@@ -20,7 +20,7 @@
               <div class="user-badges">
                 <span class="badge" *ngFor="let role of user.roles">{{ role.name }}</span>
                 <span class="badge subscription" *ngIf="user.subscription?.isActive">
-                  {{ user.subscription.subscriptionType.name }}
+                  {{ user.subscription?.subscriptionType?.name }}
                 </span>
               </div>
             </div>

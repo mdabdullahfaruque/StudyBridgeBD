@@ -6,14 +6,13 @@ import { takeUntil } from 'rxjs/operators';
 
 import { AuthService } from '../../../../shared/services/auth.service';
 import { NotificationService } from '../../../../shared/services/notification.service';
-import { LoadingComponent } from '../../../../shared/components/loading/loading';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LoadingComponent, ButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent],
   templateUrl: './register.html',
   styleUrl: './register.scss'
 })

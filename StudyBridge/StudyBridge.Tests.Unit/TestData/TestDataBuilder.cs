@@ -4,11 +4,16 @@ namespace StudyBridge.Tests.Unit.TestData;
 
 public static class TestDataBuilder
 {
+    // Predefined GUIDs for consistent testing
+    public static readonly Guid SuperAdminRoleId = new("11111111-1111-1111-1111-111111111111");
+    public static readonly Guid AdminRoleId = new("22222222-2222-2222-2222-222222222222");
+    public static readonly Guid UserRoleId = new("66666666-6666-6666-6666-666666666666");
+
     public static class Roles
     {
         public static Role SuperAdmin() => new()
         {
-            Id = 1,
+            Id = SuperAdminRoleId,
             Name = "Super Administrator",
             SystemRole = SystemRole.SuperAdmin,
             Description = "System role: SuperAdmin",
@@ -17,7 +22,7 @@ public static class TestDataBuilder
 
         public static Role Admin() => new()
         {
-            Id = 2,
+            Id = AdminRoleId,
             Name = "Administrator",
             SystemRole = SystemRole.Admin,
             Description = "System role: Admin",
@@ -26,7 +31,7 @@ public static class TestDataBuilder
 
         public static Role User() => new()
         {
-            Id = 6,
+            Id = UserRoleId,
             Name = "User",
             SystemRole = SystemRole.User,
             Description = "System role: User",
@@ -38,9 +43,9 @@ public static class TestDataBuilder
     {
         public static UserRole AdminUserRole(string userId) => new()
         {
-            Id = 1,
+            Id = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
             UserId = userId,
-            RoleId = 2, // Admin
+            RoleId = AdminRoleId, // Admin
             AssignedAt = DateTime.UtcNow,
             IsActive = true,
             Role = Roles.Admin()
@@ -48,9 +53,9 @@ public static class TestDataBuilder
 
         public static UserRole UserUserRole(string userId) => new()
         {
-            Id = 2,
+            Id = new Guid("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
             UserId = userId,
-            RoleId = 6, // User
+            RoleId = UserRoleId, // User
             AssignedAt = DateTime.UtcNow,
             IsActive = true,
             Role = Roles.User()
@@ -61,24 +66,24 @@ public static class TestDataBuilder
     {
         public static RolePermission AdminViewUsers() => new()
         {
-            Id = 1,
-            RoleId = 2, // Admin
+            Id = new Guid("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+            RoleId = AdminRoleId, // Admin
             Permission = Permission.ViewUsers,
             IsGranted = true
         };
 
         public static RolePermission AdminCreateUsers() => new()
         {
-            Id = 2,
-            RoleId = 2, // Admin
+            Id = new Guid("dddddddd-dddd-dddd-dddd-dddddddddddd"),
+            RoleId = AdminRoleId, // Admin
             Permission = Permission.CreateUsers,
             IsGranted = true
         };
 
         public static RolePermission UserViewContent() => new()
         {
-            Id = 3,
-            RoleId = 6, // User
+            Id = new Guid("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
+            RoleId = UserRoleId, // User
             Permission = Permission.ViewContent,
             IsGranted = true
         };
@@ -88,7 +93,7 @@ public static class TestDataBuilder
     {
         public static UserSubscription ActivePremium(string userId) => new()
         {
-            Id = 1,
+            Id = new Guid("ffffffff-ffff-ffff-ffff-ffffffffffff"),
             UserId = userId,
             SubscriptionType = SubscriptionType.Premium,
             StartDate = DateTime.UtcNow.AddDays(-30),
@@ -99,7 +104,7 @@ public static class TestDataBuilder
 
         public static UserSubscription ExpiredBasic(string userId) => new()
         {
-            Id = 2,
+            Id = new Guid("00000000-0000-0000-0000-000000000001"),
             UserId = userId,
             SubscriptionType = SubscriptionType.Basic,
             StartDate = DateTime.UtcNow.AddDays(-60),
@@ -113,7 +118,7 @@ public static class TestDataBuilder
     {
         public static UserProfile Complete(string userId) => new()
         {
-            Id = 1,
+            Id = new Guid("00000000-0000-0000-0000-000000000002"),
             UserId = userId,
             FirstName = "John",
             LastName = "Doe",

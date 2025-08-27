@@ -41,4 +41,8 @@ export class NotificationsComponent implements OnInit {
         return 'ℹ';
     }
   }
+
+  trackByNotificationId(index: number, notification: NotificationMessage): string {
+    return notification.id;
+  }
 }

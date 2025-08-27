@@ -43,10 +43,10 @@ public class PermissionServiceTests
         _mockUserRoleRepository.Setup(x => x.GetUserRolesAsync(userId))
             .ReturnsAsync(userRoles);
 
-        _mockRolePermissionRepository.Setup(x => x.GetRolePermissionsAsync(2))
+        _mockRolePermissionRepository.Setup(x => x.GetRolePermissionsAsync(TestDataBuilder.AdminRoleId))
             .ReturnsAsync(rolePermissions);
 
-        _mockRoleRepository.Setup(x => x.GetByIdAsync(2))
+        _mockRoleRepository.Setup(x => x.GetByIdAsync(TestDataBuilder.AdminRoleId))
             .ReturnsAsync(TestDataBuilder.Roles.Admin());
 
         // Act
@@ -69,10 +69,10 @@ public class PermissionServiceTests
         _mockUserRoleRepository.Setup(x => x.GetUserRolesAsync(userId))
             .ReturnsAsync(userRoles);
 
-        _mockRolePermissionRepository.Setup(x => x.GetRolePermissionsAsync(6))
+        _mockRolePermissionRepository.Setup(x => x.GetRolePermissionsAsync(TestDataBuilder.UserRoleId))
             .ReturnsAsync(rolePermissions);
 
-        _mockRoleRepository.Setup(x => x.GetByIdAsync(6))
+        _mockRoleRepository.Setup(x => x.GetByIdAsync(TestDataBuilder.UserRoleId))
             .ReturnsAsync(TestDataBuilder.Roles.User());
 
         // Act
@@ -142,7 +142,7 @@ public class PermissionServiceTests
         _mockUserRoleRepository.Setup(x => x.GetUserRolesAsync(userId))
             .ReturnsAsync(userRoles);
 
-        _mockRoleRepository.Setup(x => x.GetByIdAsync(2))
+        _mockRoleRepository.Setup(x => x.GetByIdAsync(TestDataBuilder.AdminRoleId))
             .ReturnsAsync(TestDataBuilder.Roles.Admin());
 
         // Act

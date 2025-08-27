@@ -8,13 +8,12 @@ import { AuthService } from '../../../../shared/services/auth.service';
 import { NotificationService } from '../../../../shared/services/notification.service';
 import { User } from '../../../../shared/models/api.models';
 import { HeaderComponent } from '../../../../shared/components/header/header';
-import { LoadingComponent } from '../../../../shared/components/loading/loading';
 import { ButtonComponent } from '../../../../shared/components/button/button';
 
 @Component({
   selector: 'app-dashboard-home',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, LoadingComponent, ButtonComponent],
+  imports: [CommonModule, HeaderComponent, ButtonComponent],
   templateUrl: './dashboard-home.html',
   styleUrl: './dashboard-home.scss'
 })
