@@ -1,0 +1,77 @@
+<div class="dashboard-container">
+  <div *ngIf="isLoading" class="loading-wrapper">
+    <app-loading message="Loading your dashboard..."></app-loading>
+  </div>
+
+  <div *ngIf="!isLoading && user" class="dashboard-content">
+    <div class="welcome-section">
+      <h1>Welcome back, {{ user.displayName }}! 👋</h1>
+      <p>Ready to continue your IELTS vocabulary journey?</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📚</div>
+        <div class="stat-content">
+          <h3>0</h3>
+          <p>Words Learned</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">🔥</div>
+        <div class="stat-content">
+          <h3>0</h3>
+          <p>Day Streak</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-content">
+          <h3>0%</h3>
+          <p>Accuracy</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-content">
+          <h3>0</h3>
+          <p>XP Points</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-section">
+      <h2>Quick Actions</h2>
+      <div class="action-grid">
+        <div class="action-card">
+          <h3>📖 Today's Words</h3>
+          <p>Learn 5 new vocabulary words</p>
+          <app-button variant="primary" [fullWidth]="true">Start Learning</app-button>
+        </div>
+        
+        <div class="action-card">
+          <h3>🔄 Quick Review</h3>
+          <p>Review previously learned words</p>
+          <app-button variant="secondary" [fullWidth]="true">Review Now</app-button>
+        </div>
+        
+        <div class="action-card">
+          <h3>🧪 Practice Test</h3>
+          <p>Test your vocabulary knowledge</p>
+          <app-button variant="info" [fullWidth]="true">Take Test</app-button>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <h2>Your Progress</h2>
+      <div class="progress-card">
+        <p>You haven't started learning yet. Complete the placement test to begin your journey!</p>
+        <app-button variant="success" size="large">Take Placement Test</app-button>
+      </div>
+    </div>
+  </div>
+</div>

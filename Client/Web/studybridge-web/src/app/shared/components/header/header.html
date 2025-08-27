@@ -1,0 +1,30 @@
+<header class="app-header">
+  <div class="header-container">
+    <div class="brand">
+      <a routerLink="/" class="brand-link">
+        <h1>StudyBridge</h1>
+      </a>
+    </div>
+    
+    <nav class="navigation" *ngIf="isAuthenticated">
+      <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+      <a routerLink="/vocabulary" routerLinkActive="active">Vocabulary</a>
+    </nav>
+    
+    <div class="user-section">
+      <div *ngIf="isAuthenticated && user" class="user-info">
+        <img [src]="user.avatarUrl || '/assets/default-avatar.png'" 
+             [alt]="user.displayName" 
+             class="avatar">
+        <span class="user-name">{{ user.displayName }}</span>
+        <button type="button" (click)="onLogout()" class="logout-btn">
+          Logout
+        </button>
+      </div>
+      
+      <div *ngIf="!isAuthenticated" class="auth-links">
+        <a routerLink="/auth/login" class="login-link">Login</a>
+      </div>
+    </div>
+  </div>
+</header>

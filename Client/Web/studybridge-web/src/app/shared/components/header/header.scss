@@ -1,0 +1,101 @@
+.app-header {
+  background: #2c3e50;
+  color: white;
+  padding: 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  .brand-link {
+    text-decoration: none;
+    color: white;
+    
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+  }
+}
+
+.navigation {
+  display: flex;
+  gap: 2rem;
+  
+  a {
+    color: #bdc3c7;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    
+    &:hover, &.active {
+      color: white;
+      background: rgba(255,255,255,0.1);
+    }
+  }
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #34495e;
+  }
+  
+  .user-name {
+    font-weight: 500;
+  }
+  
+  .logout-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background 0.3s ease;
+    
+    &:hover {
+      background: #c0392b;
+    }
+  }
+}
+
+.auth-links {
+  .login-link {
+    background: #3498db;
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+    
+    &:hover {
+      background: #2980b9;
+    }
+  }
+}

@@ -1,0 +1,36 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>Welcome to StudyBridge</h1>
+      <p>Your IELTS vocabulary learning companion</p>
+    </div>
+
+    <div class="login-content">
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <div *ngIf="isLoading" class="loading-section">
+        <app-loading message="Signing you in..."></app-loading>
+      </div>
+
+      <div *ngIf="!isLoading" class="signin-section">
+        <p class="signin-text">Sign in with your Google account to get started</p>
+        
+        <div class="google-signin-wrapper">
+          <div id="google-signin-button"></div>
+        </div>
+        
+        <div class="features-preview">
+          <h3>What you'll get:</h3>
+          <ul>
+            <li>✨ Personalized vocabulary learning</li>
+            <li>🎯 IELTS-focused word packs</li>
+            <li>📊 Progress tracking and analytics</li>
+            <li>🏆 Gamified learning experience</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
