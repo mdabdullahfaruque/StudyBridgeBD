@@ -1,11 +1,9 @@
 <div class="app-container">
-  <app-header 
-    [user]="user" 
-    [isAuthenticated]="isAuthenticated"
-    (logout)="onLogout()">
-  </app-header>
-  
-  <main class="main-content">
+  <!-- Main Content -->
+  <main class="app-main">
     <router-outlet></router-outlet>
   </main>
+
+  <!-- Global Notifications -->
+  <app-notifications></app-notifications>
 </div>

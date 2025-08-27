@@ -4,14 +4,14 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 
-import { AuthService } from './core/services/auth';
-import { User } from './core/models';
-import { HeaderComponent } from './shared/components/header/header';
+import { AuthService } from './shared/services/auth.service';
+import { User } from './shared/models/api.models';
+import { NotificationsComponent } from './shared/components/notifications/notifications';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, HeaderComponent],
+  imports: [CommonModule, RouterOutlet, NotificationsComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
@@ -27,7 +27,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.authService.user$.pipe(
+    this.authService.currentUser$.pipe(
       takeUntil(this.destroy$)
     ).subscribe(user => {
       this.user = user;
@@ -43,10 +43,5 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  onLogout(): void {
-    this.authService.logout();
-    this.router.navigate(['/auth/login']);
   }
 }
