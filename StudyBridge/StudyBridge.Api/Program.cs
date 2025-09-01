@@ -1,6 +1,5 @@
 using StudyBridge.Shared.CQRS;
-using StudyBridge.UserManagement.Application.Services;
-using StudyBridge.UserManagement.Infrastructure;
+using StudyBridge.UserManagement.Features;
 using StudyBridge.Infrastructure;
 using StudyBridge.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -75,8 +74,8 @@ builder.Services.AddInfrastructure(builder.Configuration);
 // CQRS
 builder.Services.AddScoped<IDispatcher, Dispatcher>();
 
-// User Management Module
-builder.Services.AddUserManagementModule<AppDbContext>(builder.Configuration);
+// User Management Features
+builder.Services.AddUserManagementFeatures();
 
 var app = builder.Build();
 
