@@ -2,6 +2,14 @@
 
 A comprehensive IELTS vocabulary learning platform for Bangladeshi students.
 
+> **📚 For GitHub Copilot Context**: This project includes comprehensive documentation in the `/docs` folder. Always reference these files for architectural patterns, coding standards, and development guidelines:
+> - [`/docs/INDEX.md`](./docs/INDEX.md) - Documentation hub
+> - [`/docs/PROJECT_DOCUMENTATION.md`](./docs/PROJECT_DOCUMENTATION.md) - Complete overview
+> - [`/docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) - Technical deep dive  
+> - [`/docs/API_REFERENCE.md`](./docs/API_REFERENCE.md) - API documentation
+> - [`/docs/DEVELOPMENT_GUIDE.md`](./docs/DEVELOPMENT_GUIDE.md) - Developer guide
+> - [`.github/copilot-instructions.md`](./.github/copilot-instructions.md) - Copilot context
+
 ## Architecture
 
 - **Backend**: .NET 8 Web API with modular monolithic architecture

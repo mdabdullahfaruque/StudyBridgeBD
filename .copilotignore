@@ -1,0 +1,17 @@
+# GitHub Copilot Configuration
+# This file ensures important documentation is always included as context
+
+# Never ignore documentation files
+!docs/
+!docs/**/*.md
+!README.md
+!PROJECT_SETUP.md
+!.github/copilot-instructions.md
+
+# Always include these key files for context
+!StudyBridge/StudyBridge.Domain/Entities/*.cs
+!StudyBridge/Modules/StudyBridge.UserManagement/Features/**/*.cs
+!StudyBridge/StudyBridge.Shared/**/*.cs
+
+# Include test patterns for reference
+!StudyBridge/StudyBridge.Tests.Unit/**/*Tests.cs
