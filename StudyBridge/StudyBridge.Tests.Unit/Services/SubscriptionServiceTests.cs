@@ -190,4 +190,201 @@ public class SubscriptionServiceTests
         _mockSubscriptionRepository.Verify(x => x.UpdateAsync(It.Is<UserSubscription>(s => 
             s.EndDate == newEndDate)), Times.Once);
     }
+
+    [Fact]
+    public async Task GetActiveSubscriptionAsync_WhenNoSubscription_ShouldReturnNull()
+    {
+        // Arrange
+        const string userId = "test-user-id";
+
+        _mockSubscriptionRepository.Setup(x => x.GetActiveSubscriptionAsync(userId))
+            .ReturnsAsync((UserSubscription?)null);
+
+        // Act
+        var result = await _sut.GetActiveSubscriptionAsync(userId);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetActiveSubscriptionAsync_WhenExceptionOccurs_ShouldReturnNull()
+    {
+        // Arrange
+        const string userId = "test-user-id";
+
+        _mockSubscriptionRepository.Setup(x => x.GetActiveSubscriptionAsync(userId))
+            .ThrowsAsync(new Exception("Database error"));
+
+        // Act
+        var result = await _sut.GetActiveSubscriptionAsync(userId);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetUserSubscriptionHistoryAsync_WhenSubscriptionsExist_ShouldReturnHistory()
+    {
+        // Arrange
+        const string userId = "test-user-id";
+        var subscriptions = new List<UserSubscription>
+        {
+            TestDataBuilder.Subscriptions.ActivePremium(userId),
+            TestDataBuilder.Subscriptions.ExpiredBasic(userId)
+        };
+
+        _mockSubscriptionRepository.Setup(x => x.GetUserSubscriptionsAsync(userId))
+            .ReturnsAsync(subscriptions);
+
+        // Act
+        var result = await _sut.GetUserSubscriptionHistoryAsync(userId);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().HaveCount(2);
+        result.Should().BeEquivalentTo(subscriptions);
+    }
+
+    [Fact]
+    public async Task GetUserSubscriptionHistoryAsync_WhenExceptionOccurs_ShouldReturnEmptyCollection()
+    {
+        // Arrange
+        const string userId = "test-user-id";
+
+        _mockSubscriptionRepository.Setup(x => x.GetUserSubscriptionsAsync(userId))
+            .ThrowsAsync(new Exception("Database error"));
+
+        // Act
+        var result = await _sut.GetUserSubscriptionHistoryAsync(userId);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task CreateSubscriptionAsync_WhenExceptionOccurs_ShouldReturnFalse()
+    {
+        // Arrange
+        const string userId = "test-user-id";
+        const SubscriptionType subscriptionType = SubscriptionType.Premium;
+        const decimal amount = 99.99m;
+        var endDate = DateTime.UtcNow.AddDays(30);
+
+        _mockSubscriptionRepository.Setup(x => x.GetActiveSubscriptionAsync(userId))
+            .ThrowsAsync(new Exception("Database error"));
+
+        // Act
+        var result = await _sut.CreateSubscriptionAsync(userId, subscriptionType, amount, endDate);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task IsSubscriptionActiveAsync_WhenNoSubscription_ShouldReturnFalse()
+    {
+        // Arrange
+        const string userId = "test-user-id";
+
+        _mockSubscriptionRepository.Setup(x => x.GetActiveSubscriptionAsync(userId))
+            .ReturnsAsync((UserSubscription?)null);
+
+        // Act
+        var result = await _sut.IsSubscriptionActiveAsync(userId);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task IsSubscriptionActiveAsync_WithSpecificType_WhenUserHasDifferentSubscription_ShouldReturnFalse()
+    {
+        // Arrange
+        const string userId = "test-user-id";
+        var basicSubscription = TestDataBuilder.Subscriptions.ActivePremium(userId);
+        basicSubscription.SubscriptionType = SubscriptionType.Basic;
+
+        _mockSubscriptionRepository.Setup(x => x.GetActiveSubscriptionAsync(userId))
+            .ReturnsAsync(basicSubscription);
+
+        // Act
+        var result = await _sut.IsSubscriptionActiveAsync(userId, SubscriptionType.Premium);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CancelSubscriptionAsync_WhenNoActiveSubscription_ShouldReturnFalse()
+    {
+        // Arrange
+        const string userId = "test-user-id";
+        const string reason = "User requested cancellation";
+
+        _mockSubscriptionRepository.Setup(x => x.GetActiveSubscriptionAsync(userId))
+            .ReturnsAsync((UserSubscription?)null);
+
+        // Act
+        var result = await _sut.CancelSubscriptionAsync(userId, reason);
+
+        // Assert
+        result.Should().BeFalse();
+        _mockSubscriptionRepository.Verify(x => x.UpdateAsync(It.IsAny<UserSubscription>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CancelSubscriptionAsync_WhenExceptionOccurs_ShouldReturnFalse()
+    {
+        // Arrange
+        const string userId = "test-user-id";
+        const string reason = "User requested cancellation";
+
+        _mockSubscriptionRepository.Setup(x => x.GetActiveSubscriptionAsync(userId))
+            .ThrowsAsync(new Exception("Database error"));
+
+        // Act
+        var result = await _sut.CancelSubscriptionAsync(userId, reason);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RenewSubscriptionAsync_WhenNoActiveSubscription_ShouldReturnFalse()
+    {
+        // Arrange
+        const string userId = "test-user-id";
+        const decimal renewalAmount = 99.99m;
+        var newEndDate = DateTime.UtcNow.AddDays(60);
+
+        _mockSubscriptionRepository.Setup(x => x.GetActiveSubscriptionAsync(userId))
+            .ReturnsAsync((UserSubscription?)null);
+
+        // Act
+        var result = await _sut.RenewSubscriptionAsync(userId, newEndDate, renewalAmount);
+
+        // Assert
+        result.Should().BeFalse();
+        _mockSubscriptionRepository.Verify(x => x.UpdateAsync(It.IsAny<UserSubscription>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RenewSubscriptionAsync_WhenExceptionOccurs_ShouldReturnFalse()
+    {
+        // Arrange
+        const string userId = "test-user-id";
+        const decimal renewalAmount = 99.99m;
+        var newEndDate = DateTime.UtcNow.AddDays(60);
+
+        _mockSubscriptionRepository.Setup(x => x.GetActiveSubscriptionAsync(userId))
+            .ThrowsAsync(new Exception("Database error"));
+
+        // Act
+        var result = await _sut.RenewSubscriptionAsync(userId, newEndDate, renewalAmount);
+
+        // Assert
+        result.Should().BeFalse();
+    }
 }

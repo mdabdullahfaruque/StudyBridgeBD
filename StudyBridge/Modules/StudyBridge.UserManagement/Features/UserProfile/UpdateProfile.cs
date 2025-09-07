@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using StudyBridge.Application.Contracts.Persistence;
 using StudyBridge.Shared.CQRS;
+using StudyBridge.Shared.Exceptions;
 
 namespace StudyBridge.UserManagement.Features.UserProfile;
 
@@ -21,16 +22,13 @@ public static class UpdateProfile
         public Validator()
         {
             RuleFor(x => x.DisplayName)
-                .NotEmpty().WithMessage("Display name is required")
-                .MinimumLength(2).WithMessage("Display name must be at least 2 characters long");
+                .NotEmpty().WithMessage("Display name is required");
 
             RuleFor(x => x.FirstName)
-                .NotEmpty().WithMessage("First name is required")
-                .MinimumLength(2).WithMessage("First name must be at least 2 characters long");
+                .NotEmpty().WithMessage("First name is required");
 
             RuleFor(x => x.LastName)
-                .NotEmpty().WithMessage("Last name is required")
-                .MinimumLength(2).WithMessage("Last name must be at least 2 characters long");
+                .NotEmpty().WithMessage("Last name is required");
 
             RuleFor(x => x.AvatarUrl)
                 .Must(BeValidUrl).WithMessage("Avatar URL must be a valid URL")
@@ -74,49 +72,37 @@ public static class UpdateProfile
 
         public async Task<Response> HandleAsync(Command request, CancellationToken cancellationToken)
         {
-            try
+            if (!Guid.TryParse(request.UserId, out var userId))
             {
-                var userId = Guid.Parse(request.UserId);
-                var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive, cancellationToken);
-
-                if (user == null)
-                {
-                    _logger.LogWarning("Profile update attempt for non-existent user: {UserId}", request.UserId);
-                    return new Response
-                    {
-                        Success = false,
-                        Message = "User not found"
-                    };
-                }
-
-                // Update user profile
-                user.DisplayName = request.DisplayName;
-                user.FirstName = request.FirstName;
-                user.LastName = request.LastName;
-                user.AvatarUrl = request.AvatarUrl;
-                user.UpdatedAt = DateTime.UtcNow;
-
-                _context.Users.Update(user);
-                await _context.SaveChangesAsync(cancellationToken);
-
-                _logger.LogInformation("User profile updated successfully: {UserId}", request.UserId);
-                
-                return new Response
-                {
-                    Success = true,
-                    Message = "Profile updated successfully"
-                };
+                throw new ArgumentException("Invalid user ID format", nameof(request.UserId));
             }
-            catch (Exception ex)
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive, cancellationToken);
+
+            if (user == null)
             {
-                _logger.LogError(ex, "Error updating user profile: {UserId}", request.UserId);
-                return new Response
-                {
-                    Success = false,
-                    Message = "An error occurred while updating profile"
-                };
+                _logger.LogWarning("Profile update attempt for non-existent user: {UserId}", request.UserId);
+                throw new NotFoundException("User not found");
             }
+
+            // Update user profile
+            user.DisplayName = request.DisplayName;
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
+            user.AvatarUrl = request.AvatarUrl;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("User profile updated successfully: {UserId}", request.UserId);
+            
+            return new Response
+            {
+                Success = true,
+                Message = "Profile updated successfully"
+            };
         }
     }
 }

@@ -95,6 +95,14 @@ public static class ChangePassword
                     Message = "Password changed successfully"
                 };
             }
+            catch (UnauthorizedAccessException)
+            {
+                throw; // Re-throw authorization exceptions
+            }
+            catch (InvalidOperationException)
+            {
+                throw; // Re-throw operation exceptions
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error changing password for user: {UserId}", command.UserId);

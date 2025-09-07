@@ -32,6 +32,10 @@ public class ProfileService : IProfileService
         {
             return ServiceResult<GetProfile.Response>.Failure(ex.Message, 401, ex.Errors);
         }
+        catch (ValidationException ex)
+        {
+            return ServiceResult<GetProfile.Response>.Failure(ex.Message, 400, ex.Errors);
+        }
         catch (StudyBridgeException ex)
         {
             return ServiceResult<GetProfile.Response>.Failure(ex.Message, ex.StatusCode, ex.Errors);

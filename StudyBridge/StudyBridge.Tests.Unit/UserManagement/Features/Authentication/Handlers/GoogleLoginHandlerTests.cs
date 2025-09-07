@@ -1,0 +1,246 @@
+using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using MockQueryable.EntityFrameworkCore;
+using MockQueryable.Moq;
+using Moq;
+using StudyBridge.Application.Contracts.Persistence;
+using StudyBridge.Application.Contracts.Services;
+using StudyBridge.Domain.Entities;
+using StudyBridge.Tests.Unit.TestData;
+using StudyBridge.UserManagement.Features.Authentication;
+
+namespace StudyBridge.Tests.Unit.UserManagement.Features.Authentication.Handlers;
+
+public class GoogleLoginHandlerTests
+{
+    private readonly Mock<IApplicationDbContext> _mockContext;
+    private readonly Mock<IJwtTokenService> _mockJwtTokenService;
+    private readonly Mock<IPermissionService> _mockPermissionService;
+    private readonly Mock<ILogger<GoogleLogin.Handler>> _mockLogger;
+    private readonly GoogleLogin.Handler _sut;
+
+    public GoogleLoginHandlerTests()
+    {
+        _mockContext = new Mock<IApplicationDbContext>();
+        _mockJwtTokenService = new Mock<IJwtTokenService>();
+        _mockPermissionService = new Mock<IPermissionService>();
+        _mockLogger = new Mock<ILogger<GoogleLogin.Handler>>();
+
+        _sut = new GoogleLogin.Handler(
+            _mockContext.Object,
+            _mockJwtTokenService.Object,
+            _mockPermissionService.Object,
+            _mockLogger.Object);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithExistingUser_ShouldLoginAndReturnResponse()
+    {
+        // Arrange
+        var command = TestDataBuilder.Commands.Authentication.ValidGoogleLoginCommand();
+        var existingUser = TestDataBuilder.Users.GoogleUser();
+        existingUser.Email = "user@example.com"; // This matches the hardcoded email in GoogleLogin handler
+        
+        var users = new List<AppUser> { existingUser }.AsQueryable().BuildMockDbSet();
+        _mockContext.Setup(x => x.Users).Returns(users.Object);
+
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(existingUser.Id.ToString()))
+            .ReturnsAsync(new List<SystemRole> { SystemRole.User });
+
+        _mockJwtTokenService.Setup(x => x.GenerateToken(existingUser.Id.ToString(), existingUser.Email, It.IsAny<List<string>>()))
+            .Returns("jwt_token_123");
+
+        _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await _sut.HandleAsync(command, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Token.Should().Be("jwt_token_123");
+        result.Email.Should().Be(existingUser.Email);
+        result.DisplayName.Should().Be(existingUser.DisplayName);
+        result.UserId.Should().Be(existingUser.Id.ToString());
+        result.Roles.Should().Contain("User");
+        result.IsNewUser.Should().BeFalse();
+        result.ExpiresAt.Should().BeCloseTo(DateTime.UtcNow.AddHours(24), TimeSpan.FromMinutes(1));
+
+        existingUser.LastLoginAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(10));
+        _mockContext.Verify(x => x.Users.Update(existingUser), Times.Once);
+        _mockContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithNewUser_ShouldCreateUserAndReturnResponse()
+    {
+        // Arrange
+        var command = TestDataBuilder.Commands.Authentication.ValidGoogleLoginCommand();
+        
+        var users = new List<AppUser>().AsQueryable().BuildMockDbSet();
+        _mockContext.Setup(x => x.Users).Returns(users.Object);
+
+        _mockPermissionService.Setup(x => x.AssignRoleToUserAsync(It.IsAny<string>(), SystemRole.User, "Google OAuth"))
+            .ReturnsAsync(true);
+
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<string>()))
+            .ReturnsAsync(new List<SystemRole> { SystemRole.User });
+
+        _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<string>(), "user@example.com", It.IsAny<List<string>>()))
+            .Returns("jwt_token_456");
+
+        AppUser? capturedUser = null;
+        users.Setup(x => x.Add(It.IsAny<AppUser>()))
+            .Callback<AppUser>(user => capturedUser = user);
+
+        _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await _sut.HandleAsync(command, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Token.Should().Be("jwt_token_456");
+        result.Email.Should().Be("user@example.com");
+        result.DisplayName.Should().Be("Google User");
+        result.Roles.Should().Contain("User");
+        result.IsNewUser.Should().BeTrue();
+
+        capturedUser.Should().NotBeNull();
+        capturedUser!.Email.Should().Be("user@example.com");
+        capturedUser.DisplayName.Should().Be("Google User");
+        capturedUser.EmailConfirmed.Should().BeTrue();
+        capturedUser.IsActive.Should().BeTrue();
+        capturedUser.FirstName.Should().Be("Google");
+        capturedUser.LastName.Should().Be("User");
+
+        _mockPermissionService.Verify(x => x.AssignRoleToUserAsync(It.IsAny<string>(), SystemRole.User, "Google OAuth"), Times.Once);
+        _mockContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once); // Only once for user creation
+    }
+
+    [Fact]
+    public async Task HandleAsync_WhenExceptionOccurs_ShouldLogErrorAndRethrow()
+    {
+        // Arrange
+        var command = TestDataBuilder.Commands.Authentication.ValidGoogleLoginCommand();
+        
+        _mockContext.Setup(x => x.Users)
+            .Throws(new Exception("Database connection failed"));
+
+        // Act & Assert
+        var act = async () => await _sut.HandleAsync(command, CancellationToken.None);
+        
+        await act.Should().ThrowAsync<Exception>()
+            .WithMessage("Database connection failed");
+
+        _mockLogger.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains($"Error during Google login with token: {command.IdToken}")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WhenSuccessful_ShouldLogInformation()
+    {
+        // Arrange
+        var command = TestDataBuilder.Commands.Authentication.ValidGoogleLoginCommand();
+        var existingUser = TestDataBuilder.Users.GoogleUser();
+        existingUser.Email = "user@example.com";
+        
+        var users = new List<AppUser> { existingUser }.AsQueryable().BuildMockDbSet();
+        _mockContext.Setup(x => x.Users).Returns(users.Object);
+
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<string>()))
+            .ReturnsAsync(new List<SystemRole> { SystemRole.User });
+
+        _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()))
+            .Returns("token");
+
+        _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        // Act
+        await _sut.HandleAsync(command, CancellationToken.None);
+
+        // Assert
+        _mockLogger.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Google login successful for user: user@example.com")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithNewUser_ShouldSetCorrectUserProperties()
+    {
+        // Arrange
+        var command = TestDataBuilder.Commands.Authentication.ValidGoogleLoginCommand();
+        
+        var users = new List<AppUser>().AsQueryable().BuildMockDbSet();
+        _mockContext.Setup(x => x.Users).Returns(users.Object);
+
+        _mockPermissionService.Setup(x => x.AssignRoleToUserAsync(It.IsAny<string>(), SystemRole.User, "Google OAuth"))
+            .ReturnsAsync(true);
+
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<string>()))
+            .ReturnsAsync(new List<SystemRole> { SystemRole.User });
+
+        _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()))
+            .Returns("token");
+
+        AppUser? capturedUser = null;
+        users.Setup(x => x.Add(It.IsAny<AppUser>()))
+            .Callback<AppUser>(user => capturedUser = user);
+
+        _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        // Act
+        await _sut.HandleAsync(command, CancellationToken.None);
+
+        // Assert
+        capturedUser.Should().NotBeNull();
+        capturedUser!.EmailConfirmed.Should().BeTrue("Google accounts are pre-verified");
+        capturedUser.IsActive.Should().BeTrue();
+        capturedUser.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(10));
+        capturedUser.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(10));
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithExistingUser_ShouldReturnCorrectRoles()
+    {
+        // Arrange
+        var command = TestDataBuilder.Commands.Authentication.ValidGoogleLoginCommand();
+        var existingUser = TestDataBuilder.Users.GoogleUser();
+        existingUser.Email = "user@example.com";
+        
+        var users = new List<AppUser> { existingUser }.AsQueryable().BuildMockDbSet();
+        _mockContext.Setup(x => x.Users).Returns(users.Object);
+
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(existingUser.Id.ToString()))
+            .ReturnsAsync(new List<SystemRole> { SystemRole.User, SystemRole.Admin });
+
+        _mockJwtTokenService.Setup(x => x.GenerateToken(existingUser.Id.ToString(), existingUser.Email, It.IsAny<List<string>>()))
+            .Returns("token");
+
+        _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await _sut.HandleAsync(command, CancellationToken.None);
+
+        // Assert
+        result.Roles.Should().Contain("User");
+        result.Roles.Should().Contain("Admin");
+        result.Roles.Should().HaveCount(2);
+    }
+}

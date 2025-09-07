@@ -1,4 +1,5 @@
 using StudyBridge.Domain.Entities;
+using StudyBridge.UserManagement.Features.Authentication;
 
 namespace StudyBridge.Tests.Unit.TestData;
 
@@ -8,6 +9,158 @@ public static class TestDataBuilder
     public static readonly Guid SuperAdminRoleId = new("11111111-1111-1111-1111-111111111111");
     public static readonly Guid AdminRoleId = new("22222222-2222-2222-2222-222222222222");
     public static readonly Guid UserRoleId = new("66666666-6666-6666-6666-666666666666");
+    
+    // User IDs
+    public static readonly Guid TestUserId = new("77777777-7777-7777-7777-777777777777");
+    public static readonly string TestUserIdString = TestUserId.ToString();
+
+    public static class Users
+    {
+        public static AppUser ValidUser() => new()
+        {
+            Id = TestUserId,
+            Email = "test@example.com",
+            DisplayName = "Test User",
+            FirstName = "Test",
+            LastName = "User",
+            PasswordHash = "hashed_password_123",
+            EmailConfirmed = true,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow.AddDays(-10),
+            UpdatedAt = DateTime.UtcNow.AddDays(-1),
+            LastLoginAt = DateTime.UtcNow.AddHours(-2)
+        };
+
+        public static AppUser InactiveUser() => new()
+        {
+            Id = new Guid("88888888-8888-8888-8888-888888888888"),
+            Email = "inactive@example.com",
+            DisplayName = "Inactive User",
+            FirstName = "Inactive",
+            LastName = "User",
+            PasswordHash = "hashed_password_456",
+            EmailConfirmed = false,
+            IsActive = false,
+            CreatedAt = DateTime.UtcNow.AddDays(-5),
+            UpdatedAt = DateTime.UtcNow.AddDays(-1)
+        };
+
+        public static AppUser GoogleUser() => new()
+        {
+            Id = new Guid("99999999-9999-9999-9999-999999999999"),
+            Email = "google@example.com",
+            DisplayName = "Google User",
+            FirstName = "Google",
+            LastName = "User",
+            PasswordHash = "", // OAuth users don't have passwords - use empty string instead of null
+            EmailConfirmed = true,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow.AddDays(-3),
+            UpdatedAt = DateTime.UtcNow.AddDays(-1)
+        };
+    }
+
+    public static class Commands
+    {
+        public static class Authentication
+        {
+            public static Register.Command ValidRegisterCommand() => new()
+            {
+                Email = "newuser@example.com",
+                Password = "SecurePassword123!",
+                FirstName = "New",
+                LastName = "User",
+                DisplayName = "New User"
+            };
+
+            public static Register.Command InvalidRegisterCommand() => new()
+            {
+                Email = "invalid-email",
+                Password = "weak",
+                FirstName = "",
+                LastName = "",
+                DisplayName = ""
+            };
+
+            public static Login.Command ValidLoginCommand() => new()
+            {
+                Email = "test@example.com",
+                Password = "CorrectPassword123!"
+            };
+
+            public static Login.Command InvalidLoginCommand() => new()
+            {
+                Email = "test@example.com",
+                Password = "WrongPassword"
+            };
+
+            public static GoogleLogin.Command ValidGoogleLoginCommand() => new()
+            {
+                IdToken = "valid_google_id_token_123"
+            };
+
+            public static ChangePassword.Command ValidChangePasswordCommand() => new()
+            {
+                UserId = TestUserIdString,
+                CurrentPassword = "CurrentPassword123!",
+                NewPassword = "NewSecurePassword456!"
+            };
+
+            public static ChangePassword.Command InvalidChangePasswordCommand() => new()
+            {
+                UserId = TestUserIdString,
+                CurrentPassword = "WrongCurrentPassword",
+                NewPassword = "NewSecurePassword456!"
+            };
+        }
+    }
+
+    public static class Responses
+    {
+        public static class Authentication
+        {
+            public static Register.Response SuccessfulRegisterResponse() => new()
+            {
+                Token = "jwt_token_123",
+                RefreshToken = "refresh_token_123",
+                ExpiresAt = DateTime.UtcNow.AddHours(24),
+                Email = "newuser@example.com",
+                DisplayName = "New User",
+                UserId = TestUserIdString,
+                Roles = new List<string> { "User" },
+                RequiresEmailConfirmation = true
+            };
+
+            public static Login.Response SuccessfulLoginResponse() => new()
+            {
+                Token = "jwt_token_456",
+                RefreshToken = "refresh_token_456",
+                ExpiresAt = DateTime.UtcNow.AddHours(24),
+                Email = "test@example.com",
+                DisplayName = "Test User",
+                UserId = TestUserIdString,
+                Roles = new List<string> { "User" }
+            };
+
+            public static GoogleLogin.Response SuccessfulGoogleLoginResponse() => new()
+            {
+                Token = "jwt_token_789",
+                RefreshToken = "refresh_token_789",
+                ExpiresAt = DateTime.UtcNow.AddHours(24),
+                Email = "google@example.com",
+                DisplayName = "Google User",
+                UserId = "99999999-9999-9999-9999-999999999999",
+                Roles = new List<string> { "User" },
+                IsNewUser = false
+            };
+
+            public static ChangePassword.Response SuccessfulChangePasswordResponse() => new()
+            {
+                Success = true,
+                Message = "Password changed successfully"
+            };
+        }
+    }
 
     public static class Roles
     {

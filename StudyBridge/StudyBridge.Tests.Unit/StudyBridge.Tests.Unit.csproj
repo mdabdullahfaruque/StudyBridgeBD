@@ -16,12 +16,18 @@
     <PackageReference Include="Moq" Version="4.20.70" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0" />
+    <PackageReference Include="MockQueryable.EntityFrameworkCore" Version="7.0.0" />
+    <PackageReference Include="MockQueryable.Moq" Version="7.0.0" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\StudyBridge.Application\StudyBridge.Application.csproj" />
     <ProjectReference Include="..\StudyBridge.Domain\StudyBridge.Domain.csproj" />
     <ProjectReference Include="..\StudyBridge.Infrastructure\StudyBridge.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\StudyBridge.UserManagement\StudyBridge.UserManagement.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using StudyBridge.Application.Contracts.Persistence;
 using StudyBridge.Shared.CQRS;
+using StudyBridge.Shared.Exceptions;
 
 namespace StudyBridge.UserManagement.Features.UserProfile;
 
@@ -51,14 +52,18 @@ public static class GetProfile
 
         public async Task<Response> HandleAsync(Query query, CancellationToken cancellationToken)
         {
-            var userId = Guid.Parse(query.UserId);
+            if (!Guid.TryParse(query.UserId, out var userId))
+            {
+                throw new ArgumentException("Invalid user ID format", nameof(query.UserId));
+            }
+
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive, cancellationToken);
+                .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
 
             if (user == null)
             {
                 _logger.LogWarning("User profile requested for non-existent user: {UserId}", query.UserId);
-                throw new KeyNotFoundException($"User with ID {query.UserId} not found");
+                throw new NotFoundException("User profile not found");
             }
 
             return new Response
