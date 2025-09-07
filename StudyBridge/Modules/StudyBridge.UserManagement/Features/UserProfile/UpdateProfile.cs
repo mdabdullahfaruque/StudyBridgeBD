@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using StudyBridge.Application.Contracts.Persistence;
 using StudyBridge.Shared.CQRS;
-using System.ComponentModel.DataAnnotations;
 
 namespace StudyBridge.UserManagement.Features.UserProfile;
 
@@ -11,18 +10,9 @@ public static class UpdateProfile
 {
     public class Request
     {
-        [Required(ErrorMessage = "Display name is required")]
-        [MinLength(2, ErrorMessage = "Display name must be at least 2 characters long")]
         public string DisplayName { get; init; } = string.Empty;
-        
-        [Required(ErrorMessage = "First name is required")]
-        [MinLength(2, ErrorMessage = "First name must be at least 2 characters long")]
         public string FirstName { get; init; } = string.Empty;
-        
-        [Required(ErrorMessage = "Last name is required")]
-        [MinLength(2, ErrorMessage = "Last name must be at least 2 characters long")]
         public string LastName { get; init; } = string.Empty;
-        
         public string? AvatarUrl { get; init; }
     }
 
@@ -67,15 +57,6 @@ public static class UpdateProfile
         public string FirstName { get; init; } = string.Empty;
         public string LastName { get; init; } = string.Empty;
         public string? AvatarUrl { get; init; }
-
-        public Command(string userId, Request request)
-        {
-            UserId = userId;
-            DisplayName = request.DisplayName;
-            FirstName = request.FirstName;
-            LastName = request.LastName;
-            AvatarUrl = request.AvatarUrl;
-        }
     }
 
     public class Handler : ICommandHandler<Command, Response>

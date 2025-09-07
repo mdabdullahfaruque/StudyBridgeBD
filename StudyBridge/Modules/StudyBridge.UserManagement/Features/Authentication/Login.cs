@@ -4,23 +4,18 @@ using Microsoft.Extensions.Logging;
 using StudyBridge.Application.Contracts.Persistence;
 using StudyBridge.Application.Contracts.Services;
 using StudyBridge.Shared.CQRS;
-using System.ComponentModel.DataAnnotations;
 
 namespace StudyBridge.UserManagement.Features.Authentication;
 
 public static class Login
 {
-    public class Request
+    public class Command : ICommand<Response>
     {
-        [Required(ErrorMessage = "Email is required")]
-        [EmailAddress(ErrorMessage = "Please enter a valid email address")]
         public string Email { get; init; } = string.Empty;
-        
-        [Required(ErrorMessage = "Password is required")]
         public string Password { get; init; } = string.Empty;
     }
 
-    public class Validator : AbstractValidator<Request>
+    public class Validator : AbstractValidator<Command>
     {
         public Validator()
         {
@@ -45,56 +40,35 @@ public static class Login
         public List<string> Roles { get; init; } = new();
     }
 
-    public class Command : ICommand<Response>
+    public class Handler(
+        IApplicationDbContext context,
+        IPasswordHashingService passwordHashingService,
+        IJwtTokenService jwtTokenService,
+        IPermissionService permissionService,
+        ILogger<Login.Handler> logger) : ICommandHandler<Command, Response>
     {
-        public string Email { get; init; } = string.Empty;
-        public string Password { get; init; } = string.Empty;
+        private readonly IApplicationDbContext _context = context;
+        private readonly IPasswordHashingService _passwordHashingService = passwordHashingService;
+        private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
+        private readonly IPermissionService _permissionService = permissionService;
+        private readonly ILogger<Handler> _logger = logger;
 
-        public Command(Request request)
-        {
-            Email = request.Email;
-            Password = request.Password;
-        }
-    }
-
-    public class Handler : ICommandHandler<Command, Response>
-    {
-        private readonly IApplicationDbContext _context;
-        private readonly IPasswordHashingService _passwordHashingService;
-        private readonly IJwtTokenService _jwtTokenService;
-        private readonly IPermissionService _permissionService;
-        private readonly ILogger<Handler> _logger;
-
-        public Handler(
-            IApplicationDbContext context,
-            IPasswordHashingService passwordHashingService,
-            IJwtTokenService jwtTokenService,
-            IPermissionService permissionService,
-            ILogger<Handler> logger)
-        {
-            _context = context;
-            _passwordHashingService = passwordHashingService;
-            _jwtTokenService = jwtTokenService;
-            _permissionService = permissionService;
-            _logger = logger;
-        }
-
-        public async Task<Response> HandleAsync(Command request, CancellationToken cancellationToken)
+        public async Task<Response> HandleAsync(Command command, CancellationToken cancellationToken)
         {
             // Find user by email
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == request.Email && u.IsActive, cancellationToken);
+                .FirstOrDefaultAsync(u => u.Email == command.Email && u.IsActive, cancellationToken);
 
             if (user == null || string.IsNullOrEmpty(user.PasswordHash))
             {
-                _logger.LogWarning("Failed login attempt for email: {Email} - User not found or invalid credentials", request.Email);
+                _logger.LogWarning("Failed login attempt for email: {Email} - User not found or invalid credentials", command.Email);
                 throw new UnauthorizedAccessException("Invalid email or password");
             }
 
             // Verify password
-            if (!_passwordHashingService.VerifyPassword(request.Password, user.PasswordHash))
+            if (!_passwordHashingService.VerifyPassword(command.Password, user.PasswordHash))
             {
-                _logger.LogWarning("Failed login attempt for email: {Email} - Invalid password", request.Email);
+                _logger.LogWarning("Failed login attempt for email: {Email} - Invalid password", command.Email);
                 throw new UnauthorizedAccessException("Invalid email or password");
             }
 
@@ -111,7 +85,7 @@ public static class Login
             var token = _jwtTokenService.GenerateToken(user.Id.ToString(), user.Email, roleStrings);
             var expiresAt = DateTime.UtcNow.AddHours(24); // Assuming 24-hour token validity
 
-            _logger.LogInformation("User logged in successfully: {Email}", request.Email);
+            _logger.LogInformation("User logged in successfully: {Email}", command.Email);
 
             return new Response
             {

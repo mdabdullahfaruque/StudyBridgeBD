@@ -4,23 +4,19 @@ using Microsoft.Extensions.Logging;
 using StudyBridge.Application.Contracts.Persistence;
 using StudyBridge.Application.Contracts.Services;
 using StudyBridge.Shared.CQRS;
-using System.ComponentModel.DataAnnotations;
 
 namespace StudyBridge.UserManagement.Features.Authentication;
 
 public static class ChangePassword
 {
-    public class Request
+    public class Command : ICommand<Response>
     {
-        [Required(ErrorMessage = "Current password is required")]
+        public string UserId { get; init; } = string.Empty;
         public string CurrentPassword { get; init; } = string.Empty;
-        
-        [Required(ErrorMessage = "New password is required")]
-        [MinLength(6, ErrorMessage = "Password must be at least 6 characters long")]
         public string NewPassword { get; init; } = string.Empty;
     }
 
-    public class Validator : AbstractValidator<Request>
+    public class Validator : AbstractValidator<Command>
     {
         public Validator()
         {
@@ -39,20 +35,6 @@ public static class ChangePassword
         public string Message { get; init; } = string.Empty;
     }
 
-    public class Command : ICommand<Response>
-    {
-        public string UserId { get; init; } = string.Empty;
-        public string CurrentPassword { get; init; } = string.Empty;
-        public string NewPassword { get; init; } = string.Empty;
-
-        public Command(string userId, Request request)
-        {
-            UserId = userId;
-            CurrentPassword = request.CurrentPassword;
-            NewPassword = request.NewPassword;
-        }
-    }
-
     public class Handler : ICommandHandler<Command, Response>
     {
         private readonly IApplicationDbContext _context;
@@ -69,37 +51,35 @@ public static class ChangePassword
             _logger = logger;
         }
 
-        public async Task<Response> HandleAsync(Command request, CancellationToken cancellationToken)
+        public async Task<Response> HandleAsync(Command command, CancellationToken cancellationToken)
         {
             try
             {
-                var userId = Guid.Parse(request.UserId);
+                var userId = Guid.Parse(command.UserId);
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive, cancellationToken);
 
-                if (user == null || string.IsNullOrEmpty(user.PasswordHash))
+                if (user == null)
                 {
-                    _logger.LogWarning("Password change attempt for invalid user: {UserId}", request.UserId);
-                    return new Response
-                    {
-                        Success = false,
-                        Message = "User not found or not a local user"
-                    };
+                    _logger.LogWarning("Password change attempt for invalid user: {UserId}", command.UserId);
+                    throw new UnauthorizedAccessException("User not found");
+                }
+
+                // Check if user has a password (not OAuth only)
+                if (string.IsNullOrEmpty(user.PasswordHash))
+                {
+                    throw new InvalidOperationException("Cannot change password for OAuth-only users");
                 }
 
                 // Verify current password
-                if (!_passwordHashingService.VerifyPassword(request.CurrentPassword, user.PasswordHash))
+                if (!_passwordHashingService.VerifyPassword(command.CurrentPassword, user.PasswordHash))
                 {
-                    _logger.LogWarning("Password change attempt with incorrect current password: {UserId}", request.UserId);
-                    return new Response
-                    {
-                        Success = false,
-                        Message = "Current password is incorrect"
-                    };
+                    _logger.LogWarning("Password change attempt with incorrect current password: {UserId}", command.UserId);
+                    throw new UnauthorizedAccessException("Current password is incorrect");
                 }
 
                 // Hash new password
-                var newPasswordHash = _passwordHashingService.HashPassword(request.NewPassword);
+                var newPasswordHash = _passwordHashingService.HashPassword(command.NewPassword);
 
                 // Update user
                 user.PasswordHash = newPasswordHash;
@@ -107,8 +87,8 @@ public static class ChangePassword
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync(cancellationToken);
 
-                _logger.LogInformation("Password changed successfully for user: {UserId}", request.UserId);
-                
+                _logger.LogInformation("Password changed successfully for user: {UserId}", command.UserId);
+
                 return new Response
                 {
                     Success = true,
@@ -117,7 +97,7 @@ public static class ChangePassword
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error changing password for user: {UserId}", request.UserId);
+                _logger.LogError(ex, "Error changing password for user: {UserId}", command.UserId);
                 return new Response
                 {
                     Success = false,

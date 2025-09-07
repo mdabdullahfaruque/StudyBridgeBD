@@ -1,39 +1,26 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using StudyBridge.Application.Contracts.Persistence;
 using StudyBridge.Application.Contracts.Services;
 using StudyBridge.Domain.Entities;
 using StudyBridge.Shared.CQRS;
-using System.ComponentModel.DataAnnotations;
 
 namespace StudyBridge.UserManagement.Features.Authentication;
 
 public static class Register
 {
-    public class Request
+    public class Command : ICommand<Response>
     {
-        [Required(ErrorMessage = "Email is required")]
-        [EmailAddress(ErrorMessage = "Please enter a valid email address")]
         public string Email { get; init; } = string.Empty;
-        
-        [Required(ErrorMessage = "Password is required")]
-        [MinLength(6, ErrorMessage = "Password must be at least 6 characters long")]
         public string Password { get; init; } = string.Empty;
-        
-        [Required(ErrorMessage = "First name is required")]
-        [MinLength(2, ErrorMessage = "First name must be at least 2 characters long")]
         public string FirstName { get; init; } = string.Empty;
-        
-        [Required(ErrorMessage = "Last name is required")]
-        [MinLength(2, ErrorMessage = "Last name must be at least 2 characters long")]
         public string LastName { get; init; } = string.Empty;
-        
-        [Required(ErrorMessage = "Display name is required")]
         public string DisplayName { get; init; } = string.Empty;
     }
 
-    public class Validator : AbstractValidator<Request>
+    public class Validator : AbstractValidator<Command>
     {
         public Validator()
         {
@@ -70,68 +57,50 @@ public static class Register
         public bool RequiresEmailConfirmation { get; init; }
     }
 
-    public class Command : ICommand<Response>
-    {
-        public string Email { get; init; } = string.Empty;
-        public string Password { get; init; } = string.Empty;
-        public string FirstName { get; init; } = string.Empty;
-        public string LastName { get; init; } = string.Empty;
-        public string DisplayName { get; init; } = string.Empty;
-
-        public Command(Request request)
-        {
-            Email = request.Email;
-            Password = request.Password;
-            FirstName = request.FirstName;
-            LastName = request.LastName;
-            DisplayName = request.DisplayName;
-        }
-    }
-
     public class Handler : ICommandHandler<Command, Response>
     {
         private readonly IApplicationDbContext _context;
-        private readonly IPasswordHashingService _passwordHashingService;
-        private readonly IJwtTokenService _jwtTokenService;
+        private readonly IPasswordHasher<AppUser> _passwordHasher;
+        private readonly IJwtTokenService _tokenService;
         private readonly IPermissionService _permissionService;
         private readonly ILogger<Handler> _logger;
 
         public Handler(
             IApplicationDbContext context,
-            IPasswordHashingService passwordHashingService,
-            IJwtTokenService jwtTokenService,
+            IPasswordHasher<AppUser> passwordHasher,
+            IJwtTokenService tokenService,
             IPermissionService permissionService,
             ILogger<Handler> logger)
         {
             _context = context;
-            _passwordHashingService = passwordHashingService;
-            _jwtTokenService = jwtTokenService;
+            _passwordHasher = passwordHasher;
+            _tokenService = tokenService;
             _permissionService = permissionService;
             _logger = logger;
         }
 
-        public async Task<Response> HandleAsync(Command request, CancellationToken cancellationToken)
+        public async Task<Response> HandleAsync(Command command, CancellationToken cancellationToken)
         {
             // Check if user already exists
             var existingUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
+                .FirstOrDefaultAsync(u => u.Email == command.Email, cancellationToken);
 
             if (existingUser != null)
             {
-                _logger.LogWarning("Registration attempt with existing email: {Email}", request.Email);
+                _logger.LogWarning("Registration attempt with existing email: {Email}", command.Email);
                 throw new InvalidOperationException("User with this email already exists");
             }
 
             // Hash password
-            var passwordHash = _passwordHashingService.HashPassword(request.Password);
+            var passwordHash = _passwordHasher.HashPassword(new AppUser(), command.Password);
 
             // Create user
             var user = new AppUser
             {
-                Email = request.Email,
-                DisplayName = request.DisplayName,
-                FirstName = request.FirstName,
-                LastName = request.LastName,
+                Email = command.Email,
+                DisplayName = command.DisplayName,
+                FirstName = command.FirstName,
+                LastName = command.LastName,
                 PasswordHash = passwordHash,
                 EmailConfirmed = false,
                 IsActive = true,
@@ -151,10 +120,10 @@ public static class Register
             // Generate JWT token
             var roles = await _permissionService.GetUserRolesAsync(user.Id.ToString());
             var roleStrings = roles.Select(r => r.ToString()).ToList();
-            var token = _jwtTokenService.GenerateToken(user.Id.ToString(), user.Email, roleStrings);
+            var token = _tokenService.GenerateToken(user.Id.ToString(), user.Email, roleStrings);
             var expiresAt = DateTime.UtcNow.AddHours(24); // Assuming 24-hour token validity
 
-            _logger.LogInformation("User registered successfully: {Email}", request.Email);
+            _logger.LogInformation("User registered successfully: {Email}", command.Email);
 
             return new Response
             {

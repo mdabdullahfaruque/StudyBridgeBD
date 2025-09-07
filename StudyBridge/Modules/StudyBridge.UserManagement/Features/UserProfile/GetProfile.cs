@@ -3,19 +3,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using StudyBridge.Application.Contracts.Persistence;
 using StudyBridge.Shared.CQRS;
-using System.ComponentModel.DataAnnotations;
 
 namespace StudyBridge.UserManagement.Features.UserProfile;
 
 public static class GetProfile
 {
-    public class Request
+    public class Query : IQuery<Response>
     {
-        // This will come from the authenticated user context
         public string UserId { get; init; } = string.Empty;
     }
 
-    public class Validator : AbstractValidator<Request>
+    public class Validator : AbstractValidator<Query>
     {
         public Validator()
         {
@@ -38,21 +36,6 @@ public static class GetProfile
         public bool EmailConfirmed { get; init; }
     }
 
-    public class Query : IQuery<Response>
-    {
-        public string UserId { get; init; } = string.Empty;
-
-        public Query(Request request)
-        {
-            UserId = request.UserId;
-        }
-
-        public Query(string userId)
-        {
-            UserId = userId;
-        }
-    }
-
     public class Handler : IQueryHandler<Query, Response>
     {
         private readonly IApplicationDbContext _context;
@@ -66,16 +49,16 @@ public static class GetProfile
             _logger = logger;
         }
 
-        public async Task<Response> HandleAsync(Query request, CancellationToken cancellationToken)
+        public async Task<Response> HandleAsync(Query query, CancellationToken cancellationToken)
         {
-            var userId = Guid.Parse(request.UserId);
+            var userId = Guid.Parse(query.UserId);
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive, cancellationToken);
 
             if (user == null)
             {
-                _logger.LogWarning("User profile requested for non-existent user: {UserId}", request.UserId);
-                throw new KeyNotFoundException($"User with ID {request.UserId} not found");
+                _logger.LogWarning("User profile requested for non-existent user: {UserId}", query.UserId);
+                throw new KeyNotFoundException($"User with ID {query.UserId} not found");
             }
 
             return new Response

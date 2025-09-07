@@ -1,10 +1,11 @@
 using StudyBridge.Shared.CQRS;
-using StudyBridge.UserManagement.Features;
+using StudyBridge.UserManagement.Extensions;
 using StudyBridge.Infrastructure;
 using StudyBridge.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 using Serilog;
 
@@ -26,7 +27,25 @@ builder.Host.UseSerilog();
 // Add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo 
+    { 
+        Title = "StudyBridge API", 
+        Version = "v1" 
+    });
+    
+    // Custom schema ID generator to handle nested class naming conflicts
+    c.CustomSchemaIds(type =>
+    {
+        // For nested classes, include the parent class name
+        if (type.DeclaringType != null)
+        {
+            return $"{type.DeclaringType.Name}{type.Name}";
+        }
+        return type.Name;
+    });
+});
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JWT");
@@ -74,8 +93,8 @@ builder.Services.AddInfrastructure(builder.Configuration);
 // CQRS
 builder.Services.AddScoped<IDispatcher, Dispatcher>();
 
-// User Management Features
-builder.Services.AddUserManagementFeatures();
+// User Management Module
+builder.Services.AddUserManagementModule<AppDbContext>(builder.Configuration);
 
 var app = builder.Build();
 
