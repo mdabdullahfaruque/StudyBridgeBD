@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MockQueryable.EntityFrameworkCore;
@@ -15,7 +16,7 @@ namespace StudyBridge.Tests.Unit.UserManagement.Features.Authentication.Handlers
 public class LoginHandlerTests
 {
     private readonly Mock<IApplicationDbContext> _mockContext;
-    private readonly Mock<IPasswordHashingService> _mockPasswordHashingService;
+    private readonly Mock<IPasswordHasher<AppUser>> _mockPasswordHasher;
     private readonly Mock<IJwtTokenService> _mockJwtTokenService;
     private readonly Mock<IPermissionService> _mockPermissionService;
     private readonly Mock<ILogger<Login.Handler>> _mockLogger;
@@ -24,14 +25,14 @@ public class LoginHandlerTests
     public LoginHandlerTests()
     {
         _mockContext = new Mock<IApplicationDbContext>();
-        _mockPasswordHashingService = new Mock<IPasswordHashingService>();
+        _mockPasswordHasher = new Mock<IPasswordHasher<AppUser>>();
         _mockJwtTokenService = new Mock<IJwtTokenService>();
         _mockPermissionService = new Mock<IPermissionService>();
         _mockLogger = new Mock<ILogger<Login.Handler>>();
 
         _sut = new Login.Handler(
             _mockContext.Object,
-            _mockPasswordHashingService.Object,
+            _mockPasswordHasher.Object,
             _mockJwtTokenService.Object,
             _mockPermissionService.Object,
             _mockLogger.Object);
@@ -48,8 +49,8 @@ public class LoginHandlerTests
         var users = new List<AppUser> { user }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
 
-        _mockPasswordHashingService.Setup(x => x.VerifyPassword(command.Password, user.PasswordHash))
-            .Returns(true);
+        _mockPasswordHasher.Setup(x => x.VerifyHashedPassword(user, user.PasswordHash!, command.Password))
+            .Returns(PasswordVerificationResult.Success);
 
         _mockPermissionService.Setup(x => x.GetUserRolesAsync(user.Id.ToString()))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
@@ -140,8 +141,8 @@ public class LoginHandlerTests
         var users = new List<AppUser> { user }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
 
-        _mockPasswordHashingService.Setup(x => x.VerifyPassword(command.Password, user.PasswordHash))
-            .Returns(false);
+        _mockPasswordHasher.Setup(x => x.VerifyHashedPassword(user, user.PasswordHash!, command.Password))
+            .Returns(PasswordVerificationResult.Failed);
 
         // Act & Assert
         var act = async () => await _sut.HandleAsync(command, CancellationToken.None);
@@ -164,8 +165,8 @@ public class LoginHandlerTests
         var users = new List<AppUser> { user }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
 
-        _mockPasswordHashingService.Setup(x => x.VerifyPassword(command.Password, user.PasswordHash))
-            .Returns(true);
+        _mockPasswordHasher.Setup(x => x.VerifyHashedPassword(user, user.PasswordHash!, command.Password))
+            .Returns(PasswordVerificationResult.Success);
 
         _mockPermissionService.Setup(x => x.GetUserRolesAsync(user.Id.ToString()))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
@@ -198,8 +199,8 @@ public class LoginHandlerTests
         var users = new List<AppUser> { user }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
 
-        _mockPasswordHashingService.Setup(x => x.VerifyPassword(command.Password, user.PasswordHash))
-            .Returns(true);
+        _mockPasswordHasher.Setup(x => x.VerifyHashedPassword(user, user.PasswordHash!, command.Password))
+            .Returns(PasswordVerificationResult.Success);
 
         _mockPermissionService.Setup(x => x.GetUserRolesAsync(user.Id.ToString()))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User, SystemRole.Admin });
@@ -230,8 +231,8 @@ public class LoginHandlerTests
         var users = new List<AppUser> { user }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
 
-        _mockPasswordHashingService.Setup(x => x.VerifyPassword(command.Password, user.PasswordHash))
-            .Returns(true);
+        _mockPasswordHasher.Setup(x => x.VerifyHashedPassword(user, user.PasswordHash!, command.Password))
+            .Returns(PasswordVerificationResult.Success);
 
         _mockPermissionService.Setup(x => x.GetUserRolesAsync(user.Id.ToString()))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
