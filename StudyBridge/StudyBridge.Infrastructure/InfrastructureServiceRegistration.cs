@@ -7,6 +7,8 @@ using StudyBridge.Infrastructure.Services;
 using StudyBridge.Application.Contracts.Persistence;
 using StudyBridge.Application.Contracts.Services;
 using StudyBridge.Application.Services;
+using Microsoft.AspNetCore.Identity;
+using StudyBridge.Domain.Entities;
 
 namespace StudyBridge.Infrastructure;
 
@@ -32,6 +34,9 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<ISubscriptionService, SubscriptionService>();
         services.AddScoped<IPasswordHashingService, PasswordHashingService>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
+        
+        // Register ASP.NET Core Identity services (without Entity Framework stores)
+        services.AddScoped<IPasswordHasher<AppUser>, PasswordHasher<AppUser>>();
         
         return services;
     }

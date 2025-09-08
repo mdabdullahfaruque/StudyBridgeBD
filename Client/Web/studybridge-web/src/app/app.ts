@@ -4,14 +4,14 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 
-import { AuthService } from './shared/services/auth.service';
-import { User } from './shared/models/api.models';
-import { NotificationsComponent } from './shared/components/notifications/notifications';
+import { AuthService } from './services/auth.service';
+import { User } from './models/user.models';
+import { ToastContainerComponent } from './shared/toast-container/toast-container.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, NotificationsComponent],
+  imports: [CommonModule, RouterOutlet, ToastContainerComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
