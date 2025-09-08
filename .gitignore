@@ -226,6 +226,11 @@ yarn.lock
 .env.test.local
 .env.production.local
 
+# ASP.NET Configuration files with secrets
+appsettings.Development.json
+appsettings.Local.json
+appsettings.Production.json
+
 # Database
 *.db
 *.sqlite
