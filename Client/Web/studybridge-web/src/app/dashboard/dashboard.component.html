@@ -1,0 +1,122 @@
+<!-- StudyBridge Dashboard -->
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+  <!-- Header -->
+  <header class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center">
+          <h1 class="text-2xl font-bold text-gray-900">StudyBridge</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <span class="text-sm text-gray-500">Welcome back!</span>
+          <button 
+            class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+            (click)="logout()">
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <!-- Dashboard Header -->
+    <div class="px-4 py-6 sm:px-0">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-gray-900 mb-2">Welcome to Your Dashboard</h2>
+        <p class="text-lg text-gray-600">Your IELTS vocabulary learning journey starts here!</p>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                  <span class="text-white font-bold">📚</span>
+                </div>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 truncate">Words Learned</dt>
+                  <dd class="text-3xl font-bold text-gray-900">0</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                  <span class="text-white font-bold">🔥</span>
+                </div>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 truncate">Current Streak</dt>
+                  <dd class="text-3xl font-bold text-gray-900">0 days</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+                  <span class="text-white font-bold">📊</span>
+                </div>
+              </div>
+              <div class="ml-5 w-0 flex-1">
+                <dl>
+                  <dt class="text-sm font-medium text-gray-500 truncate">Progress</dt>
+                  <dd class="text-3xl font-bold text-gray-900">0%</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coming Soon Section -->
+      <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-8 text-center">
+          <div class="text-6xl mb-4">🚀</div>
+          <h3 class="text-2xl font-bold text-gray-900 mb-4">Coming Soon</h3>
+          <div class="max-w-md mx-auto">
+            <ul class="text-left space-y-3 text-gray-600">
+              <li class="flex items-center">
+                <span class="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
+                2100+ IELTS vocabulary words
+              </li>
+              <li class="flex items-center">
+                <span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+                Spaced repetition learning system
+              </li>
+              <li class="flex items-center">
+                <span class="w-2 h-2 bg-purple-500 rounded-full mr-3"></span>
+                Progress tracking & analytics
+              </li>
+              <li class="flex items-center">
+                <span class="w-2 h-2 bg-yellow-500 rounded-full mr-3"></span>
+                Personalized learning paths
+              </li>
+            </ul>
+          </div>
+          <div class="mt-6">
+            <p class="text-sm text-gray-500">
+              🎉 <strong>Great news!</strong> You've successfully set up your StudyBridge account and can access the dashboard.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

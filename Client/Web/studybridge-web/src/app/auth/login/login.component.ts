@@ -55,7 +55,13 @@ export class LoginComponent implements OnInit, OnDestroy {
         const { email, password } = this.loginForm.value;
         await this.authService.login({ email, password });
         this.toastService.success('Login Successful', 'Welcome back to StudyBridge!');
-        this.router.navigate(['/dashboard']);
+        
+        // Use Angular router for navigation with a slight delay to ensure auth state is updated
+        setTimeout(() => {
+          this.router.navigate(['/dashboard']).then(() => {
+            console.log('Navigation to dashboard completed');
+          });
+        }, 100);
       } catch (error: any) {
         const message = error.error?.message || 'Login failed. Please check your credentials.';
         this.toastService.error('Login Failed', message);

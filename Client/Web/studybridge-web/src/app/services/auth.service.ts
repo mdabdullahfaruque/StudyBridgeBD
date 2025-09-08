@@ -170,7 +170,7 @@ export class AuthService {
     localStorage.setItem(environment.tokenKey, loginResponse.token);
     localStorage.setItem(environment.userKey, JSON.stringify(user));
     
-    // Update current user
+    // Update current user - use next() to immediately update the observable
     this.currentUserSubject.next(user);
   }
 

@@ -85,7 +85,13 @@ export class RegisterComponent implements OnInit, OnDestroy {
         
         await this.authService.register(userData);
         this.toastService.success('Registration Successful', 'Welcome to StudyBridge!');
-        this.router.navigate(['/dashboard']);
+        
+        // Use Angular router for navigation with a slight delay to ensure auth state is updated
+        setTimeout(() => {
+          this.router.navigate(['/dashboard']).then(() => {
+            console.log('Navigation to dashboard completed');
+          });
+        }, 100);
       } catch (error: any) {
         const message = error.error?.message || 'Registration failed. Please try again.';
         this.toastService.error('Registration Failed', message);
