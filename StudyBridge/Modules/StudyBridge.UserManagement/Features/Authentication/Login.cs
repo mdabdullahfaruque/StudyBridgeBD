@@ -1,8 +1,10 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using StudyBridge.Application.Contracts.Persistence;
 using StudyBridge.Application.Contracts.Services;
+using StudyBridge.Domain.Entities;
 using StudyBridge.Shared.CQRS;
 
 namespace StudyBridge.UserManagement.Features.Authentication;
@@ -42,13 +44,13 @@ public static class Login
 
     public class Handler(
         IApplicationDbContext context,
-        IPasswordHashingService passwordHashingService,
+        IPasswordHasher<AppUser> passwordHasher,
         IJwtTokenService jwtTokenService,
         IPermissionService permissionService,
         ILogger<Login.Handler> logger) : ICommandHandler<Command, Response>
     {
         private readonly IApplicationDbContext _context = context;
-        private readonly IPasswordHashingService _passwordHashingService = passwordHashingService;
+        private readonly IPasswordHasher<AppUser> _passwordHasher = passwordHasher;
         private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
         private readonly IPermissionService _permissionService = permissionService;
         private readonly ILogger<Handler> _logger = logger;
@@ -66,7 +68,8 @@ public static class Login
             }
 
             // Verify password
-            if (!_passwordHashingService.VerifyPassword(command.Password, user.PasswordHash))
+            var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, command.Password);
+            if (passwordVerificationResult == PasswordVerificationResult.Failed)
             {
                 _logger.LogWarning("Failed login attempt for email: {Email} - Invalid password", command.Email);
                 throw new UnauthorizedAccessException("Invalid email or password");
