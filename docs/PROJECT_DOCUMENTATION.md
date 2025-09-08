@@ -788,38 +788,37 @@ graph TB
 
 ---
 
-## 🎨 Frontend Architecture
+## 🎨 Frontend Architecture (Angular 20 Implementation)
 
-### Angular Application Structure
+### Current Application Structure (September 2025)
 
 ```mermaid
 graph TB
-    subgraph "Angular Application"
-        subgraph "Core"
-            AUTH_SVC[AuthService]
-            HTTP_INT[HTTP Interceptor]
-            GUARDS[Route Guards]
-            MODELS[Models/DTOs]
+    subgraph "Angular 20 Application (Implemented ✅)"
+        subgraph "Core Services"
+            AUTH_SVC[AuthService<br/>Observable State Management]
+            HTTP_INT[HTTP Interceptor<br/>JWT Token Injection]
+            GUARDS[Auth Guards<br/>Route Protection]
+            MODELS[TypeScript Models<br/>Strong Typing]
+            NOTIFICATION[NotificationService<br/>Toast Messages]
         end
         
-        subgraph "Features"
-            AUTH_COMP[Authentication]
-            DASHBOARD[Dashboard]
-            PROFILE[Profile]
-            VOCAB[Vocabulary - Future]
+        subgraph "Implemented Features"
+            AUTH_COMP[Authentication Module<br/>Login + Register + Google OAuth]
+            DASHBOARD[Dashboard Module<br/>User Profile Display]
+            PROFILE[Profile Management<br/>User Info CRUD]
         end
         
-        subgraph "Shared"
-            COMPONENTS[Shared Components]
-            SERVICES[Shared Services]
-            PIPES[Custom Pipes]
-            DIRECTIVES[Custom Directives]
+        subgraph "Shared Components"
+            BUTTON[ButtonComponent<br/>Reusable UI Button]
+            LOADING[LoadingComponent<br/>Loading States]
+            HEADER[HeaderComponent<br/>Navigation Bar]
         end
         
-        subgraph "Layout"
-            HEADER[Header Component]
-            SIDEBAR[Sidebar Component]
-            FOOTER[Footer Component]
+        subgraph "Routing System"
+            PUBLIC[Public Routes<br/>/auth/*]
+            PROTECTED[Protected Routes<br/>/dashboard, /profile]
+            REDIRECT[Smart Redirects<br/>returnUrl handling]
         end
     end
     
@@ -833,28 +832,193 @@ graph TB
     AUTH_COMP --> MODELS
     DASHBOARD --> MODELS
     PROFILE --> MODELS
+    
+    PROTECTED --> GUARDS
+    PUBLIC --> REDIRECT
 ```
 
-### State Management Flow
+### Modern Angular 20 Features Implemented
+
+```mermaid
+graph LR
+    subgraph "Angular 20 Features ✅"
+        STANDALONE[Standalone Components<br/>No NgModules]
+        SIGNALS[Reactive State<br/>RxJS + Observables]
+        MODERN_FORMS[Reactive Forms<br/>Strong Typing]
+        MODERN_ROUTING[Modern Router<br/>Guards & Resolvers]
+    end
+    
+    subgraph "TypeScript 5.9 ✅"
+        STRICT[Strict Mode<br/>Null Safety]
+        DECORATORS[Modern Decorators<br/>Clean Syntax]
+        TYPES[Strong Typing<br/>Interface Driven]
+    end
+    
+    subgraph "Styling Solution ✅"
+        TAILWIND[Tailwind CSS 3.4<br/>Utility-first]
+        RESPONSIVE[Mobile-first<br/>Responsive Design]
+        DARK_MODE[Dark Mode Ready<br/>CSS Variables]
+    end
+```
+
+### Component Architecture (Implemented)
+
+```typescript
+// Example: Modern Standalone Component Implementation
+@Component({
+  selector: 'app-login',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent],
+  templateUrl: './login.html',
+  styleUrl: './login.scss'
+})
+export class LoginComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  
+  loginForm: FormGroup;
+  isLoading = false;
+  
+  constructor(
+    private authService: AuthService,
+    private notificationService: NotificationService,
+    private router: Router
+  ) {
+    this.loginForm = this.formBuilder.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
+    });
+  }
+  
+  onSubmit(): void {
+    if (this.loginForm.valid) {
+      this.authService.login(this.loginForm.value)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => this.handleLoginSuccess(response),
+          error: (error) => this.handleLoginError(error)
+        });
+    }
+  }
+}
+```
+
+### State Management Flow (Implemented)
 
 ```mermaid
 sequenceDiagram
-    participant COMP as Component
-    participant SVC as Service
-    participant HTTP as HTTP Client
-    participant INT as Interceptor
+    participant UI as Component
+    participant AUTH as AuthService
+    participant HTTP as HttpClient
+    participant INT as JWT Interceptor
     participant API as Backend API
+    participant STORE as Local Storage
     
-    COMP->>SVC: Call service method
-    SVC->>HTTP: HTTP request
-    HTTP->>INT: Request interceptor
-    INT->>INT: Add JWT token
-    INT->>API: Authenticated request
-    API->>INT: Response
+    UI->>AUTH: login(credentials)
+    AUTH->>HTTP: POST /auth/login
+    HTTP->>INT: Outgoing request
+    INT->>API: Request with headers
+    API->>INT: JWT token response
     INT->>HTTP: Response
-    HTTP->>SVC: Observable response
-    SVC->>COMP: Update component state
-    COMP->>COMP: Update UI
+    HTTP->>AUTH: AuthResponse
+    AUTH->>STORE: Store JWT token
+    AUTH->>AUTH: Update currentUser$ observable
+    AUTH->>UI: Success response
+    UI->>UI: Navigate to dashboard
+    
+    Note over AUTH: Observable-based state management
+    Note over STORE: Persistent auth state
+```
+
+### Routing Implementation
+
+```typescript
+// Current routing configuration (implemented)
+export const routes: Routes = [
+  {
+    path: '',
+    redirectTo: '/dashboard',
+    pathMatch: 'full'
+  },
+  {
+    path: 'auth',
+    children: [
+      {
+        path: 'login',
+        component: LoginComponent
+      },
+      {
+        path: 'register', 
+        component: RegisterComponent
+      }
+    ]
+  },
+  {
+    path: 'dashboard',
+    component: DashboardHomeComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'profile',
+    component: ProfileComponent,
+    canActivate: [AuthGuard]
+  }
+];
+```
+
+### UI Component System (Tailwind CSS)
+
+```mermaid
+graph TB
+    subgraph "Design System ✅"
+        COLORS[Color Palette<br/>Primary, Secondary, etc.]
+        TYPOGRAPHY[Typography Scale<br/>Headings, Body text]
+        SPACING[Spacing System<br/>Consistent margins/padding]
+        BREAKPOINTS[Responsive Breakpoints<br/>Mobile-first]
+    end
+    
+    subgraph "Component Library ✅"
+        FORMS[Form Components<br/>Input, Select, Checkbox]
+        BUTTONS[Button Variants<br/>Primary, Secondary, Ghost]
+        FEEDBACK[Feedback Components<br/>Alerts, Toasts, Loading]
+        LAYOUT[Layout Components<br/>Header, Container, Grid]
+    end
+    
+    subgraph "Responsive Features ✅"
+        MOBILE[Mobile Optimized<br/>Touch-friendly]
+        TABLET[Tablet Layout<br/>Medium screens]
+        DESKTOP[Desktop Layout<br/>Large screens]
+    end
+```
+
+### Authentication Flow (Complete Implementation)
+
+```mermaid
+flowchart TD
+    START[User visits protected route] --> CHECK{Authenticated?}
+    CHECK -->|No| LOGIN[Redirect to login]
+    CHECK -->|Yes| ALLOW[Allow access]
+    
+    LOGIN --> FORM[Login form displayed]
+    FORM --> SUBMIT{Form submitted}
+    SUBMIT -->|Email/Password| LOCAL_AUTH[Local authentication]
+    SUBMIT -->|Google OAuth| GOOGLE_AUTH[Google OAuth flow]
+    
+    LOCAL_AUTH --> API_CALL[POST /auth/login]
+    GOOGLE_AUTH --> GOOGLE_POPUP[Google OAuth popup]
+    GOOGLE_POPUP --> GOOGLE_TOKEN[Receive Google token]
+    GOOGLE_TOKEN --> GOOGLE_API[POST /auth/google]
+    
+    API_CALL --> SUCCESS{Success?}
+    GOOGLE_API --> SUCCESS
+    
+    SUCCESS -->|Yes| STORE_TOKEN[Store JWT token]
+    SUCCESS -->|No| ERROR[Show error message]
+    
+    STORE_TOKEN --> UPDATE_STATE[Update auth state]
+    UPDATE_STATE --> REDIRECT[Redirect to original route]
+    
+    ERROR --> FORM
+    REDIRECT --> ALLOW
 ```
 
 ---
