@@ -16,20 +16,23 @@ public static class TestDataBuilder
 
     public static class Users
     {
-        public static AppUser ValidUser() => new()
+        public static AppUser LocalUser() => new()
         {
             Id = TestUserId,
             Email = "test@example.com",
             DisplayName = "Test User",
             FirstName = "Test",
             LastName = "User",
-            PasswordHash = "hashed_password_123",
+            PasswordHash = "$2a$11$DummyHashForTestingPurposes123456789",
             EmailConfirmed = true,
             IsActive = true,
-            CreatedAt = DateTime.UtcNow.AddDays(-10),
-            UpdatedAt = DateTime.UtcNow.AddDays(-1),
-            LastLoginAt = DateTime.UtcNow.AddHours(-2)
+            LoginProvider = StudyBridge.Domain.Enums.LoginProvider.Local,
+            CreatedAt = DateTime.UtcNow.AddDays(-5),
+            UpdatedAt = DateTime.UtcNow.AddDays(-1)
         };
+
+        // Alias for backward compatibility
+        public static AppUser ValidUser() => LocalUser();
 
         public static AppUser InactiveUser() => new()
         {
@@ -41,6 +44,7 @@ public static class TestDataBuilder
             PasswordHash = "hashed_password_456",
             EmailConfirmed = false,
             IsActive = false,
+            LoginProvider = StudyBridge.Domain.Enums.LoginProvider.Local,
             CreatedAt = DateTime.UtcNow.AddDays(-5),
             UpdatedAt = DateTime.UtcNow.AddDays(-1)
         };
@@ -52,9 +56,12 @@ public static class TestDataBuilder
             DisplayName = "Google User",
             FirstName = "Google",
             LastName = "User",
+            GoogleSub = "12345678901234567890",
+            AvatarUrl = "https://lh3.googleusercontent.com/a/default-user",
             PasswordHash = "", // OAuth users don't have passwords - use empty string instead of null
             EmailConfirmed = true,
             IsActive = true,
+            LoginProvider = StudyBridge.Domain.Enums.LoginProvider.Google,
             CreatedAt = DateTime.UtcNow.AddDays(-3),
             UpdatedAt = DateTime.UtcNow.AddDays(-1)
         };
@@ -96,7 +103,13 @@ public static class TestDataBuilder
 
             public static GoogleLogin.Command ValidGoogleLoginCommand() => new()
             {
-                IdToken = "valid_google_id_token_123"
+                IdToken = "valid_google_id_token_123",
+                Email = "google@example.com",
+                DisplayName = "Google User",
+                FirstName = "Google",
+                LastName = "User",
+                GoogleSub = "12345678901234567890",
+                AvatarUrl = "https://lh3.googleusercontent.com/a/default-user"
             };
 
             public static ChangePassword.Command ValidChangePasswordCommand() => new()

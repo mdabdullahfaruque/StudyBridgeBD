@@ -35,7 +35,12 @@ public class GoogleLoginValidatorTests
         // Arrange
         var command = new GoogleLogin.Command
         {
-            IdToken = idToken
+            IdToken = idToken,
+            Email = "test@example.com",
+            DisplayName = "Test User",
+            FirstName = "Test",
+            LastName = "User",
+            GoogleSub = "12345678901234567890"
         };
 
         // Act
@@ -47,111 +52,132 @@ public class GoogleLoginValidatorTests
         result.Errors.Should().Contain(e => e.ErrorMessage == "Google ID token is required");
     }
 
-    [Fact]
-    public void Validate_WithValidIdToken_ShouldBeValid()
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void Validate_WithEmptyEmail_ShouldBeInvalid(string email)
     {
         // Arrange
         var command = new GoogleLogin.Command
         {
-            IdToken = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXVkIjoieW91ci1jbGllbnQtaWQuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MTUxNjI0MjYyMn0"
+            IdToken = "valid_token",
+            Email = email,
+            DisplayName = "Test User",
+            FirstName = "Test",
+            LastName = "User",
+            GoogleSub = "12345678901234567890"
         };
 
         // Act
         var result = _sut.Validate(command);
 
         // Assert
-        result.IsValid.Should().BeTrue();
-        result.Errors.Should().BeEmpty();
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(GoogleLogin.Command.Email));
+        result.Errors.Should().Contain(e => e.ErrorMessage == "Email is required");
     }
 
     [Fact]
-    public void Validate_WithShortIdToken_ShouldBeValid()
-    {
-        // Arrange - Note: Validator only checks for null/empty, not format or length
-        var command = new GoogleLogin.Command
-        {
-            IdToken = "short-token"
-        };
-
-        // Act
-        var result = _sut.Validate(command);
-
-        // Assert
-        result.IsValid.Should().BeTrue("Validator should only check for required field, not format");
-        result.Errors.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void Validate_WithVeryLongIdToken_ShouldBeValid()
-    {
-        // Arrange
-        var longToken = new string('a', 2000); // Very long token
-        var command = new GoogleLogin.Command
-        {
-            IdToken = longToken
-        };
-
-        // Act
-        var result = _sut.Validate(command);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-        result.Errors.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void Validate_WithSpecialCharactersInToken_ShouldBeValid()
+    public void Validate_WithInvalidEmail_ShouldBeInvalid()
     {
         // Arrange
         var command = new GoogleLogin.Command
         {
-            IdToken = "token.with-special_characters+and=numbers123/symbols!"
+            IdToken = "valid_token",
+            Email = "invalid-email",
+            DisplayName = "Test User",
+            FirstName = "Test",
+            LastName = "User",
+            GoogleSub = "12345678901234567890"
         };
 
         // Act
         var result = _sut.Validate(command);
 
         // Assert
-        result.IsValid.Should().BeTrue();
-        result.Errors.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void Validate_WithJwtFormatToken_ShouldBeValid()
-    {
-        // Arrange - Typical JWT format with header.payload.signature
-        var command = new GoogleLogin.Command
-        {
-            IdToken = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.EkN-DOsnsuRjRO6BxXemmJDm3HbxrbRzXglbN2S4sOkopdU4IsDxTI8jO19W_A4K8ZPJijNLis4EZsHeY559a4DFOd50_OqgHs3PheClF_N6V7i5Lf5YH6K6o_wNmQR3Ug5qK7QoGvKaYlvZjKgFVYN2cK7Mk-gU7QJp4qHjA"
-        };
-
-        // Act
-        var result = _sut.Validate(command);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
-        result.Errors.Should().BeEmpty();
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(GoogleLogin.Command.Email));
+        result.Errors.Should().Contain(e => e.ErrorMessage == "Valid email is required");
     }
 
     [Theory]
-    [InlineData("token")]
-    [InlineData("1")]
-    [InlineData("a")]
-    [InlineData("!@#$%^&*()")]
-    public void Validate_WithAnyNonEmptyToken_ShouldBeValid(string token)
+    [InlineData("")]
+    [InlineData(" ")]
+    public void Validate_WithEmptyDisplayName_ShouldBeInvalid(string displayName)
     {
         // Arrange
         var command = new GoogleLogin.Command
         {
-            IdToken = token
+            IdToken = "valid_token",
+            Email = "test@example.com",
+            DisplayName = displayName,
+            FirstName = "Test",
+            LastName = "User",
+            GoogleSub = "12345678901234567890"
         };
 
         // Act
         var result = _sut.Validate(command);
 
         // Assert
-        result.IsValid.Should().BeTrue($"Token '{token}' should be valid as long as it's not empty");
-        result.Errors.Should().BeEmpty();
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(GoogleLogin.Command.DisplayName));
+        result.Errors.Should().Contain(e => e.ErrorMessage == "Display name is required");
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void Validate_WithEmptyGoogleSub_ShouldBeInvalid(string googleSub)
+    {
+        // Arrange
+        var command = new GoogleLogin.Command
+        {
+            IdToken = "valid_token",
+            Email = "test@example.com",
+            DisplayName = "Test User",
+            FirstName = "Test",
+            LastName = "User",
+            GoogleSub = googleSub
+        };
+
+        // Act
+        var result = _sut.Validate(command);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(GoogleLogin.Command.GoogleSub));
+        result.Errors.Should().Contain(e => e.ErrorMessage == "Google subject (sub) is required");
+    }
+
+    [Fact]
+    public void Validate_WithValidEmailFormats_ShouldBeValid()
+    {
+        // Arrange & Act & Assert
+        var validEmails = new[]
+        {
+            "user@example.com",
+            "user.name@example.com",
+            "user+tag@example.co.uk",
+            "user123@test-domain.org"
+        };
+
+        foreach (var email in validEmails)
+        {
+            var command = new GoogleLogin.Command
+            {
+                IdToken = "valid_token",
+                Email = email,
+                DisplayName = "Test User",
+                FirstName = "Test",
+                LastName = "User",
+                GoogleSub = "12345678901234567890"
+            };
+
+            var result = _sut.Validate(command);
+
+            result.IsValid.Should().BeTrue($"Email '{email}' should be valid");
+        }
     }
 
     [Fact]
@@ -160,7 +186,12 @@ public class GoogleLoginValidatorTests
         // Arrange
         var command = new GoogleLogin.Command
         {
-            IdToken = "   " // Only whitespace
+            IdToken = "   ", // Only whitespace
+            Email = "test@example.com",
+            DisplayName = "Test User",
+            FirstName = "Test",
+            LastName = "User",
+            GoogleSub = "12345678901234567890"
         };
 
         // Act
@@ -173,20 +204,48 @@ public class GoogleLoginValidatorTests
     }
 
     [Fact]
-    public void Validate_WithTabAndNewlineToken_ShouldBeInvalid()
+    public void Validate_WithAllRequiredFields_ShouldBeValid()
     {
         // Arrange
         var command = new GoogleLogin.Command
         {
-            IdToken = "\t\n\r" // Tab, newline, carriage return
+            IdToken = "valid_token_123",
+            Email = "test@example.com",
+            DisplayName = "Test User",
+            FirstName = "Test",
+            LastName = "User",
+            GoogleSub = "12345678901234567890",
+            AvatarUrl = "https://example.com/avatar.jpg"
         };
 
         // Act
         var result = _sut.Validate(command);
 
         // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(GoogleLogin.Command.IdToken));
-        result.Errors.Should().Contain(e => e.ErrorMessage == "Google ID token is required");
+        result.IsValid.Should().BeTrue();
+        result.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Validate_WithOptionalFieldsEmpty_ShouldBeValid()
+    {
+        // Arrange
+        var command = new GoogleLogin.Command
+        {
+            IdToken = "valid_token_123",
+            Email = "test@example.com",
+            DisplayName = "Test User",
+            FirstName = "", // Optional
+            LastName = "", // Optional
+            GoogleSub = "12345678901234567890",
+            AvatarUrl = null // Optional
+        };
+
+        // Act
+        var result = _sut.Validate(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.Errors.Should().BeEmpty();
     }
 }

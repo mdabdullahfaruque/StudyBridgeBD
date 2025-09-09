@@ -1,4 +1,5 @@
 using StudyBridge.Domain.Common;
+using StudyBridge.Domain.Enums;
 
 namespace StudyBridge.Domain.Entities;
 
@@ -14,10 +15,14 @@ public class AppUser : BaseEntity
     public bool EmailConfirmed { get; set; } = false;
     public DateTime? LastLoginAt { get; set; }
     public bool IsActive { get; set; } = true;
+    public LoginProvider LoginProvider { get; set; } = LoginProvider.Local;
     
     // Helper method to check if user is OAuth user
-    public bool IsOAuthUser => !string.IsNullOrEmpty(GoogleSub);
+    public bool IsOAuthUser => LoginProvider != LoginProvider.Local;
     
     // Helper method to check if user is local user
-    public bool IsLocalUser => !string.IsNullOrEmpty(PasswordHash);
+    public bool IsLocalUser => LoginProvider == LoginProvider.Local && !string.IsNullOrEmpty(PasswordHash);
+    
+    // Helper method to check if user is Google user
+    public bool IsGoogleUser => LoginProvider == LoginProvider.Google && !string.IsNullOrEmpty(GoogleSub);
 }

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using StudyBridge.Application.Contracts.Persistence;
 using StudyBridge.Application.Contracts.Services;
 using StudyBridge.Domain.Entities;
+using StudyBridge.Domain.Enums;
 using StudyBridge.Shared.CQRS;
 
 namespace StudyBridge.UserManagement.Features.Authentication;
@@ -104,6 +105,7 @@ public static class Register
                 PasswordHash = passwordHash,
                 EmailConfirmed = false,
                 IsActive = true,
+                LoginProvider = LoginProvider.Local,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };

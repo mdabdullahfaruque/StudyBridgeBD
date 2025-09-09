@@ -40,7 +40,7 @@ public class GoogleLoginHandlerTests
         // Arrange
         var command = TestDataBuilder.Commands.Authentication.ValidGoogleLoginCommand();
         var existingUser = TestDataBuilder.Users.GoogleUser();
-        existingUser.Email = "user@example.com"; // This matches the hardcoded email in GoogleLogin handler
+        existingUser.Email = command.Email; // Ensure email matches
         
         var users = new List<AppUser> { existingUser }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
@@ -61,7 +61,7 @@ public class GoogleLoginHandlerTests
         result.Should().NotBeNull();
         result.Token.Should().Be("jwt_token_123");
         result.Email.Should().Be(existingUser.Email);
-        result.DisplayName.Should().Be(existingUser.DisplayName);
+        result.DisplayName.Should().Be(command.DisplayName);
         result.UserId.Should().Be(existingUser.Id.ToString());
         result.Roles.Should().Contain("User");
         result.IsNewUser.Should().BeFalse();
@@ -87,7 +87,7 @@ public class GoogleLoginHandlerTests
         _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<string>()))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
 
-        _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<string>(), "user@example.com", It.IsAny<List<string>>()))
+        _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<string>(), command.Email, It.IsAny<List<string>>()))
             .Returns("jwt_token_456");
 
         AppUser? capturedUser = null;
@@ -103,18 +103,21 @@ public class GoogleLoginHandlerTests
         // Assert
         result.Should().NotBeNull();
         result.Token.Should().Be("jwt_token_456");
-        result.Email.Should().Be("user@example.com");
-        result.DisplayName.Should().Be("Google User");
+        result.Email.Should().Be(command.Email);
+        result.DisplayName.Should().Be(command.DisplayName);
         result.Roles.Should().Contain("User");
         result.IsNewUser.Should().BeTrue();
 
         capturedUser.Should().NotBeNull();
-        capturedUser!.Email.Should().Be("user@example.com");
-        capturedUser.DisplayName.Should().Be("Google User");
+        capturedUser!.Email.Should().Be(command.Email);
+        capturedUser.DisplayName.Should().Be(command.DisplayName);
+        capturedUser.FirstName.Should().Be(command.FirstName);
+        capturedUser.LastName.Should().Be(command.LastName);
+        capturedUser.GoogleSub.Should().Be(command.GoogleSub);
+        capturedUser.AvatarUrl.Should().Be(command.AvatarUrl);
         capturedUser.EmailConfirmed.Should().BeTrue();
         capturedUser.IsActive.Should().BeTrue();
-        capturedUser.FirstName.Should().Be("Google");
-        capturedUser.LastName.Should().Be("User");
+        capturedUser.LoginProvider.Should().Be(StudyBridge.Domain.Enums.LoginProvider.Google);
 
         _mockPermissionService.Verify(x => x.AssignRoleToUserAsync(It.IsAny<string>(), SystemRole.User, "Google OAuth"), Times.Once);
         _mockContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once); // Only once for user creation
@@ -151,7 +154,7 @@ public class GoogleLoginHandlerTests
         // Arrange
         var command = TestDataBuilder.Commands.Authentication.ValidGoogleLoginCommand();
         var existingUser = TestDataBuilder.Users.GoogleUser();
-        existingUser.Email = "user@example.com";
+        existingUser.Email = command.Email;
         
         var users = new List<AppUser> { existingUser }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
@@ -173,7 +176,7 @@ public class GoogleLoginHandlerTests
             x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Google login successful for user: user@example.com")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains($"Google login successful for user: {command.Email}")),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
@@ -221,7 +224,7 @@ public class GoogleLoginHandlerTests
         // Arrange
         var command = TestDataBuilder.Commands.Authentication.ValidGoogleLoginCommand();
         var existingUser = TestDataBuilder.Users.GoogleUser();
-        existingUser.Email = "user@example.com";
+        existingUser.Email = command.Email;
         
         var users = new List<AppUser> { existingUser }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
