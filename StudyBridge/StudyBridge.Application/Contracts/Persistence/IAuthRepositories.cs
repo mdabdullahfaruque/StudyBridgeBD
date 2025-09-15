@@ -31,6 +31,31 @@ public interface IRolePermissionRepository
     Task DeleteByRoleIdAsync(Guid roleId);
 }
 
+public interface IMenuRepository
+{
+    Task<Menu?> GetByIdAsync(Guid id);
+    Task<Menu?> GetByNameAsync(string name);
+    Task<IEnumerable<Menu>> GetAllAsync();
+    Task<IEnumerable<Menu>> GetByParentIdAsync(Guid? parentId);
+    Task<IEnumerable<Menu>> GetMenuTreeAsync();
+    Task<IEnumerable<Menu>> GetUserMenusAsync(string userId);
+    Task<Menu> AddAsync(Menu menu);
+    Task UpdateAsync(Menu menu);
+    Task DeleteAsync(Guid id);
+}
+
+public interface IPermissionRepository
+{
+    Task<Permission?> GetByIdAsync(Guid id);
+    Task<Permission?> GetByKeyAsync(string permissionKey);
+    Task<IEnumerable<Permission>> GetAllAsync();
+    Task<IEnumerable<Permission>> GetByMenuIdAsync(Guid menuId);
+    Task<IEnumerable<Permission>> GetUserPermissionsAsync(string userId);
+    Task<Permission> AddAsync(Permission permission);
+    Task UpdateAsync(Permission permission);
+    Task DeleteAsync(Guid id);
+}
+
 public interface IUserSubscriptionRepository
 {
     Task<UserSubscription?> GetActiveSubscriptionAsync(string userId);

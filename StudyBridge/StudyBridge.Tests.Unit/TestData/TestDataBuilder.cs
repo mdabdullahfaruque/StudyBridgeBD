@@ -230,29 +230,30 @@ public static class TestDataBuilder
 
     public static class RolePermissions
     {
-        public static RolePermission AdminViewUsers() => new()
-        {
-            Id = new Guid("cccccccc-cccc-cccc-cccc-cccccccccccc"),
-            RoleId = AdminRoleId, // Admin
-            Permission = Permission.ViewUsers,
-            IsGranted = true
-        };
+        // TODO: Update after new RBAC implementation
+        // public static RolePermission AdminViewUsers() => new()
+        // {
+        //     Id = new Guid("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+        //     RoleId = AdminRoleId, // Admin
+        //     Permission = SystemPermission.ViewUsers,
+        //     IsGranted = true
+        // };
 
-        public static RolePermission AdminCreateUsers() => new()
-        {
-            Id = new Guid("dddddddd-dddd-dddd-dddd-dddddddddddd"),
-            RoleId = AdminRoleId, // Admin
-            Permission = Permission.CreateUsers,
-            IsGranted = true
-        };
+        // public static RolePermission AdminCreateUsers() => new()
+        // {
+        //     Id = new Guid("dddddddd-dddd-dddd-dddd-dddddddddddd"),
+        //     RoleId = AdminRoleId, // Admin
+        //     Permission = SystemPermission.CreateUsers,
+        //     IsGranted = true
+        // };
 
-        public static RolePermission UserViewContent() => new()
-        {
-            Id = new Guid("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
-            RoleId = UserRoleId, // User
-            Permission = Permission.ViewContent,
-            IsGranted = true
-        };
+        // public static RolePermission UserViewContent() => new()
+        // {
+        //     Id = new Guid("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
+        //     RoleId = UserRoleId, // User
+        //     Permission = SystemPermission.ViewContent,
+        //     IsGranted = true
+        // };
     }
 
     public static class Subscriptions

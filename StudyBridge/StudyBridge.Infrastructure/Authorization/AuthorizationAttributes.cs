@@ -11,11 +11,11 @@ namespace StudyBridge.Infrastructure.Authorization;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class RequirePermissionAttribute : Attribute, IAsyncAuthorizationFilter
 {
-    private readonly Permission _permission;
+    private readonly string _permissionKey;
 
-    public RequirePermissionAttribute(Permission permission)
+    public RequirePermissionAttribute(string permissionKey)
     {
-        _permission = permission;
+        _permissionKey = permissionKey;
     }
 
     public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
@@ -38,7 +38,7 @@ public class RequirePermissionAttribute : Attribute, IAsyncAuthorizationFilter
         var permissionService = context.HttpContext.RequestServices
             .GetRequiredService<IPermissionService>();
 
-        var hasPermission = await permissionService.HasPermissionAsync(userId, _permission);
+        var hasPermission = await permissionService.HasPermissionAsync(userId, _permissionKey);
         
         if (!hasPermission)
         {

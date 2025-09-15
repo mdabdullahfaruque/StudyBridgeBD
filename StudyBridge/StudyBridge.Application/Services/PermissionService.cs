@@ -10,6 +10,8 @@ public class PermissionService : IPermissionService
     private readonly IRoleRepository _roleRepository;
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
+    private readonly IMenuRepository _menuRepository;
+    private readonly IPermissionRepository _permissionRepository;
     private readonly ILogger<PermissionService> _logger;
 
     private static readonly Dictionary<SystemRole, SystemRole[]> RoleHierarchy = new()
@@ -26,11 +28,15 @@ public class PermissionService : IPermissionService
         IRoleRepository roleRepository,
         IUserRoleRepository userRoleRepository,
         IRolePermissionRepository rolePermissionRepository,
+        IMenuRepository menuRepository,
+        IPermissionRepository permissionRepository,
         ILogger<PermissionService> logger)
     {
         _roleRepository = roleRepository;
         _userRoleRepository = userRoleRepository;
         _rolePermissionRepository = rolePermissionRepository;
+        _menuRepository = menuRepository;
+        _permissionRepository = permissionRepository;
         _logger = logger;
     }
 
@@ -39,11 +45,31 @@ public class PermissionService : IPermissionService
         try
         {
             var userPermissions = await GetUserPermissionsAsync(userId);
-            return userPermissions.Contains(permission);
+            return userPermissions.Any(p => p.Id == permission.Id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error checking permission {Permission} for user {UserId}", permission, userId);
+            _logger.LogError(ex, "Error checking permission {Permission} for user {UserId}", permission.PermissionKey, userId);
+            return false;
+        }
+    }
+
+    public async Task<bool> HasPermissionAsync(string userId, string permissionKey)
+    {
+        try
+        {
+            var permission = await _permissionRepository.GetByKeyAsync(permissionKey);
+            if (permission == null)
+            {
+                _logger.LogWarning("Permission with key {PermissionKey} not found", permissionKey);
+                return false;
+            }
+
+            return await HasPermissionAsync(userId, permission);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking permission key {PermissionKey} for user {UserId}", permissionKey, userId);
             return false;
         }
     }
@@ -52,41 +78,7 @@ public class PermissionService : IPermissionService
     {
         try
         {
-            var userRoles = await _userRoleRepository.GetUserRolesAsync(userId);
-            var activeRoles = userRoles.Where(ur => ur.IsActive);
-
-            var allPermissions = new HashSet<Permission>();
-
-            foreach (var userRole in activeRoles)
-            {
-                // Get direct role permissions
-                var rolePermissions = await _rolePermissionRepository.GetRolePermissionsAsync(userRole.RoleId);
-                foreach (var rp in rolePermissions.Where(rp => rp.IsGranted))
-                {
-                    allPermissions.Add(rp.Permission);
-                }
-
-                // Get inherited permissions from role hierarchy
-                var role = await _roleRepository.GetByIdAsync(userRole.RoleId);
-                if (role != null)
-                {
-                    var inheritedRoles = GetInheritedRoles(role.SystemRole);
-                    foreach (var inheritedRole in inheritedRoles)
-                    {
-                        var inheritedRoleEntity = await _roleRepository.GetBySystemRoleAsync(inheritedRole);
-                        if (inheritedRoleEntity != null)
-                        {
-                            var inheritedPermissions = await _rolePermissionRepository.GetRolePermissionsAsync(inheritedRoleEntity.Id);
-                            foreach (var ip in inheritedPermissions.Where(ip => ip.IsGranted))
-                            {
-                                allPermissions.Add(ip.Permission);
-                            }
-                        }
-                    }
-                }
-            }
-
-            return allPermissions;
+            return await _permissionRepository.GetUserPermissionsAsync(userId);
         }
         catch (Exception ex)
         {
@@ -219,8 +211,10 @@ public class PermissionService : IPermissionService
                 var rolePermission = new RolePermission
                 {
                     RoleId = createdRole.Id,
-                    Permission = permission,
-                    IsGranted = true
+                    PermissionId = permission.Id,
+                    IsGranted = true,
+                    GrantedAt = DateTime.UtcNow,
+                    GrantedBy = "System" // TODO: Pass actual user who is creating the role
                 };
                 await _rolePermissionRepository.AddAsync(rolePermission);
             }
@@ -248,8 +242,10 @@ public class PermissionService : IPermissionService
                 var rolePermission = new RolePermission
                 {
                     RoleId = roleId,
-                    Permission = permission,
-                    IsGranted = true
+                    PermissionId = permission.Id,
+                    IsGranted = true,
+                    GrantedAt = DateTime.UtcNow,
+                    GrantedBy = "System" // TODO: Pass actual user who is updating permissions
                 };
                 await _rolePermissionRepository.AddAsync(rolePermission);
             }
@@ -261,6 +257,32 @@ public class PermissionService : IPermissionService
         {
             _logger.LogError(ex, "Error updating permissions for role {RoleId}", roleId);
             return false;
+        }
+    }
+
+    public async Task<IEnumerable<Menu>> GetUserMenusAsync(string userId)
+    {
+        try
+        {
+            return await _menuRepository.GetUserMenusAsync(userId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting menus for user {UserId}", userId);
+            return Enumerable.Empty<Menu>();
+        }
+    }
+
+    public async Task<Permission?> GetPermissionByKeyAsync(string permissionKey)
+    {
+        try
+        {
+            return await _permissionRepository.GetByKeyAsync(permissionKey);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting permission by key {PermissionKey}", permissionKey);
+            return null;
         }
     }
 

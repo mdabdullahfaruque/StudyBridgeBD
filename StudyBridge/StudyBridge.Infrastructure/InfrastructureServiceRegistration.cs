@@ -28,6 +28,8 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
         services.AddScoped<IUserSubscriptionRepository, UserSubscriptionRepository>();
         services.AddScoped<IUserProfileRepository, UserProfileRepository>();
+        services.AddScoped<IMenuRepository, MenuRepository>();
+        services.AddScoped<IPermissionRepository, PermissionRepository>();
 
         // Register services
         services.AddScoped<IPermissionService, PermissionService>();
