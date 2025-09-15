@@ -4,7 +4,7 @@ import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@a
 import { BrowserModule } from '@angular/platform-browser';
 
 import { routes } from './app.routes';
-import { AuthInterceptor } from './shared/interceptors/auth.interceptor';
+import { AuthInterceptor } from './interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
