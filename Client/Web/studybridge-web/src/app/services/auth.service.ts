@@ -115,6 +115,29 @@ export class AuthService {
     }
   }
 
+  async googleLoginWithUserData(googleLoginData: any): Promise<LoginResponse> {
+    this.isLoadingSubject.next(true);
+    
+    try {
+      const response = await this.http.post<ApiResponse<LoginResponse>>(
+        `${this.apiUrl}/auth/google`,
+        googleLoginData
+      ).toPromise();
+
+      if (response?.data) {
+        this.handleAuthSuccess(response.data);
+        return response.data;
+      }
+      
+      throw new Error('Invalid response format');
+    } catch (error) {
+      this.handleError('Google login failed', error);
+      throw error;
+    } finally {
+      this.isLoadingSubject.next(false);
+    }
+  }
+
   async changePassword(passwordData: ChangePasswordRequest): Promise<void> {
     this.isLoadingSubject.next(true);
     
