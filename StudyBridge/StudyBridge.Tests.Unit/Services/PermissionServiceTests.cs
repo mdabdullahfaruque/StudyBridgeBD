@@ -199,6 +199,116 @@ public class PermissionServiceTests
         result.Should().BeFalse();
     }
 
+    [Fact]
+    public async Task CreateRoleAsync_WhenRoleDoesNotExist_ShouldReturnTrue()
+    {
+        // Arrange
+        const string roleName = "Test Role";
+        const SystemRole systemRole = SystemRole.ContentManager;
+        var permissions = new List<Permission> { CreateTestPermission("users.view") };
+        var createdRole = CreateTestRole(systemRole);
+
+        _mockRoleRepository
+            .Setup(x => x.GetBySystemRoleAsync(systemRole))
+            .ReturnsAsync((Role?)null);
+
+        _mockRoleRepository
+            .Setup(x => x.AddAsync(It.IsAny<Role>()))
+            .ReturnsAsync(createdRole);
+
+        _mockRolePermissionRepository
+            .Setup(x => x.AddAsync(It.IsAny<RolePermission>()))
+            .ReturnsAsync((RolePermission rp) => rp);
+
+        // Act
+        var result = await _sut.CreateRoleAsync(roleName, systemRole, permissions);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CreateRoleAsync_WhenRoleExists_ShouldReturnFalse()
+    {
+        // Arrange
+        const string roleName = "Existing Role";
+        const SystemRole systemRole = SystemRole.Admin;
+        var permissions = new List<Permission> { CreateTestPermission("users.view") };
+        var existingRole = CreateTestRole(systemRole);
+
+        _mockRoleRepository
+            .Setup(x => x.GetBySystemRoleAsync(systemRole))
+            .ReturnsAsync(existingRole);
+
+        // Act
+        var result = await _sut.CreateRoleAsync(roleName, systemRole, permissions);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RemoveRoleFromUserAsync_WhenRoleExists_ShouldReturnTrue()
+    {
+        // Arrange
+        const string userId = "test-user-id";
+        const SystemRole role = SystemRole.Finance;
+        var roleEntity = CreateTestRole(role);
+        var userRole = CreateTestUserRole(userId, roleEntity.Id);
+
+        _mockRoleRepository
+            .Setup(x => x.GetBySystemRoleAsync(role))
+            .ReturnsAsync(roleEntity);
+
+        _mockUserRoleRepository
+            .Setup(x => x.GetUserRoleAsync(userId, roleEntity.Id))
+            .ReturnsAsync(userRole);
+
+        _mockUserRoleRepository
+            .Setup(x => x.UpdateAsync(It.IsAny<UserRole>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _sut.RemoveRoleFromUserAsync(userId, role);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetUserRolesAsync_ShouldReturnUserRoles()
+    {
+        // Arrange
+        const string userId = "test-user-id";
+        var role1 = CreateTestRole(SystemRole.Admin);
+        var role2 = CreateTestRole(SystemRole.Finance);
+        var userRoles = new List<UserRole>
+        {
+            CreateTestUserRole(userId, role1.Id),
+            CreateTestUserRole(userId, role2.Id)
+        };
+
+        _mockUserRoleRepository
+            .Setup(x => x.GetUserRolesAsync(userId))
+            .ReturnsAsync(userRoles);
+
+        _mockRoleRepository
+            .Setup(x => x.GetByIdAsync(role1.Id))
+            .ReturnsAsync(role1);
+
+        _mockRoleRepository
+            .Setup(x => x.GetByIdAsync(role2.Id))
+            .ReturnsAsync(role2);
+
+        // Act
+        var result = await _sut.GetUserRolesAsync(userId);
+
+        // Assert
+        result.Should().HaveCount(2);
+        result.Should().Contain(SystemRole.Admin);
+        result.Should().Contain(SystemRole.Finance);
+    }
+
     private static Permission CreateTestPermission(string permissionKey)
     {
         return new Permission
@@ -239,6 +349,21 @@ public class PermissionServiceTests
             Route = $"/{name}",
             MenuType = MenuType.Admin,
             SortOrder = 1,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
+
+    private static UserRole CreateTestUserRole(string userId, Guid roleId)
+    {
+        return new UserRole
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            RoleId = roleId,
+            AssignedBy = "system",
+            AssignedAt = DateTime.UtcNow,
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
