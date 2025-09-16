@@ -101,20 +101,44 @@
         <div class="bg-white shadow rounded-lg mb-8">
           <div class="px-6 py-6">
             <h3 class="text-xl font-bold text-gray-900 mb-4">🌟 Enhanced Tree Component with Dynamic Counts</h3>
-            <p class="text-sm text-gray-600 mb-4">
+            <p class="text-sm text-gray-600 mb-6">
               Interactive tree with real-time counts, selection tracking, and advanced features:
             </p>
             
-            <app-tree-wrapper
-              [treeData]="vocabularyTreeData"
-              [config]="treeConfig"
-              [selectedNodes]="selectedVocabularyNodes"
-              (selectedNodesChange)="onSelectionChange($event)"
-              (nodeSelect)="onNodeSelect($event)"
-              (nodeUnselect)="onNodeUnselect($event)"
-              (nodeExpand)="onNodeExpand($event)"
-              (nodeCollapse)="onNodeCollapse($event)">
-            </app-tree-wrapper>
+            <!-- Normal Mode -->
+            <div class="mb-8">
+              <h4 class="text-sm font-medium text-gray-700 mb-3">Normal Mode (with header and stats):</h4>
+              <app-tree-wrapper
+                [treeData]="vocabularyTreeData"
+                [config]="treeConfig"
+                [selectedNodes]="selectedVocabularyNodes"
+                (selectedNodesChange)="onSelectionChange($event)"
+                (nodeSelect)="onNodeSelect($event)"
+                (nodeUnselect)="onNodeUnselect($event)"
+                (nodeExpand)="onNodeExpand($event)"
+                (nodeCollapse)="onNodeCollapse($event)">
+              </app-tree-wrapper>
+            </div>
+
+            <!-- Minimal Mode -->
+            <div class="mb-8">
+              <h4 class="text-sm font-medium text-gray-700 mb-3">Minimal Mode (just tree with optional title):</h4>
+              <app-tree-wrapper
+                [treeData]="vocabularyTreeData"
+                [config]="{ selectionMode: 'checkbox', showHeader: true, showCounts: true, headerTitle: 'Select Categories', minimal: true }"
+                [selectedNodes]="[]">
+              </app-tree-wrapper>
+            </div>
+
+            <!-- No Header Mode -->
+            <div>
+              <h4 class="text-sm font-medium text-gray-700 mb-3">No Header Mode (just the tree):</h4>
+              <app-tree-wrapper
+                [treeData]="vocabularyTreeData"
+                [config]="{ selectionMode: 'checkbox', showHeader: false, minimal: true }"
+                [selectedNodes]="[]">
+              </app-tree-wrapper>
+            </div>
           </div>
         </div>      <!-- Coming Soon Section -->
       <div class="bg-white shadow rounded-lg">

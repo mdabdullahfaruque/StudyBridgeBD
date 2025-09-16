@@ -23,9 +23,12 @@ export class DashboardComponent implements OnInit {
     selectionMode: 'checkbox',
     showHeader: true,
     showCounts: true,
+    showControls: true,
+    showStats: true,
     headerTitle: 'IELTS Vocabulary Categories',
     cssClass: 'w-full md:w-[30rem]',
-    expandAll: false
+    expandAll: false,
+    minimal: false
   };
 
   constructor(

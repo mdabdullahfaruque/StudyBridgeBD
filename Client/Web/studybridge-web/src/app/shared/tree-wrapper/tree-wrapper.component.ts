@@ -7,9 +7,12 @@ export interface TreeConfig {
   selectionMode?: 'single' | 'multiple' | 'checkbox';
   showHeader?: boolean;
   showCounts?: boolean;
+  showControls?: boolean;
+  showStats?: boolean;
   headerTitle?: string;
   cssClass?: string;
   expandAll?: boolean;
+  minimal?: boolean;
 }
 
 export interface TreeCounts {
@@ -32,9 +35,12 @@ export class TreeWrapperComponent implements OnInit, OnChanges {
     selectionMode: 'checkbox',
     showHeader: true,
     showCounts: true,
+    showControls: true,
+    showStats: true,
     headerTitle: 'Tree Selection',
     cssClass: 'w-full',
-    expandAll: false
+    expandAll: false,
+    minimal: false
   };
   @Input() selectedNodes: TreeNode[] = [];
 
@@ -52,29 +58,52 @@ export class TreeWrapperComponent implements OnInit, OnChanges {
   };
 
   processedTreeData: TreeNode[] = [];
+  private expandedNodeKeys: Set<string> = new Set();
 
   ngOnInit(): void {
     this.initializeTree();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['treeData'] || changes['selectedNodes']) {
+    if (changes['treeData']) {
       this.initializeTree();
+    } else if (changes['selectedNodes']) {
+      // Only update counts and labels, don't recreate tree structure
+      this.updateCountsOnly();
     }
   }
 
   private initializeTree(): void {
+    // Save current expanded state
+    this.saveExpandedState(this.processedTreeData);
+    
     this.processedTreeData = this.processTreeData([...this.treeData]);
     this.calculateCounts();
     
+    // Restore expanded state or expand all if configured
     if (this.config.expandAll) {
       this.expandAllNodes(this.processedTreeData);
+    } else {
+      this.restoreExpandedState(this.processedTreeData);
     }
+  }
+
+  private updateCountsOnly(): void {
+    this.calculateCounts();
+    this.updateTreeLabelsPreservingState(this.processedTreeData);
   }
 
   private processTreeData(nodes: TreeNode[]): TreeNode[] {
     return nodes.map(node => {
       const processedNode = { ...node };
+      
+      // Store original label for later use
+      if (!processedNode.data) {
+        processedNode.data = {};
+      }
+      if (typeof processedNode.data === 'object') {
+        (processedNode.data as any).originalLabel = node.label;
+      }
       
       if (processedNode.children && processedNode.children.length > 0) {
         processedNode.children = this.processTreeData(processedNode.children);
@@ -172,26 +201,29 @@ export class TreeWrapperComponent implements OnInit, OnChanges {
     }
     this.selectedNodesChange.emit(this.selectedNodes);
     this.updateCounts();
-    this.updateTreeLabels();
+    // Don't recreate tree, just update labels while preserving expanded state
+    this.updateTreeLabelsPreservingState(this.processedTreeData);
   }
 
   onNodeSelect(event: any): void {
     this.nodeSelect.emit(event.node);
     this.updateCounts();
-    this.updateTreeLabels();
+    this.updateTreeLabelsPreservingState(this.processedTreeData);
   }
 
   onNodeUnselect(event: any): void {
     this.nodeUnselect.emit(event.node);
     this.updateCounts();
-    this.updateTreeLabels();
+    this.updateTreeLabelsPreservingState(this.processedTreeData);
   }
 
   onNodeExpand(event: any): void {
+    this.expandedNodeKeys.add(event.node.key);
     this.nodeExpand.emit(event.node);
   }
 
   onNodeCollapse(event: any): void {
+    this.expandedNodeKeys.delete(event.node.key);
     this.nodeCollapse.emit(event.node);
   }
 
@@ -201,7 +233,7 @@ export class TreeWrapperComponent implements OnInit, OnChanges {
 
   private updateTreeLabels(): void {
     if (this.config.showCounts) {
-      this.processedTreeData = this.processTreeData([...this.treeData]);
+      this.updateTreeLabelsPreservingState(this.processedTreeData);
     }
   }
 
@@ -227,14 +259,14 @@ export class TreeWrapperComponent implements OnInit, OnChanges {
     this.selectedNodes = [...allNodes];
     this.selectedNodesChange.emit(this.selectedNodes);
     this.updateCounts();
-    this.updateTreeLabels();
+    this.updateTreeLabelsPreservingState(this.processedTreeData);
   }
 
   clearSelection(): void {
     this.selectedNodes = [];
     this.selectedNodesChange.emit(this.selectedNodes);
     this.updateCounts();
-    this.updateTreeLabels();
+    this.updateTreeLabelsPreservingState(this.processedTreeData);
   }
 
   private getAllNodes(nodes: TreeNode[]): TreeNode[] {
@@ -246,5 +278,56 @@ export class TreeWrapperComponent implements OnInit, OnChanges {
       }
     });
     return allNodes;
+  }
+
+  private saveExpandedState(nodes: TreeNode[]): void {
+    nodes.forEach(node => {
+      if (node.expanded && node.key) {
+        this.expandedNodeKeys.add(node.key);
+      }
+      if (node.children && node.children.length > 0) {
+        this.saveExpandedState(node.children);
+      }
+    });
+  }
+
+  private restoreExpandedState(nodes: TreeNode[]): void {
+    nodes.forEach(node => {
+      if (node.key && this.expandedNodeKeys.has(node.key)) {
+        node.expanded = true;
+      }
+      if (node.children && node.children.length > 0) {
+        this.restoreExpandedState(node.children);
+      }
+    });
+  }
+
+  private updateTreeLabelsPreservingState(nodes: TreeNode[]): void {
+    nodes.forEach(node => {
+      if (node.children && node.children.length > 0) {
+        // Update parent node label with current counts
+        if (this.config.showCounts) {
+          const originalLabel = this.getOriginalLabel(node);
+          const childCount = this.countAllChildren(node);
+          const selectedCount = this.countSelectedChildren(node);
+          node.label = `${originalLabel} (${selectedCount}/${childCount})`;
+        }
+        
+        // Recursively update children
+        this.updateTreeLabelsPreservingState(node.children);
+      }
+    });
+  }
+
+  private getOriginalLabel(node: TreeNode): string {
+    // Try to get original label from stored data first
+    if (node.data && typeof node.data === 'object' && (node.data as any).originalLabel) {
+      return (node.data as any).originalLabel;
+    }
+    
+    // Fallback: extract original label by removing count suffix if present
+    const label = node.label || '';
+    const countPattern = /\s*\(\d+\/\d+\)$/;
+    return label.replace(countPattern, '');
   }
 }
