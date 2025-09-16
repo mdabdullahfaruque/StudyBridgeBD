@@ -1,0 +1,243 @@
+<form [formGroup]="dynamicForm" (ngSubmit)="onSubmit()" class="space-y-6">
+  <!-- Form Header -->
+  <div *ngIf="config.title || config.description" class="mb-6">
+    <h3 *ngIf="config.title" class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+      {{ config.title }}
+    </h3>
+    <p *ngIf="config.description" class="text-sm text-gray-600 dark:text-gray-400">
+      {{ config.description }}
+    </p>
+  </div>
+
+  <!-- Form Messages -->
+  <div *ngIf="formMessages.length > 0" class="mb-4">
+    <p-message 
+      *ngFor="let message of formMessages" 
+      [severity]="message.severity" 
+      [text]="message.text"
+      styleClass="mb-2">
+    </p-message>
+  </div>
+
+  <!-- Dynamic Fields -->
+  <div [ngClass]="getLayoutClass()">
+    <ng-container *ngFor="let field of visibleFields; trackBy: trackByFieldKey">
+      <div [ngClass]="getFieldWrapperClass(field)" *ngIf="shouldShowField(field)">
+        
+        <!-- Field Label -->
+        <label 
+          *ngIf="field.label" 
+          [for]="field.key" 
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          [class.required-field]="isFieldRequired(field)">
+          {{ field.label }}
+          <span *ngIf="isFieldRequired(field)" class="text-red-500 ml-1">*</span>
+        </label>
+
+        <!-- Input Text Field -->
+        <input 
+          *ngIf="field.type === 'text'" 
+          pInputText 
+          [id]="field.key"
+          [formControlName]="field.key"
+          [placeholder]="field.placeholder || ''"
+          [readonly]="field.readonly || false"
+          [disabled]="field.disabled || false"
+          class="w-full"
+          [class.p-invalid]="isFieldInvalid(field.key)">
+
+        <!-- Textarea Field -->
+        <textarea 
+          *ngIf="field.type === 'textarea'" 
+          pTextarea 
+          [id]="field.key"
+          [formControlName]="field.key"
+          [placeholder]="field.placeholder || ''"
+          [rows]="field.rows || 3"
+          [readonly]="field.readonly || false"
+          [disabled]="field.disabled || false"
+          class="w-full"
+          [class.p-invalid]="isFieldInvalid(field.key)">
+        </textarea>
+
+        <!-- Number Input Field -->
+        <p-inputnumber 
+          *ngIf="field.type === 'number'" 
+          [id]="field.key"
+          [formControlName]="field.key"
+          [placeholder]="field.placeholder || ''"
+          [attr.min]="field.min"
+          [attr.max]="field.max"
+          [step]="field.step || 1"
+          [readonly]="field.readonly || false"
+          [disabled]="field.disabled || false"
+          styleClass="w-full"
+          [class.p-invalid]="isFieldInvalid(field.key)">
+        </p-inputnumber>
+
+        <!-- Email Input Field -->
+        <input 
+          *ngIf="field.type === 'email'" 
+          pInputText 
+          type="email"
+          [id]="field.key"
+          [formControlName]="field.key"
+          [placeholder]="field.placeholder || ''"
+          [readonly]="field.readonly || false"
+          [disabled]="field.disabled || false"
+          class="w-full"
+          [class.p-invalid]="isFieldInvalid(field.key)">
+
+        <!-- Password Input Field -->
+        <input 
+          *ngIf="field.type === 'password'" 
+          pInputText 
+          type="password"
+          [id]="field.key"
+          [formControlName]="field.key"
+          [placeholder]="field.placeholder || ''"
+          [readonly]="field.readonly || false"
+          [disabled]="field.disabled || false"
+          class="w-full"
+          [class.p-invalid]="isFieldInvalid(field.key)">
+
+        <!-- Select Dropdown Field -->
+        <p-select 
+          *ngIf="field.type === 'select'" 
+          [id]="field.key"
+          [formControlName]="field.key"
+          [options]="field.options || []"
+          [placeholder]="field.placeholder || 'Select an option'"
+          [disabled]="field.disabled || false"
+          styleClass="w-full"
+          [class.p-invalid]="isFieldInvalid(field.key)">
+        </p-select>
+
+        <!-- Multi-Select Field -->
+        <p-multiselect 
+          *ngIf="field.type === 'multiselect'" 
+          [id]="field.key"
+          [formControlName]="field.key"
+          [options]="field.options || []"
+          [placeholder]="field.placeholder || 'Select options'"
+          [disabled]="field.disabled || false"
+          styleClass="w-full"
+          [class.p-invalid]="isFieldInvalid(field.key)">
+        </p-multiselect>
+
+        <!-- Checkbox Field -->
+        <div *ngIf="field.type === 'checkbox'" class="flex items-center">
+          <p-checkbox 
+            [id]="field.key"
+            [formControlName]="field.key"
+            [binary]="true"
+            [disabled]="field.disabled || false"
+            [class.p-invalid]="isFieldInvalid(field.key)">
+          </p-checkbox>
+          <label 
+            *ngIf="field.checkboxLabel" 
+            [for]="field.key" 
+            class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+            {{ field.checkboxLabel }}
+          </label>
+        </div>
+
+        <!-- Radio Button Group -->
+        <div *ngIf="field.type === 'radio'" class="space-y-2">
+          <div *ngFor="let option of field.options" class="flex items-center">
+            <p-radiobutton 
+              [id]="field.key + '_' + option.value"
+              [formControlName]="field.key"
+              [value]="option.value"
+              [disabled]="field.disabled || false"
+              [class.p-invalid]="isFieldInvalid(field.key)">
+            </p-radiobutton>
+            <label 
+              [for]="field.key + '_' + option.value" 
+              class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+              {{ option.label }}
+            </label>
+          </div>
+        </div>
+
+        <!-- Date Picker Field -->
+        <p-datepicker 
+          *ngIf="field.type === 'date'" 
+          [id]="field.key"
+          [formControlName]="field.key"
+          [placeholder]="field.placeholder || 'Select date'"
+          [disabled]="field.disabled || false"
+          styleClass="w-full"
+          [class.p-invalid]="isFieldInvalid(field.key)">
+        </p-datepicker>
+
+        <!-- Toggle Switch Field -->
+        <div *ngIf="field.type === 'toggle'" class="flex items-center">
+          <p-toggleswitch 
+            [id]="field.key"
+            [formControlName]="field.key"
+            [disabled]="field.disabled || false"
+            [class.p-invalid]="isFieldInvalid(field.key)">
+          </p-toggleswitch>
+          <label 
+            *ngIf="field.toggleLabel" 
+            [for]="field.key" 
+            class="ml-3 text-sm text-gray-700 dark:text-gray-300">
+            {{ field.toggleLabel }}
+          </label>
+        </div>
+
+        <!-- Hidden Field -->
+        <input 
+          *ngIf="field.type === 'hidden'" 
+          type="hidden"
+          [id]="field.key"
+          [formControlName]="field.key">
+
+        <!-- Field Help Text -->
+        <small 
+          *ngIf="field.helpText && !isFieldInvalid(field.key)" 
+          class="block mt-1 text-xs text-gray-500 dark:text-gray-400">
+          {{ field.helpText }}
+        </small>
+
+        <!-- Field Error Messages -->
+        <div *ngIf="isFieldInvalid(field.key)" class="mt-1">
+          <small 
+            *ngFor="let error of getFieldErrors(field.key)" 
+            class="block text-xs text-red-600 dark:text-red-400">
+            {{ error }}
+          </small>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- Form Actions -->
+  <div 
+    *ngIf="config.showSubmitButton !== false || config.showResetButton" 
+    [ngClass]="getActionButtonsClass()"
+    class="pt-6 border-t border-gray-200 dark:border-gray-700">
+    
+    <button 
+      *ngIf="config.showResetButton" 
+      type="button" 
+      pButton 
+      (click)="onReset()"
+      [disabled]="isSubmitting"
+      severity="secondary"
+      class="mr-3">
+      {{ config.resetButtonText || 'Reset' }}
+    </button>
+
+    <button 
+      *ngIf="config.showSubmitButton !== false" 
+      type="submit" 
+      pButton 
+      [disabled]="!dynamicForm.valid || isSubmitting"
+      [loading]="isSubmitting"
+      severity="primary">
+      {{ isSubmitting ? (config.submittingText || 'Submitting...') : (config.submitButtonText || 'Submit') }}
+    </button>
+  </div>
+</form>

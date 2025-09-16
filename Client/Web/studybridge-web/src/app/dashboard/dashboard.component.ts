@@ -9,11 +9,12 @@ import { TableWrapperComponent, TableColumn, TableConfig, TableLazyLoadEvent } f
 import { BasicTableComponent, BasicTableColumn, BasicTableConfig } from '../shared/basic-table/basic-table.component';
 import { IntermediateTableComponent, IntermediateTableColumn, IntermediateTableConfig } from '../shared/intermediate-table/intermediate-table.component';
 import { MinimalTableComponent, MinimalTableColumn } from '../shared/minimal-table/minimal-table.component';
+import { DynamicFormComponent, FormConfig, FormField } from '../shared/dynamic-form/dynamic-form.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, TreeWrapperComponent, TableWrapperComponent, BasicTableComponent, IntermediateTableComponent, MinimalTableComponent],
+  imports: [CommonModule, TreeWrapperComponent, TableWrapperComponent, BasicTableComponent, IntermediateTableComponent, MinimalTableComponent, DynamicFormComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
@@ -174,6 +175,127 @@ export class DashboardComponent implements OnInit {
     { field: 'word', header: 'Word', width: '30%' },
     { field: 'definition', header: 'Definition', width: '50%' },
     { field: 'category', header: 'Category', width: '20%' }
+  ];
+
+  // Dynamic Form Configuration
+  vocabularyFormConfig: FormConfig = {
+    title: 'Add New Vocabulary Word',
+    description: 'Add a new word to your IELTS vocabulary collection',
+    layout: 'vertical',
+    showSubmitButton: true,
+    showResetButton: true,
+    submitButtonText: 'Add Word',
+    resetButtonText: 'Clear Form'
+  };
+
+  vocabularyFormFields: FormField[] = [
+    {
+      key: 'word',
+      type: 'text',
+      label: 'Word',
+      placeholder: 'Enter the vocabulary word',
+      validation: {
+        required: true,
+        minLength: 2,
+        maxLength: 50
+      },
+      helpText: 'The vocabulary word (2-50 characters)'
+    },
+    {
+      key: 'definition',
+      type: 'textarea',
+      label: 'Definition',
+      placeholder: 'Enter the definition of the word',
+      rows: 3,
+      validation: {
+        required: true,
+        minLength: 10,
+        maxLength: 500
+      },
+      helpText: 'Clear definition of the word (10-500 characters)'
+    },
+    {
+      key: 'category',
+      type: 'select',
+      label: 'Category',
+      placeholder: 'Select a category',
+      options: [
+        { label: 'Academic', value: 'academic' },
+        { label: 'Business', value: 'business' },
+        { label: 'General', value: 'general' },
+        { label: 'Advanced', value: 'advanced' }
+      ],
+      validation: {
+        required: true
+      },
+      helpText: 'Choose the appropriate category for this word'
+    },
+    {
+      key: 'difficulty',
+      type: 'radio',
+      label: 'Difficulty Level',
+      options: [
+        { label: 'Easy', value: 'easy' },
+        { label: 'Medium', value: 'medium' },
+        { label: 'Hard', value: 'hard' }
+      ],
+      validation: {
+        required: true
+      },
+      helpText: 'Select the difficulty level of this word'
+    },
+    {
+      key: 'frequency',
+      type: 'number',
+      label: 'Frequency Score',
+      placeholder: 'Enter frequency score (1-100)',
+      min: 1,
+      max: 100,
+      step: 1,
+      validation: {
+        required: true,
+        min: 1,
+        max: 100
+      },
+      helpText: 'How commonly this word is used (1-100 scale)'
+    },
+    {
+      key: 'partOfSpeech',
+      type: 'multiselect',
+      label: 'Parts of Speech',
+      placeholder: 'Select applicable parts of speech',
+      options: [
+        { label: 'Noun', value: 'noun' },
+        { label: 'Verb', value: 'verb' },
+        { label: 'Adjective', value: 'adjective' },
+        { label: 'Adverb', value: 'adverb' },
+        { label: 'Preposition', value: 'preposition' },
+        { label: 'Conjunction', value: 'conjunction' }
+      ],
+      validation: {
+        required: true
+      },
+      helpText: 'Select all applicable parts of speech'
+    },
+    {
+      key: 'tags',
+      type: 'text',
+      label: 'Tags',
+      placeholder: 'Enter comma-separated tags',
+      helpText: 'Optional tags for better organization (comma-separated)'
+    },
+    {
+      key: 'isImportant',
+      type: 'checkbox',
+      checkboxLabel: 'Mark as important word',
+      helpText: 'Check if this is a high-priority word for learning'
+    },
+    {
+      key: 'addToFavorites',
+      type: 'toggle',
+      toggleLabel: 'Add to Favorites',
+      helpText: 'Toggle to add this word to your favorites list'
+    }
   ];
 
   constructor(
@@ -541,6 +663,23 @@ export class DashboardComponent implements OnInit {
 
   onIntermediateRowUnselect(event: any): void {
     console.log('Intermediate table row unselected:', event.data);
+  }
+
+  // Dynamic Form Event Handlers
+  onVocabularyFormSubmit(formData: any): void {
+    console.log('Form submitted:', formData);
+    // Handle form submission - could save to backend
+    alert(`New vocabulary word added: ${formData.word}\nDefinition: ${formData.definition}`);
+  }
+
+  onFormFieldChange(event: { field: string; value: any; formValue: any }): void {
+    console.log('Field changed:', event);
+    // Handle field-level changes if needed
+  }
+
+  onFormValidationChange(isValid: boolean): void {
+    console.log('Form validation status:', isValid);
+    // Handle form validation state changes
   }
 
   logout(): void {

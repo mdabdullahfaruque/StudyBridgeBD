@@ -231,6 +231,24 @@
           </div>
         </div>
 
+        <!-- Dynamic Form Component -->
+        <div class="bg-white shadow rounded-lg mb-8">
+          <div class="px-6 py-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">📝 Dynamic Form Component</h3>
+            <p class="text-sm text-gray-600 mb-6">
+              Comprehensive form builder with validation, conditional logic, and multiple field types
+            </p>
+            
+            <app-dynamic-form
+              [config]="vocabularyFormConfig"
+              [fields]="vocabularyFormFields"
+              (formSubmit)="onVocabularyFormSubmit($event)"
+              (fieldChange)="onFormFieldChange($event)"
+              (formValidationChange)="onFormValidationChange($event)">
+            </app-dynamic-form>
+          </div>
+        </div>
+
       <!-- Coming Soon Section -->
       <div class="bg-white shadow rounded-lg">
         <div class="px-6 py-8 text-center">
