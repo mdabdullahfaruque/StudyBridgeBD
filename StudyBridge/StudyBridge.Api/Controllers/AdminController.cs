@@ -246,6 +246,57 @@ public class AdminController : ControllerBase
                        .OrderBy(m => m.SortOrder)
                        .ToList();
     }
+
+    [HttpGet("public-menus")]
+    [RequirePermission("public.dashboard")]
+    public async Task<IActionResult> GetPublicMenus()
+    {
+        try
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest(new { message = "User not authenticated" });
+            }
+
+            // For now, simulate User permissions for public menus
+            var userPermissions = new List<string>
+            {
+                "public.dashboard", "public.vocabulary", "public.learning"
+            };
+            
+            // Get all public menus
+            var allMenus = await _menuRepository.GetAllAsync();
+            var publicMenus = allMenus.Where(m => m.MenuType == MenuType.Public && m.IsActive).ToList();
+
+            // Get permissions for public menus
+            var menuPermissions = new Dictionary<Guid, List<string>>();
+            foreach (var menu in publicMenus)
+            {
+                var permissions = await _permissionRepository.GetByMenuIdAsync(menu.Id);
+                menuPermissions[menu.Id] = permissions.Where(p => p.IsActive)
+                                                    .Select(p => p.PermissionKey)
+                                                    .ToList();
+            }
+
+            // Filter menus by user permissions and build hierarchy
+            var accessibleMenus = publicMenus.Where(menu =>
+            {
+                var requiredPermissions = menuPermissions.GetValueOrDefault(menu.Id, new List<string>());
+                return requiredPermissions.Count == 0 || requiredPermissions.Any(p => userPermissions.Contains(p));
+            }).ToList();
+
+            var menuHierarchy = BuildMenuHierarchy(accessibleMenus);
+            var menuDtos = menuHierarchy.Select(menu => MapToMenuDtoWithChildren(menu, accessibleMenus, menuPermissions, userPermissions)).ToList();
+
+            return Ok(ApiResponse<List<MenuDto>>.SuccessResult(menuDtos, "Public menus retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving public menus for user");
+            return StatusCode(500, ApiResponse<List<MenuDto>>.FailureResult("An error occurred while retrieving public menus"));
+        }
+    }
 }
 
 public record CreateUserRequest(string Email, string DisplayName);

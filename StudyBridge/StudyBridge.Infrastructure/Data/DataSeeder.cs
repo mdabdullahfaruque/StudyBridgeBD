@@ -21,6 +21,7 @@ public class DataSeederService
             
             await SeedSystemRolesAsync(serviceProvider);
             await SeedMenusAsync(serviceProvider);
+            await SeedPublicMenusAsync(serviceProvider);
             await SeedPermissionsAsync(serviceProvider);
             await SeedRolePermissionsAsync(serviceProvider);
             await SeedDefaultAdminUserAsync(serviceProvider);
@@ -193,6 +194,48 @@ public class DataSeederService
         }
     }
 
+    private static async Task SeedPublicMenusAsync(IServiceProvider serviceProvider)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var menuRepository = scope.ServiceProvider.GetRequiredService<IMenuRepository>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<DataSeederService>>();
+
+        logger.LogInformation("Seeding public menus...");
+
+        // Public menu definitions for regular users
+        var publicMenus = new[]
+        {
+            new { Name = "public-dashboard", DisplayName = "Dashboard", Icon = "pi pi-home", Route = "/public/dashboard", SortOrder = 10 },
+            new { Name = "public-vocabulary", DisplayName = "Vocabulary", Icon = "pi pi-book", Route = "/public/vocabulary", SortOrder = 20 },
+            new { Name = "public-learning", DisplayName = "Learning", Icon = "pi pi-lightbulb", Route = "/public/learning", SortOrder = 30 }
+        };
+
+        foreach (var menuData in publicMenus)
+        {
+            var existingMenu = await menuRepository.GetByNameAsync(menuData.Name);
+            if (existingMenu == null)
+            {
+                var menu = new Menu
+                {
+                    Id = Guid.NewGuid(),
+                    Name = menuData.Name,
+                    DisplayName = menuData.DisplayName,
+                    Icon = menuData.Icon,
+                    Route = menuData.Route,
+                    MenuType = MenuType.Public,
+                    SortOrder = menuData.SortOrder,
+                    IsActive = true,
+                    HasCrudPermissions = false,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await menuRepository.AddAsync(menu);
+                logger.LogInformation("Created public menu: {MenuName}", menuData.Name);
+            }
+        }
+    }
+
     private static async Task SeedPermissionsAsync(IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
@@ -249,7 +292,12 @@ public class DataSeederService
             
             // Analytics and Reports
             new { MenuName = "system-management", PermissionType = PermissionType.View, Key = "analytics.view", DisplayName = "View Analytics", Description = "Access to analytics and reports" },
-            new { MenuName = "financial-management", PermissionType = PermissionType.View, Key = "reports.view", DisplayName = "View Reports", Description = "Access to financial reports" }
+            new { MenuName = "financial-management", PermissionType = PermissionType.View, Key = "reports.view", DisplayName = "View Reports", Description = "Access to financial reports" },
+            
+            // Public Menu permissions for regular users
+            new { MenuName = "public-dashboard", PermissionType = PermissionType.View, Key = "public.dashboard", DisplayName = "View Public Dashboard", Description = "Access to user dashboard" },
+            new { MenuName = "public-vocabulary", PermissionType = PermissionType.View, Key = "public.vocabulary", DisplayName = "View Vocabulary", Description = "Access to vocabulary learning" },
+            new { MenuName = "public-learning", PermissionType = PermissionType.View, Key = "public.learning", DisplayName = "Access Learning", Description = "Access to learning modules" }
         };
 
         foreach (var permData in permissions)
@@ -318,7 +366,7 @@ public class DataSeederService
             },
             [SystemRole.User] = new[]
             {
-                "dashboard.view"
+                "dashboard.view", "public.dashboard", "public.vocabulary", "public.learning"
             }
         };
 
@@ -383,7 +431,9 @@ public class DataSeederService
                 UpdatedAt = DateTime.UtcNow
             };
 
-            adminUser.PasswordHash = passwordHasher.HashPassword(adminUser, defaultPassword);
+            // Hash password like Register API does
+            var passwordHash = passwordHasher.HashPassword(new AppUser(), defaultPassword);
+            adminUser.PasswordHash = passwordHash;
 
             context.Users.Add(adminUser);
             await context.SaveChangesAsync();
@@ -408,6 +458,56 @@ public class DataSeederService
         else
         {
             logger.LogInformation("Default admin user already exists: {Email}", adminEmail);
+        }
+
+        // Create test user with regular User role
+        const string testUserEmail = "user@studybridge.com";
+        const string testUserPassword = "User@123456";
+        
+        var existingTestUser = await context.Users.FirstOrDefaultAsync(u => u.Email == testUserEmail);
+        if (existingTestUser == null)
+        {
+            var testUser = new AppUser
+            {
+                Id = Guid.NewGuid(),
+                Email = testUserEmail,
+                DisplayName = "Test User",
+                FirstName = "Test",
+                LastName = "User",
+                EmailConfirmed = true,
+                IsActive = true,
+                LoginProvider = LoginProvider.Local,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            // Hash password like Register API does
+            var testPasswordHash = passwordHasher.HashPassword(new AppUser(), testUserPassword);
+            testUser.PasswordHash = testPasswordHash;
+
+            context.Users.Add(testUser);
+            await context.SaveChangesAsync();
+
+            // Assign User role
+            var userRole = await roleRepository.GetBySystemRoleAsync(SystemRole.User);
+            if (userRole != null)
+            {
+                var testUserRole = new UserRole
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = testUser.Id.ToString(),
+                    RoleId = userRole.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await userRoleRepository.AddAsync(testUserRole);
+                logger.LogInformation("Created test user: {Email} with User role", testUserEmail);
+            }
+        }
+        else
+        {
+            logger.LogInformation("Test user already exists: {Email}", testUserEmail);
         }
     }
 }
