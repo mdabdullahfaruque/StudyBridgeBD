@@ -45,7 +45,8 @@ export class LoginComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(isAuthenticated => {
         if (isAuthenticated) {
-          this.router.navigate(['/dashboard']);
+          const redirectUrl = this.authService.getRedirectUrlForUser();
+          this.router.navigate([redirectUrl]);
         }
       });
   }
@@ -64,10 +65,11 @@ export class LoginComponent implements OnInit, OnDestroy {
         await this.authService.login({ email, password });
         this.toastService.success('Login Successful', 'Welcome back to StudyBridge!');
         
-        // Use Angular router for navigation with a slight delay to ensure auth state is updated
+        // Use role-based redirection with a slight delay to ensure auth state is updated
         setTimeout(() => {
-          this.router.navigate(['/dashboard']).then(() => {
-            console.log('Navigation to dashboard completed');
+          const redirectUrl = this.authService.getRedirectUrlForUser();
+          this.router.navigate([redirectUrl]).then(() => {
+            console.log('Navigation completed to:', redirectUrl);
           });
         }, 100);
       } catch (error: any) {

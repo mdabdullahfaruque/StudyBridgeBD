@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { RoleGuard } from '../guards/auth.guards';
 import { AdminLayoutComponent } from './admin-layout/admin-layout.component';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 
@@ -6,6 +7,8 @@ export const ADMIN_ROUTES: Routes = [
   {
     path: '',
     component: AdminLayoutComponent,
+    canActivate: [RoleGuard],
+    data: { roles: ['Admin', 'SuperAdmin', 'Administrator'] },
     children: [
       {
         path: '',

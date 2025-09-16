@@ -196,6 +196,31 @@ export class AuthService {
     return roles.some(role => this.hasRole(role));
   }
 
+  // Role-based navigation helpers
+  getRedirectUrlForUser(): string {
+    const user = this.getCurrentUser();
+    if (!user) return '/auth/login';
+    
+    // If user has only 'User' role, redirect to public area
+    if (user.roles.length === 1 && user.roles.includes('User')) {
+      return '/public/dashboard';
+    }
+    
+    // If user has admin roles (Admin, SuperAdmin, etc.), redirect to admin area
+    const adminRoles = ['Admin', 'SuperAdmin', 'Administrator'];
+    if (user.roles.some(role => adminRoles.includes(role))) {
+      return '/admin/dashboard';
+    }
+    
+    // Default fallback
+    return '/public/dashboard';
+  }
+
+  isAdminUser(): boolean {
+    const adminRoles = ['Admin', 'SuperAdmin', 'Administrator'];
+    return this.hasAnyRole(adminRoles);
+  }
+
   // Private Helper Methods
   private handleAuthSuccess(loginResponse: LoginResponse): void {
     const user: User = {
