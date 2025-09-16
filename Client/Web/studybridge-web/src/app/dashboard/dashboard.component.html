@@ -97,7 +97,26 @@
         </div>
       </div>
 
-      <!-- Coming Soon Section -->
+        <!-- Enhanced Tree Wrapper Component -->
+        <div class="bg-white shadow rounded-lg mb-8">
+          <div class="px-6 py-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">🌟 Enhanced Tree Component with Dynamic Counts</h3>
+            <p class="text-sm text-gray-600 mb-4">
+              Interactive tree with real-time counts, selection tracking, and advanced features:
+            </p>
+            
+            <app-tree-wrapper
+              [treeData]="vocabularyTreeData"
+              [config]="treeConfig"
+              [selectedNodes]="selectedVocabularyNodes"
+              (selectedNodesChange)="onSelectionChange($event)"
+              (nodeSelect)="onNodeSelect($event)"
+              (nodeUnselect)="onNodeUnselect($event)"
+              (nodeExpand)="onNodeExpand($event)"
+              (nodeCollapse)="onNodeCollapse($event)">
+            </app-tree-wrapper>
+          </div>
+        </div>      <!-- Coming Soon Section -->
       <div class="bg-white shadow rounded-lg">
         <div class="px-6 py-8 text-center">
           <div class="text-6xl mb-4">🚀</div>

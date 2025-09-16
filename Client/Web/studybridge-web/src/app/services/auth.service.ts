@@ -41,7 +41,25 @@ export class AuthService {
       this.currentUserSubject.next(user);
     } else {
       this.clearAuthData();
+      // FOR DEMO PURPOSES: Create a mock user to test PrimeNG styling
+      this.createMockUser();
     }
+  }
+
+  private createMockUser(): void {
+    const mockUser: User = {
+      id: 'demo-user-123',
+      email: 'demo@studybridge.com',
+      displayName: 'Demo User',
+      roles: ['User'],
+      isActive: true,
+      lastLoginAt: new Date()
+    };
+    
+    // Store mock data for demo
+    localStorage.setItem(environment.tokenKey, 'mock-jwt-token-for-demo');
+    localStorage.setItem(environment.userKey, JSON.stringify(mockUser));
+    this.currentUserSubject.next(mockUser);
   }
 
   // Authentication Methods
