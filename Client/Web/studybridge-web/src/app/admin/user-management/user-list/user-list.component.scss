@@ -1,0 +1,45 @@
+/* User List Component Styles */
+.user-list-container {
+  .p-card .p-card-content {
+    padding: 1.5rem;
+  }
+}
+
+/* Custom table styling */
+::ng-deep {
+  .p-datatable.p-datatable-gridlines .p-datatable-thead > tr > th {
+    border-width: 1px;
+    background: #f8fafc;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .p-datatable.p-datatable-gridlines .p-datatable-tbody > tr > td {
+    border-width: 1px;
+    padding: 1rem 0.75rem;
+  }
+
+  .p-datatable .p-datatable-tbody > tr:hover {
+    background: #f8fafc;
+  }
+}
+
+/* Dark mode adjustments */
+.dark {
+  ::ng-deep {
+    .p-datatable.p-datatable-gridlines .p-datatable-thead > tr > th {
+      background: #374151;
+      color: #f9fafb;
+      border-color: #4b5563;
+    }
+
+    .p-datatable.p-datatable-gridlines .p-datatable-tbody > tr > td {
+      border-color: #374151;
+      color: #f3f4f6;
+    }
+
+    .p-datatable .p-datatable-tbody > tr:hover {
+      background: #374151;
+    }
+  }
+}

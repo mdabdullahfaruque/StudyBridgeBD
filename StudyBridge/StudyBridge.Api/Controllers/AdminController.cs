@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using StudyBridge.Api.DTOs;
+using StudyBridge.Application.Contracts.Persistence;
 using StudyBridge.Application.Contracts.Services;
 using StudyBridge.Domain.Entities;
+using StudyBridge.Domain.Enums;
 using StudyBridge.Infrastructure.Authorization;
+using StudyBridge.Shared.Common;
 using System.Security.Claims;
 
 namespace StudyBridge.Api.Controllers;
@@ -12,15 +16,24 @@ public class AdminController : ControllerBase
 {
     private readonly IPermissionService _permissionService;
     private readonly ISubscriptionService _subscriptionService;
+    private readonly IMenuRepository _menuRepository;
+    private readonly IPermissionRepository _permissionRepository;
+    private readonly IRoleRepository _roleRepository;
     private readonly ILogger<AdminController> _logger;
 
     public AdminController(
         IPermissionService permissionService,
         ISubscriptionService subscriptionService,
+        IMenuRepository menuRepository,
+        IPermissionRepository permissionRepository,
+        IRoleRepository roleRepository,
         ILogger<AdminController> logger)
     {
         _permissionService = permissionService;
         _subscriptionService = subscriptionService;
+        _menuRepository = menuRepository;
+        _permissionRepository = permissionRepository;
+        _roleRepository = roleRepository;
         _logger = logger;
     }
 
@@ -105,6 +118,133 @@ public class AdminController : ControllerBase
     {
         _logger.LogInformation("Admin accessing system logs");
         return Ok(new { message = "System logs retrieved successfully" });
+    }
+
+    // Menu Management Endpoints
+    [HttpGet("menus")]
+    [RequirePermission("system.view")]
+    public async Task<IActionResult> GetAllMenus()
+    {
+        try
+        {
+            var menus = await _menuRepository.GetAllAsync();
+            var menuDtos = menus.Where(m => m.MenuType == MenuType.Admin && m.IsActive)
+                               .Select(MapToMenuDto)
+                               .ToList();
+
+            return Ok(ApiResponse<List<MenuDto>>.SuccessResult(menuDtos, "Menus retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving all menus");
+            return StatusCode(500, ApiResponse<List<MenuDto>>.FailureResult("Failed to retrieve menus"));
+        }
+    }
+
+    [HttpGet("menus/user-menus")]
+    public async Task<IActionResult> GetUserMenus()
+    {
+        try
+        {
+            // TODO: Get actual user permissions from JWT token
+            // For now, simulate SuperAdmin permissions
+            var userPermissions = new List<string>
+            {
+                "dashboard.view", "users.view", "users.create", "users.edit", "users.delete", "users.manage",
+                "roles.view", "roles.create", "roles.edit", "roles.delete", "roles.manage",
+                "permissions.view", "permissions.create", "permissions.edit", "permissions.delete", "permissions.manage",
+                "content.view", "content.create", "content.edit", "content.delete", "content.manage",
+                "financials.view", "financials.manage", "reports.view", "analytics.view",
+                "system.view", "system.manage", "system.logs"
+            };
+
+            var allMenus = await _menuRepository.GetAllAsync();
+            var adminMenus = allMenus.Where(m => m.MenuType == MenuType.Admin && m.IsActive).ToList();
+
+            // Get permissions for each menu
+            var menuPermissions = new Dictionary<Guid, List<string>>();
+            foreach (var menu in adminMenus)
+            {
+                var permissions = await _permissionRepository.GetByMenuIdAsync(menu.Id);
+                menuPermissions[menu.Id] = permissions.Where(p => p.IsActive)
+                                                    .Select(p => p.PermissionKey)
+                                                    .ToList();
+            }
+
+            // Filter menus based on user permissions
+            var accessibleMenus = adminMenus.Where(menu =>
+            {
+                var requiredPermissions = menuPermissions.GetValueOrDefault(menu.Id, new List<string>());
+                return requiredPermissions.Count == 0 || 
+                       requiredPermissions.Any(p => userPermissions.Contains(p));
+            }).ToList();
+
+            // Build hierarchy and convert to DTOs
+            var menuHierarchy = BuildMenuHierarchy(accessibleMenus);
+            var menuDtos = menuHierarchy.Select(m => MapToMenuDtoWithChildren(m, accessibleMenus, menuPermissions, userPermissions))
+                                       .ToList();
+
+            return Ok(ApiResponse<List<MenuDto>>.SuccessResult(menuDtos, "User menus retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving user menus");
+            return StatusCode(500, ApiResponse<List<MenuDto>>.FailureResult("Failed to retrieve user menus"));
+        }
+    }
+
+    // Helper methods
+    private static MenuDto MapToMenuDto(Menu menu)
+    {
+        return new MenuDto
+        {
+            Id = menu.Id.ToString(),
+            Name = menu.Name,
+            DisplayName = menu.DisplayName,
+            Icon = menu.Icon,
+            Route = menu.Route,
+            ParentId = menu.ParentMenuId?.ToString(),
+            SortOrder = menu.SortOrder,
+            IsActive = menu.IsActive,
+            MenuType = (int)menu.MenuType,
+            RequiredPermissions = new List<string>()
+        };
+    }
+
+    private static MenuDto MapToMenuDtoWithChildren(Menu menu, List<Menu> allMenus, Dictionary<Guid, List<string>> menuPermissions, List<string> userPermissions)
+    {
+        var requiredPermissions = menuPermissions.GetValueOrDefault(menu.Id, new List<string>());
+        
+        return new MenuDto
+        {
+            Id = menu.Id.ToString(),
+            Name = menu.Name,
+            DisplayName = menu.DisplayName,
+            Icon = menu.Icon,
+            Route = menu.Route,
+            ParentId = menu.ParentMenuId?.ToString(),
+            SortOrder = menu.SortOrder,
+            IsActive = menu.IsActive,
+            MenuType = (int)menu.MenuType,
+            RequiredPermissions = requiredPermissions,
+            Children = allMenus.Where(m => m.ParentMenuId == menu.Id)
+                              .Where(child =>
+                              {
+                                  var childPermissions = menuPermissions.GetValueOrDefault(child.Id, new List<string>());
+                                  return childPermissions.Count == 0 || 
+                                         childPermissions.Any(p => userPermissions.Contains(p));
+                              })
+                              .OrderBy(m => m.SortOrder)
+                              .Select(m => MapToMenuDtoWithChildren(m, allMenus, menuPermissions, userPermissions))
+                              .ToList()
+        };
+    }
+
+    private static List<Menu> BuildMenuHierarchy(List<Menu> flatMenus)
+    {
+        return flatMenus.Where(m => m.ParentMenuId == null)
+                       .OrderBy(m => m.SortOrder)
+                       .ToList();
     }
 }
 

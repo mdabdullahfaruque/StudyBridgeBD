@@ -1,0 +1,224 @@
+<div class="admin-dashboard p-6 space-y-6">
+  <!-- Page Header -->
+  <div class="flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
+      <p class="text-gray-600 dark:text-gray-400 mt-1">Welcome back! Here's what's happening with your platform.</p>
+    </div>
+    <p-button 
+      label="Refresh Data" 
+      icon="pi pi-refresh" 
+      (click)="refreshData()"
+      [loading]="isLoading()">
+    </p-button>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Total Users -->
+    <p-card styleClass="h-full">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</p>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+            {{ stats()?.totalUsers || 0 | number }}
+          </p>
+          <p class="text-sm text-green-600 dark:text-green-400 mt-1">
+            <i class="pi pi-arrow-up text-xs"></i>
+            +12% from last month
+          </p>
+        </div>
+        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+          <i class="pi pi-users text-blue-600 dark:text-blue-400 text-xl"></i>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Active Users -->
+    <p-card styleClass="h-full">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Users</p>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+            {{ stats()?.activeUsers || 0 | number }}
+          </p>
+          <p class="text-sm text-green-600 dark:text-green-400 mt-1">
+            <i class="pi pi-arrow-up text-xs"></i>
+            +8% from last month
+          </p>
+        </div>
+        <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+          <i class="pi pi-user-check text-green-600 dark:text-green-400 text-xl"></i>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- New Users This Month -->
+    <p-card styleClass="h-full">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">New Users</p>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+            {{ stats()?.newUsersThisMonth || 0 | number }}
+          </p>
+          <p class="text-sm text-blue-600 dark:text-blue-400 mt-1">
+            This month
+          </p>
+        </div>
+        <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+          <i class="pi pi-user-plus text-purple-600 dark:text-purple-400 text-xl"></i>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Revenue -->
+    <p-card styleClass="h-full">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Revenue</p>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+            ${{ (stats()?.revenue || 0) | number:'1.0-0' }}
+          </p>
+          <p class="text-sm text-green-600 dark:text-green-400 mt-1">
+            <i class="pi pi-arrow-up text-xs"></i>
+            +{{ stats()?.revenueGrowth || 0 }}% from last month
+          </p>
+        </div>
+        <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex items-center justify-center">
+          <i class="pi pi-dollar text-yellow-600 dark:text-yellow-400 text-xl"></i>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- User Growth Chart -->
+    <p-card>
+      <ng-template pTemplate="header">
+        <div class="p-4 pb-0">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">User Growth</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Last 30 days</p>
+        </div>
+      </ng-template>
+      <p-chart 
+        type="line" 
+        [data]="userGrowthChart()" 
+        [options]="chartOptions()"
+        height="300px">
+      </p-chart>
+    </p-card>
+
+    <!-- User Distribution Chart -->
+    <p-card>
+      <ng-template pTemplate="header">
+        <div class="p-4 pb-0">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">User Roles</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Distribution by role</p>
+        </div>
+      </ng-template>
+      <p-chart 
+        type="doughnut" 
+        [data]="userRolesChart()" 
+        [options]="doughnutOptions()"
+        height="300px">
+      </p-chart>
+    </p-card>
+  </div>
+
+  <!-- Recent Users Table -->
+  <p-card>
+    <ng-template pTemplate="header">
+      <div class="p-4 pb-0 flex justify-between items-center">
+        <div>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Recent Users</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Latest user registrations</p>
+        </div>
+        <p-button 
+          label="View All Users" 
+          icon="pi pi-external-link" 
+          [text]="true"
+          routerLink="/admin/users">
+        </p-button>
+      </div>
+    </ng-template>
+    
+    <p-table 
+      [value]="recentUsers()" 
+      [rows]="5"
+      styleClass="p-datatable-sm"
+      [loading]="isLoading()">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th>User</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Roles</th>
+          <th>Joined</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+      
+      <ng-template pTemplate="body" let-user>
+        <tr>
+          <td>
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                <span class="text-sm font-medium text-blue-600 dark:text-blue-400">
+                  {{ getInitials(user.displayName) }}
+                </span>
+              </div>
+              <span class="font-medium">{{ user.displayName }}</span>
+            </div>
+          </td>
+          <td>{{ user.email }}</td>
+          <td>
+            <p-tag 
+              [value]="user.status" 
+              [severity]="getStatusSeverity(user.status)">
+            </p-tag>
+          </td>
+          <td>
+            <div class="flex flex-wrap gap-1">
+              <span 
+                *ngFor="let role of user.roles" 
+                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                {{ role }}
+              </span>
+            </div>
+          </td>
+          <td>{{ formatDate(user.createdAt) }}</td>
+          <td>
+            <div class="flex space-x-2">
+              <p-button 
+                icon="pi pi-eye" 
+                [text]="true" 
+                size="small"
+                (click)="viewUser(user.id)">
+              </p-button>
+              <p-button 
+                icon="pi pi-pencil" 
+                [text]="true" 
+                size="small"
+                severity="secondary"
+                (click)="editUser(user.id)">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="text-center py-8">
+            <div class="text-gray-500 dark:text-gray-400">
+              <i class="pi pi-users text-3xl mb-3 block"></i>
+              <p>No recent users found</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>

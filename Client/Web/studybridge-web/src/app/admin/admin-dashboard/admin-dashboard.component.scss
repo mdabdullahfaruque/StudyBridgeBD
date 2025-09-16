@@ -1,0 +1,119 @@
+/* Admin Dashboard Styles */
+.admin-dashboard {
+  .stat-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  .chart-container {
+    position: relative;
+    height: 300px;
+  }
+}
+
+/* PrimeNG customizations for dashboard */
+::ng-deep {
+  .p-card {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
+    
+    .p-card-header {
+      padding: 1rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .p-card-content {
+      padding: 1.5rem;
+    }
+  }
+
+  .p-datatable {
+    .p-datatable-header {
+      background: transparent;
+      border: none;
+      padding: 0;
+    }
+    
+    .p-datatable-thead > tr > th {
+      background: #f9fafb;
+      color: #374151;
+      font-weight: 600;
+      border: none;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .p-datatable-tbody > tr > td {
+      border: none;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    
+    .p-datatable-tbody > tr:hover {
+      background: #f9fafb;
+    }
+  }
+
+  .p-tag {
+    font-weight: 500;
+    font-size: 0.75rem;
+  }
+
+  .p-button.p-button-text {
+    color: #6b7280;
+    
+    &:hover {
+      background: #f3f4f6;
+      color: #374151;
+    }
+  }
+}
+
+/* Dark mode adjustments */
+.dark {
+  ::ng-deep {
+    .p-card {
+      background: #1f2937;
+      border-color: #374151;
+      color: #f9fafb;
+      
+      .p-card-header {
+        border-bottom-color: #374151;
+      }
+    }
+
+    .p-datatable {
+      .p-datatable-thead > tr > th {
+        background: #374151;
+        color: #f9fafb;
+        border-bottom-color: #4b5563;
+      }
+      
+      .p-datatable-tbody > tr > td {
+        border-bottom-color: #374151;
+        color: #f3f4f6;
+      }
+      
+      .p-datatable-tbody > tr:hover {
+        background: #374151;
+      }
+    }
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admin-dashboard {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .flex.justify-between {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+  }
+}
