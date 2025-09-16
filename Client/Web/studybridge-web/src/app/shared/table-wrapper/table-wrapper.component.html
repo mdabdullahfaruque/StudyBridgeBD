@@ -1,0 +1,254 @@
+<div class="card">
+  <!-- Header with Global Search and Actions -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4" *ngIf="config.showHeader !== false">
+    
+    <!-- Title and Caption -->
+    <div>
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200" *ngIf="config.caption">
+        {{ config.caption }}
+      </h3>
+    </div>
+
+    <!-- Global Search and Actions -->
+    <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+      
+      <!-- Global Filter -->
+      <div class="relative" *ngIf="config.globalFilterFields && config.globalFilterFields.length > 0">
+        <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+        <input 
+          #globalFilter
+          type="text" 
+          pInputText 
+          placeholder="Search..." 
+          [(ngModel)]="globalFilterValue"
+          (input)="onGlobalFilterChange($event)"
+          class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
+        />
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-2">
+        <!-- Refresh Button -->
+        <button 
+          pButton 
+          type="button" 
+          icon="pi pi-refresh" 
+          class="p-button-outlined p-button-sm"
+          (click)="refresh()"
+          pTooltip="Refresh data"
+        ></button>
+
+        <!-- Clear Filters Button -->
+        <button 
+          pButton 
+          type="button" 
+          icon="pi pi-filter-slash" 
+          class="p-button-outlined p-button-sm"
+          (click)="clear(table)"
+          pTooltip="Clear all filters"
+        ></button>
+
+        <!-- Export Button -->
+        <button 
+          pButton 
+          type="button" 
+          icon="pi pi-download" 
+          class="p-button-outlined p-button-sm"
+          (click)="exportCSV(table)"
+          pTooltip="Export to CSV"
+          *ngIf="config.exportable"
+        ></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Selection Info -->
+  <div class="mb-4 flex justify-between items-center" *ngIf="config.selectionMode && getSelectionCount() > 0">
+    <div class="text-sm text-gray-600 dark:text-gray-400">
+      {{ getSelectionCount() }} item(s) selected
+    </div>
+    <div class="flex gap-2">
+      <button 
+        pButton 
+        type="button" 
+        label="Select All" 
+        class="p-button-text p-button-sm"
+        (click)="selectAll()"
+        *ngIf="!isAllSelected()"
+      ></button>
+      <button 
+        pButton 
+        type="button" 
+        label="Clear Selection" 
+        class="p-button-text p-button-sm"
+        (click)="clearSelection()"
+      ></button>
+    </div>
+  </div>
+
+  <!-- Data Table -->
+  <p-table 
+    #table
+    [value]="data" 
+    [loading]="loading"
+    [paginator]="config.paginator" 
+    [rows]="rows"
+    [totalRecords]="totalRecords"
+    [rowsPerPageOptions]="config.rowsPerPageOptions"
+    [lazy]="config.serverSide"
+    [sortMode]="config.sortMode || 'single'"
+    [globalFilterFields]="config.globalFilterFields"
+    [resizableColumns]="config.resizableColumns"
+    [reorderableColumns]="config.reorderableColumns"
+    [scrollable]="config.scrollable"
+    [scrollHeight]="config.scrollHeight"
+    [showGridlines]="config.showGridlines"
+    [(selection)]="selectedItems"
+    [selectionMode]="config.selectionMode === 'checkbox' ? 'multiple' : config.selectionMode"
+    (onLazyLoad)="onLazyLoadData($event)"
+    (onSort)="onSortChange($event)"
+    (onRowSelect)="onRowSelectEvent($event)"
+    (onRowUnselect)="onRowUnselectEvent($event)"
+    class="p-datatable-sm"
+  >
+    
+    <!-- Column Headers -->
+    <ng-template pTemplate="header">
+      <tr>
+        <th *ngFor="let col of getVisibleColumns()" 
+            [pSortableColumn]="col.sortable !== false ? col.field : undefined"
+            [style.width]="getColumnWidth(col)">
+          {{ col.header }}
+          <p-sortIcon *ngIf="col.sortable !== false" [field]="col.field"></p-sortIcon>
+          
+          <!-- Column Filter -->
+          <div class="p-column-filter mt-2" *ngIf="col.filterable">
+            <!-- Text Filter -->
+            <input 
+              *ngIf="!col.filterType || col.filterType === 'text'"
+              type="text" 
+              pInputText 
+              [placeholder]="getFilterPlaceholder(col)"
+              (input)="onColumnFilter($event, col.field)"
+              class="p-column-filter-input w-full text-sm"
+            />
+
+            <!-- Number Filter -->
+            <input 
+              *ngIf="col.filterType === 'number'"
+              type="number" 
+              pInputText 
+              [placeholder]="getFilterPlaceholder(col)"
+              (input)="onColumnFilter($event, col.field)"
+              class="p-column-filter-input w-full text-sm"
+            />
+
+            <!-- Date Filter -->
+            <input 
+              *ngIf="col.filterType === 'date'"
+              type="date"
+              pInputText 
+              [placeholder]="getFilterPlaceholder(col)"
+              (change)="onColumnFilter($event, col.field)"
+              class="p-column-filter-input w-full text-sm"
+            />
+
+            <!-- Dropdown Filter -->
+            <select 
+              *ngIf="col.filterType === 'dropdown' && col.filterOptions"
+              (change)="onColumnFilter($event, col.field)"
+              class="p-column-filter-input w-full text-sm"
+            >
+              <option value="">All</option>
+              <option *ngFor="let option of col.filterOptions" [value]="option.value || option">
+                {{ option.label || option }}
+              </option>
+            </select>
+          </div>
+        </th>
+      </tr>
+    </ng-template>
+
+    <!-- Table Body -->
+    <ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
+      <tr>
+        <td *ngFor="let col of getVisibleColumns()" class="cell-content">
+          <!-- Custom Template -->
+          <div *ngIf="col.customTemplate" [innerHTML]="col.customTemplate"></div>
+          
+          <!-- Default Content -->
+          <span *ngIf="!col.customTemplate" [ngSwitch]="col.type">
+            
+            <!-- Boolean Display -->
+            <i *ngSwitchCase="'boolean'" 
+               class="pi text-sm"
+               [ngClass]="{
+                 'pi-check text-green-500': getFieldValue(rowData, col.field),
+                 'pi-times text-red-500': !getFieldValue(rowData, col.field)
+               }">
+            </i>
+
+            <!-- Number Display -->
+            <span *ngSwitchCase="'number'" class="font-mono">
+              {{ formatCellValue(rowData, col) }}
+            </span>
+
+            <!-- Date Display -->
+            <span *ngSwitchCase="'date'">
+              {{ formatCellValue(rowData, col) }}
+            </span>
+
+            <!-- Enum/Tag Display -->
+            <span *ngSwitchCase="'enum'" 
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              {{ formatCellValue(rowData, col) }}
+            </span>
+
+            <!-- Default Text -->
+            <span *ngSwitchDefault>
+              {{ formatCellValue(rowData, col) }}
+            </span>
+
+          </span>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Empty State -->
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td [attr.colspan]="getVisibleColumns().length" class="text-center py-8">
+          <div class="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
+            <i class="pi pi-inbox text-4xl mb-2"></i>
+            <p class="text-lg font-medium">No data found</p>
+            <p class="text-sm">There are no records to display</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Loading Template -->
+    <ng-template pTemplate="loadingbody" *ngIf="loading">
+      <tr>
+        <td [attr.colspan]="getVisibleColumns().length" class="text-center py-8">
+          <div class="flex flex-col items-center justify-center">
+            <i class="pi pi-spin pi-spinner text-2xl text-blue-500 mb-2"></i>
+            <p class="text-gray-600 dark:text-gray-400">Loading data...</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+  </p-table>
+
+  <!-- Footer Information -->
+  <div class="mt-4 flex justify-between items-center text-sm text-gray-600 dark:text-gray-400" *ngIf="config.paginator">
+    <div>
+      Showing {{ (first + 1) }} to {{ Math.min(first + rows, totalRecords) }} of {{ totalRecords }} entries
+    </div>
+    <div *ngIf="config.selectionMode">
+      {{ getSelectionCount() }} selected
+    </div>
+  </div>
+
+</div>

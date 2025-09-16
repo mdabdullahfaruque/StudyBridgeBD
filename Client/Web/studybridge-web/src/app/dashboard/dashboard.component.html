@@ -100,7 +100,7 @@
         <!-- Enhanced Tree Wrapper Component -->
         <div class="bg-white shadow rounded-lg mb-8">
           <div class="px-6 py-6">
-            <h3 class="text-xl font-bold text-gray-900 mb-4">🌟 Enhanced Tree Component with Dynamic Counts</h3>
+            <h3 class="text-xl font-bold text-gray-900 mb-4">� Tree Component Demo</h3>
             <p class="text-sm text-gray-600 mb-6">
               Interactive tree with real-time counts, selection tracking, and advanced features:
             </p>
@@ -140,7 +140,98 @@
               </app-tree-wrapper>
             </div>
           </div>
-        </div>      <!-- Coming Soon Section -->
+        </div>
+
+
+
+        <!-- Table Component Variations -->
+        <div class="space-y-8 mb-8">
+          <h2 class="text-2xl font-bold text-gray-900 text-center mb-8">📊 Table Component Variations</h2>
+          
+          <!-- Version 1: Basic Table -->
+          <div class="bg-white shadow rounded-lg">
+            <div class="px-6 py-6">
+              <h3 class="text-lg font-bold text-gray-900 mb-2">🔹 Version 1: Basic Table</h3>
+              <p class="text-sm text-gray-600 mb-4">
+                <strong>Features:</strong> Sorting, Pagination only | 
+                <strong>Use case:</strong> Simple data display with basic navigation
+              </p>
+              
+              <app-basic-table
+                [data]="vocabularyData"
+                [columns]="basicTableColumns"
+                [config]="basicTableConfig">
+              </app-basic-table>
+            </div>
+          </div>
+
+          <!-- Version 2: Intermediate Table -->
+          <div class="bg-white shadow rounded-lg">
+            <div class="px-6 py-6">
+              <h3 class="text-lg font-bold text-gray-900 mb-2">🔸 Version 2: Intermediate Table</h3>
+              <p class="text-sm text-gray-600 mb-4">
+                <strong>Features:</strong> Sorting, Global Search, Selection, Export | 
+                <strong>Use case:</strong> Interactive data with search and selection
+              </p>
+              
+              <app-intermediate-table
+                [data]="vocabularyData"
+                [columns]="intermediateTableColumns"
+                [config]="intermediateTableConfig"
+                [selectedItems]="selectedIntermediateItems"
+                (selectedItemsChange)="selectedIntermediateItems = $event"
+                (onRowSelect)="onIntermediateRowSelect($event)"
+                (onRowUnselect)="onIntermediateRowUnselect($event)">
+              </app-intermediate-table>
+            </div>
+          </div>
+
+          <!-- Version 3: Minimal Table -->
+          <div class="bg-white shadow rounded-lg">
+            <div class="px-6 py-6">
+              <h3 class="text-lg font-bold text-gray-900 mb-2">🔺 Version 3: Minimal Table</h3>
+              <p class="text-sm text-gray-600 mb-4">
+                <strong>Features:</strong> Pure data display only | 
+                <strong>Use case:</strong> Ultra-simple read-only data presentation
+              </p>
+              
+              <app-minimal-table
+                [data]="vocabularyData.slice(0, 6)"
+                [columns]="minimalTableColumns"
+                title="Simple Vocabulary List">
+              </app-minimal-table>
+            </div>
+          </div>
+
+          <!-- Version 4: Full-Featured Table -->
+          <div class="bg-white shadow rounded-lg">
+            <div class="px-6 py-6">
+              <h3 class="text-lg font-bold text-gray-900 mb-2">🔶 Version 4: Full-Featured Table (Advanced)</h3>
+              <p class="text-sm text-gray-600 mb-4">
+                <strong>Features:</strong> All features - Sorting, Filtering, Global Search, Selection, Export, Column Controls | 
+                <strong>Use case:</strong> Complex data management with all capabilities
+              </p>
+              
+              <!-- This is our original comprehensive table -->
+              <app-table-wrapper
+                [data]="vocabularyData"
+                [columns]="tableColumns"
+                [config]="tableConfig"
+                [selectedItems]="selectedVocabulary"
+                (selectedItemsChange)="selectedVocabulary = $event"
+                (onLazyLoad)="onTableLazyLoad($event)"
+                (onSort)="onTableSort($event)"
+                (onFilter)="onTableFilter($event)"
+                (onGlobalFilter)="onTableGlobalFilter($event)"
+                (onRowSelect)="onRowSelect($event)"
+                (onRowUnselect)="onRowUnselect($event)"
+                (onExport)="onTableExport($event)">
+              </app-table-wrapper>
+            </div>
+          </div>
+        </div>
+
+      <!-- Coming Soon Section -->
       <div class="bg-white shadow rounded-lg">
         <div class="px-6 py-8 text-center">
           <div class="text-6xl mb-4">🚀</div>
