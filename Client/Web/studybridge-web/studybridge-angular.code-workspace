@@ -1,0 +1,54 @@
+{
+  "folders": [
+    {
+      "name": "🏗️ Core Module",
+      "path": "./src/app/core"
+    },
+    {
+      "name": "🔄 Shared Module", 
+      "path": "./src/app/shared"
+    },
+    {
+      "name": "🔐 Auth Feature",
+      "path": "./src/app/features/auth"
+    },
+    {
+      "name": "👑 Admin Feature",
+      "path": "./src/app/features/admin" 
+    },
+    {
+      "name": "👤 Public Feature",
+      "path": "./src/app/features/public"
+    },
+    {
+      "name": "📁 Root App",
+      "path": "./src/app"
+    },
+    {
+      "name": "📄 Project Docs",
+      "path": "./docs"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/.angular": true
+    },
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.patterns": {
+      "*.component.ts": "${capture}.component.html, ${capture}.component.scss, ${capture}.component.spec.ts",
+      "*.module.ts": "${capture}-routing.module.ts, ${capture}.routes.ts"
+    },
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "angular.enable-strict-mode-prompt": false
+  },
+  "extensions": {
+    "recommendations": [
+      "angular.ng-template",
+      "ms-vscode.vscode-typescript-next", 
+      "bradlc.vscode-tailwindcss",
+      "esbenp.prettier-vscode"
+    ]
+  }
+}
