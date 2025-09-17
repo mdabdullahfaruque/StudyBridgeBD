@@ -4,10 +4,10 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
-import { AuthService } from '../../services/auth.service';
-import { GoogleAuthService } from '../../services/google-auth.service';
-import { ToastService } from '../../services/toast.service';
-import { environment } from '../../../environments/environment.development';
+import { AuthService } from '../../../services/auth.service';
+import { GoogleAuthService } from '../../../services/google-auth.service';
+import { ToastService } from '../../../services/toast.service';
+import { environment } from '../../../../environments/environment.development';
 
 @Component({
   selector: 'app-login',

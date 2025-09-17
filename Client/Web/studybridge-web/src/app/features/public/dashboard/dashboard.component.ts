@@ -1,15 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { AuthService } from '../services/auth.service';
-import { User } from '../models/user.models';
+import { AuthService } from '../../../services/auth.service';
+import { User } from '../../../models/user.models';
 import { TreeNode } from 'primeng/api';
-import { TreeWrapperComponent, TreeConfig } from '../shared/tree-wrapper/tree-wrapper.component';
-import { TableWrapperComponent, TableColumn, TableConfig, TableLazyLoadEvent } from '../shared/table-wrapper/table-wrapper.component';
+import { TreeWrapperComponent, TreeConfig } from '../../../shared/tree-wrapper/tree-wrapper.component';
+import { TableWrapperComponent, TableColumn, TableConfig, TableLazyLoadEvent } from '../../../shared/table-wrapper/table-wrapper.component';
 import { BasicTableComponent, BasicTableColumn, BasicTableConfig } from '../shared/basic-table/basic-table.component';
 import { IntermediateTableComponent, IntermediateTableColumn, IntermediateTableConfig } from '../shared/intermediate-table/intermediate-table.component';
 import { MinimalTableComponent, MinimalTableColumn } from '../shared/minimal-table/minimal-table.component';
-import { DynamicFormComponent, FormConfig, FormField } from '../shared/dynamic-form/dynamic-form.component';
+import { DynamicFormComponent, FormConfig, FormField } from '../../../shared/dynamic-form/dynamic-form.component';
 
 @Component({
   selector: 'app-dashboard',

@@ -25,12 +25,13 @@ import {
 } from './api.config';
 import { AuthService } from './auth.service';
 import { NotificationService } from './notification.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = API_CONFIG.BASE_URL;
+  private baseUrl = environment.apiUrl || API_CONFIG.BASE_URL;
   private loadingSubject = new BehaviorSubject<LoadingState>({});
   public loading$ = this.loadingSubject.asObservable();
 
@@ -57,8 +58,8 @@ export class ApiService {
     ).pipe(
       timeout(options.timeout || API_CONFIG.TIMEOUT),
       retry(options.retries || 0),
-      map(response => this.handleSuccess(response)),
-      catchError(error => this.handleError(error, options)),
+      map((response: ApiResponse<T>) => this.handleSuccess(response)),
+      catchError((error: HttpErrorResponse) => this.handleError(error, options)),
       finalize(() => this.setLoading(loadingKey, false))
     );
   }
@@ -82,8 +83,8 @@ export class ApiService {
     ).pipe(
       timeout(options.timeout || API_CONFIG.TIMEOUT),
       retry(options.retries || 0),
-      map(response => this.handleSuccess(response)),
-      catchError(error => this.handleError(error, options)),
+      map((response: ApiResponse<T>) => this.handleSuccess(response)),
+      catchError((error: HttpErrorResponse) => this.handleError(error, options)),
       finalize(() => this.setLoading(loadingKey, false))
     );
   }
@@ -107,8 +108,8 @@ export class ApiService {
     ).pipe(
       timeout(options.timeout || API_CONFIG.TIMEOUT),
       retry(options.retries || 0),
-      map(response => this.handleSuccess(response)),
-      catchError(error => this.handleError(error, options)),
+      map((response: ApiResponse<T>) => this.handleSuccess(response)),
+      catchError((error: HttpErrorResponse) => this.handleError(error, options)),
       finalize(() => this.setLoading(loadingKey, false))
     );
   }
@@ -130,8 +131,8 @@ export class ApiService {
     ).pipe(
       timeout(options.timeout || API_CONFIG.TIMEOUT),
       retry(options.retries || 0),
-      map(response => this.handleSuccess(response)),
-      catchError(error => this.handleError(error, options)),
+      map((response: ApiResponse<T>) => this.handleSuccess(response)),
+      catchError((error: HttpErrorResponse) => this.handleError(error, options)),
       finalize(() => this.setLoading(loadingKey, false))
     );
   }
@@ -155,8 +156,8 @@ export class ApiService {
     ).pipe(
       timeout(options.timeout || API_CONFIG.TIMEOUT),
       retry(options.retries || 0),
-      map(response => this.handleSuccess(response)),
-      catchError(error => this.handleError(error, options)),
+      map((response: ApiResponse<T>) => this.handleSuccess(response)),
+      catchError((error: HttpErrorResponse) => this.handleError(error, options)),
       finalize(() => this.setLoading(loadingKey, false))
     );
   }
@@ -208,8 +209,8 @@ export class ApiService {
       }
     ).pipe(
       timeout(options.timeout || API_CONFIG.TIMEOUT * 3), // Longer timeout for uploads
-      map(response => this.handleSuccess(response)),
-      catchError(error => this.handleError(error, options)),
+      map((response: ApiResponse<T>) => this.handleSuccess(response)),
+      catchError((error: HttpErrorResponse) => this.handleError(error, options)),
       finalize(() => this.setLoading(loadingKey, false))
     );
   }
@@ -276,16 +277,16 @@ export class ApiService {
     return response;
   }
 
-  private handleError(error: HttpErrorResponse, options: ApiRequestOptions): Observable<never> {
+  private handleError<T>(error: HttpErrorResponse, options: ApiRequestOptions): Observable<never> {
     let apiError: ApiError;
     
     if (error.error && typeof error.error === 'object') {
-      // Backend returned an error response
+      // Backend returned an error response (ApiResponse<T> structure)
       apiError = {
         message: error.error.message || API_ERROR_MESSAGES.UNKNOWN_ERROR,
         statusCode: error.status,
         errors: error.error.errors || [],
-        timestamp: error.error.timestamp || new Date().toISOString()
+        timestamp: new Date().toISOString()
       };
     } else {
       // Network or other error

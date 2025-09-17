@@ -3,14 +3,12 @@
  * These models match the backend ApiResponse<T> structure
  */
 
-// Generic API Response wrapper
+// Generic API Response wrapper (matches backend ApiResponse<T> structure)
 export interface ApiResponse<T = any> {
   success: boolean;
   message: string;
   data: T;
   errors: string[];
-  statusCode: number;
-  timestamp: string;
 }
 
 // HTTP Request Options
@@ -19,11 +17,13 @@ export interface ApiRequestOptions {
   showSuccessToast?: boolean;
   suppressGlobalErrorHandling?: boolean;
   params?: any;
-  headers?: { [header: string]: string | string[] };
+  headers?: Record<string, string>;
   isFormData?: boolean;
+  timeout?: number;
+  retries?: number;
 }
 
-// API Error Response
+// API Error Response (for error handling)
 export interface ApiError {
   message: string;
   statusCode: number;

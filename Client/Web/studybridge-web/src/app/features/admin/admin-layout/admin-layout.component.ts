@@ -7,9 +7,9 @@ import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
 import { TooltipModule } from 'primeng/tooltip';
 import { MenuItem } from 'primeng/api';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../../services/auth.service';
 import { AdminService } from '../services/admin.service';
-import { User } from '../../models/user.models';
+import { User } from '../../../models/user.models';
 
 export interface AdminMenuItem {
   id: string;
