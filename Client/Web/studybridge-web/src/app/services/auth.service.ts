@@ -1,25 +1,28 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment.development';
 import { 
-  User, 
+  UserDto, 
   LoginRequest, 
   RegisterRequest, 
   GoogleLoginRequest, 
   ChangePasswordRequest, 
   LoginResponse,
   ApiResponse 
-} from '../models/user.models';
+} from '../models/api.models';
+import { AuthApiService } from './auth-api.service';
+import { NotificationService } from './notification.service';
+import { API_CONFIG } from './api.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private readonly apiUrl = environment.apiUrl;
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  private currentUserSubject = new BehaviorSubject<UserDto | null>(null);
   private isLoadingSubject = new BehaviorSubject<boolean>(false);
 
   public currentUser$ = this.currentUserSubject.asObservable();
@@ -28,7 +31,9 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private authApiService: AuthApiService,
+    private notificationService: NotificationService
   ) {
     this.initializeAuthState();
   }
@@ -47,18 +52,35 @@ export class AuthService {
   }
 
   private createMockUser(): void {
-    const mockUser: User = {
-      id: 'demo-user-123',
+    const mockUser: UserDto = {
+      id: '1',
       email: 'demo@studybridge.com',
+      firstName: 'Demo',
+      lastName: 'User',
       displayName: 'Demo User',
-      roles: ['User'],
       isActive: true,
-      lastLoginAt: new Date()
+      emailConfirmed: true,
+      roles: [{ 
+        id: '1', 
+        name: 'User', 
+        description: 'Standard user role', 
+        isActive: true,
+        systemRole: 1,
+        permissions: [{ 
+          id: '1', 
+          permissionKey: 'dashboard.view', 
+          displayName: 'View Dashboard',
+          description: 'View dashboard', 
+          permissionType: 1, 
+          isSystemPermission: true 
+        }] 
+      }],
+      createdAt: new Date().toISOString()
     };
     
     // Store mock data for demo
-    localStorage.setItem(environment.tokenKey, 'mock-jwt-token-for-demo');
-    localStorage.setItem(environment.userKey, JSON.stringify(mockUser));
+    localStorage.setItem(API_CONFIG.AUTH.TOKEN_KEY, 'mock-jwt-token-for-demo');
+    localStorage.setItem(API_CONFIG.AUTH.USER_KEY, JSON.stringify(mockUser));
     this.currentUserSubject.next(mockUser);
   }
 
@@ -113,7 +135,7 @@ export class AuthService {
     this.isLoadingSubject.next(true);
     
     try {
-      const request: GoogleLoginRequest = { googleToken };
+      const request: GoogleLoginRequest = { idToken: googleToken };
       const response = await this.http.post<ApiResponse<LoginResponse>>(
         `${this.apiUrl}/auth/google`,
         request
@@ -183,17 +205,26 @@ export class AuthService {
     return this.getStoredToken();
   }
 
-  getCurrentUser(): User | null {
+  getCurrentUser(): UserDto | null {
     return this.currentUserSubject.value;
   }
 
-  hasRole(role: string): boolean {
+  hasRole(roleName: string): boolean {
     const user = this.getCurrentUser();
-    return user?.roles?.includes(role) ?? false;
+    return user?.roles?.some(role => role.name === roleName) ?? false;
   }
 
   hasAnyRole(roles: string[]): boolean {
-    return roles.some(role => this.hasRole(role));
+    return roles.some(roleName => this.hasRole(roleName));
+  }
+
+  hasPermission(permissionKey: string): boolean {
+    const user = this.getCurrentUser();
+    if (!user?.roles) return false;
+    
+    return user.roles.some(role => 
+      role.permissions?.some(permission => permission.permissionKey === permissionKey)
+    );
   }
 
   // Role-based navigation helpers
@@ -202,13 +233,13 @@ export class AuthService {
     if (!user) return '/auth/login';
     
     // If user has only 'User' role, redirect to public area
-    if (user.roles.length === 1 && user.roles.includes('User')) {
+    if (user.roles.length === 1 && user.roles[0].name === 'User') {
       return '/public/dashboard';
     }
     
     // If user has admin roles (Admin, SuperAdmin, etc.), redirect to admin area
     const adminRoles = ['Admin', 'SuperAdmin', 'Administrator'];
-    if (user.roles.some(role => adminRoles.includes(role))) {
+    if (user.roles.some(role => adminRoles.includes(role.name))) {
       return '/admin/dashboard';
     }
     
@@ -223,34 +254,29 @@ export class AuthService {
 
   // Private Helper Methods
   private handleAuthSuccess(loginResponse: LoginResponse): void {
-    const user: User = {
-      id: loginResponse.userId,
-      email: loginResponse.email,
-      displayName: loginResponse.displayName,
-      roles: loginResponse.roles,
-      isActive: true,
-      lastLoginAt: new Date()
-    };
+    const user = loginResponse.user;
 
     // Store auth data
-    localStorage.setItem(environment.tokenKey, loginResponse.token);
-    localStorage.setItem(environment.userKey, JSON.stringify(user));
+    localStorage.setItem(API_CONFIG.AUTH.TOKEN_KEY, loginResponse.token);
+    localStorage.setItem(API_CONFIG.AUTH.REFRESH_TOKEN_KEY, loginResponse.refreshToken);
+    localStorage.setItem(API_CONFIG.AUTH.USER_KEY, JSON.stringify(user));
     
     // Update current user - use next() to immediately update the observable
     this.currentUserSubject.next(user);
   }
 
   private clearAuthData(): void {
-    localStorage.removeItem(environment.tokenKey);
-    localStorage.removeItem(environment.userKey);
+    localStorage.removeItem(API_CONFIG.AUTH.TOKEN_KEY);
+    localStorage.removeItem(API_CONFIG.AUTH.REFRESH_TOKEN_KEY);
+    localStorage.removeItem(API_CONFIG.AUTH.USER_KEY);
   }
 
   private getStoredToken(): string | null {
-    return localStorage.getItem(environment.tokenKey);
+    return localStorage.getItem(API_CONFIG.AUTH.TOKEN_KEY);
   }
 
-  private getStoredUser(): User | null {
-    const userJson = localStorage.getItem(environment.userKey);
+  private getStoredUser(): UserDto | null {
+    const userJson = localStorage.getItem(API_CONFIG.AUTH.USER_KEY);
     return userJson ? JSON.parse(userJson) : null;
   }
 
