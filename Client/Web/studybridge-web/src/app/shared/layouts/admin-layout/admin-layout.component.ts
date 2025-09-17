@@ -7,9 +7,9 @@ import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
 import { TooltipModule } from 'primeng/tooltip';
 import { MenuItem } from 'primeng/api';
-import { AuthService } from '../../../services/auth.service';
-import { AdminService } from '../services/admin.service';
-import { User } from '../../../models/user.models';
+import { AuthService } from '../../services/auth.service';
+// import { AdminService } from '../services/admin.service'; // TODO: Create AdminService
+import { UserDto } from '../../models/api.models';
 
 export interface AdminMenuItem {
   id: string;
@@ -96,7 +96,7 @@ export class AdminLayoutComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private adminService: AdminService,
+    // private adminService: AdminService, // TODO: Create AdminService
     private router: Router
   ) {}
 
@@ -127,37 +127,25 @@ export class AdminLayoutComponent implements OnInit {
     await this.loadUserMenusFromApi();
   }
 
-  private async loadAdminUser(user: User): Promise<AdminUser> {
+  private async loadAdminUser(user: UserDto): Promise<AdminUser> {
     // TODO: Replace with actual API call to get user permissions and roles
     // For now, simulate based on user info
-    const roles = user.roles || ['SuperAdmin']; // Default to SuperAdmin for testing
-    const permissions = this.getPermissionsForRoles(roles);
+    const roleNames = user.roles?.map(role => role.name) || ['SuperAdmin']; // Default to SuperAdmin for testing
+    const permissions = this.getPermissionsForRoles(roleNames);
 
     return {
       id: user.id || '',
       email: user.email || '',
       displayName: user.displayName || user.email || '',
-      roles,
+      roles: roleNames,
       permissions
     };
   }
 
   private async loadUserMenusFromApi() {
-    try {
-      const response = await this.adminService.getUserMenus().toPromise();
-      if (response?.success && response.data) {
-        const menuItems = this.convertBackendMenusToAdminMenuItems(response.data);
-        this.menuItems.set(menuItems);
-      } else {
-        console.error('Failed to load user menus:', response?.message);
-        // Fallback to hardcoded menu
-        this.loadFallbackMenu();
-      }
-    } catch (error) {
-      console.error('Error loading user menus:', error);
-      // Fallback to hardcoded menu
-      this.loadFallbackMenu();
-    }
+    // TODO: Implement AdminService calls
+    // For now, load fallback menu
+    this.loadFallbackMenu();
   }
 
   private loadFallbackMenu() {

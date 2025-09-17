@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
-import { ToastService } from '../../services/toast.service';
-import { Toast, ToastType } from '../../models/common.models';
+import { ToastService } from '../services/toast.service';
+import { Toast, ToastType } from '../models/common.models';
 
 @Component({
   selector: 'app-toast-container',

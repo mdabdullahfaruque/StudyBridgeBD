@@ -4,8 +4,8 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 
-import { AuthService } from './services/auth.service';
-import { User } from './models/user.models';
+import { AuthService } from './shared/services/auth.service';
+import { UserDto } from './shared/models/api.models';
 import { ToastContainerComponent } from './shared/toast-container/toast-container.component';
 
 @Component({
@@ -18,7 +18,7 @@ import { ToastContainerComponent } from './shared/toast-container/toast-containe
 export class AppComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   
-  user: User | null = null;
+  user: UserDto | null = null;
   isAuthenticated = false;
 
   constructor(

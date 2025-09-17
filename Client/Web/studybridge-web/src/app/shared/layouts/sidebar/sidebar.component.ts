@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { User } from '../../models/user.models';
+import { UserDto } from '../../models/api.models';
 
 interface MenuItem {
   label: string;
@@ -155,7 +155,7 @@ interface MenuItem {
 })
 export class SidebarComponent {
   @Input() isOpen = false;
-  @Input() user: User | null = null;
+  @Input() user: UserDto | null = null;
   @Output() close = new EventEmitter<void>();
 
   openSubmenus: { [key: string]: boolean } = {};
@@ -255,7 +255,7 @@ export class SidebarComponent {
       return false;
     }
     
-    return item.roles.some(role => this.user?.roles.includes(role));
+    return item.roles.some(role => this.user?.roles?.some(userRole => userRole.name === role));
   }
 
   getUserInitials(displayName: string): string {

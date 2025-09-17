@@ -1,25 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { AuthService } from '../../../services/auth.service';
-import { User } from '../../../models/user.models';
+import { AuthService } from '../../../../shared/services/auth.service';
+import { UserDto } from '../../../../shared/models/api.models';
 import { TreeNode } from 'primeng/api';
-import { TreeWrapperComponent, TreeConfig } from '../../../shared/tree-wrapper/tree-wrapper.component';
-import { TableWrapperComponent, TableColumn, TableConfig, TableLazyLoadEvent } from '../../../shared/table-wrapper/table-wrapper.component';
-import { BasicTableComponent, BasicTableColumn, BasicTableConfig } from '../shared/basic-table/basic-table.component';
-import { IntermediateTableComponent, IntermediateTableColumn, IntermediateTableConfig } from '../shared/intermediate-table/intermediate-table.component';
-import { MinimalTableComponent, MinimalTableColumn } from '../shared/minimal-table/minimal-table.component';
-import { DynamicFormComponent, FormConfig, FormField } from '../../../shared/dynamic-form/dynamic-form.component';
+import { TreeWrapperComponent, TreeConfig } from '../../../../shared/tree-wrapper/tree-wrapper.component';
+import { TableWrapperComponent, TableColumn, TableConfig, TableLazyLoadEvent } from '../../../../shared/table-wrapper/table-wrapper.component';
+import { DynamicFormComponent, FormConfig, FormField } from '../../../../shared/dynamic-form/dynamic-form.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, TreeWrapperComponent, TableWrapperComponent, BasicTableComponent, IntermediateTableComponent, MinimalTableComponent, DynamicFormComponent],
+  imports: [CommonModule, TreeWrapperComponent, TableWrapperComponent, DynamicFormComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit {
-  currentUser: User | null = null;
+  currentUser: UserDto | null = null;
   
   // Tree Configuration
   vocabularyTreeData: TreeNode[] = [];
@@ -132,50 +129,7 @@ export class DashboardComponent implements OnInit {
     caption: 'IELTS Vocabulary Management'
   };
 
-  // Basic Table Configuration
-  basicTableColumns: BasicTableColumn[] = [
-    { field: 'word', header: 'Word', sortable: true, width: '200px' },
-    { field: 'definition', header: 'Definition', sortable: true, width: '300px' },
-    { field: 'category', header: 'Category', sortable: true, width: '150px' },
-    { field: 'difficulty', header: 'Difficulty', sortable: true, width: '120px' }
-  ];
-
-  basicTableConfig: BasicTableConfig = {
-    paginator: true,
-    rows: 5,
-    rowsPerPageOptions: [5, 10],
-    sortable: true,
-    caption: 'Basic Table - Sorting & Pagination Only'
-  };
-
-  // Intermediate Table Configuration
-  intermediateTableColumns: IntermediateTableColumn[] = [
-    { field: 'word', header: 'Word', sortable: true, width: '200px', type: 'text' },
-    { field: 'definition', header: 'Definition', sortable: true, width: '250px', type: 'text' },
-    { field: 'category', header: 'Category', sortable: true, width: '120px', type: 'enum' },
-    { field: 'frequency', header: 'Frequency', sortable: true, width: '100px', type: 'number' },
-    { field: 'mastered', header: 'Mastered', sortable: true, width: '100px', type: 'boolean' }
-  ];
-
-  intermediateTableConfig: IntermediateTableConfig = {
-    paginator: true,
-    rows: 8,
-    rowsPerPageOptions: [5, 8, 15],
-    selectionMode: 'multiple',
-    globalFilter: true,
-    globalFilterFields: ['word', 'definition', 'category'],
-    exportable: true,
-    caption: 'Intermediate Table - With Global Search & Selection'
-  };
-
   selectedIntermediateItems: any[] = [];
-
-  // Minimal Table Configuration
-  minimalTableColumns: MinimalTableColumn[] = [
-    { field: 'word', header: 'Word', width: '30%' },
-    { field: 'definition', header: 'Definition', width: '50%' },
-    { field: 'category', header: 'Category', width: '20%' }
-  ];
 
   // Dynamic Form Configuration
   vocabularyFormConfig: FormConfig = {
@@ -677,7 +631,8 @@ export class DashboardComponent implements OnInit {
     // Handle field-level changes if needed
   }
 
-  onFormValidationChange(isValid: boolean): void {
+  onFormValidationChange(event: any): void {
+    const isValid = typeof event === 'boolean' ? event : event.isValid || false;
     console.log('Form validation status:', isValid);
     // Handle form validation state changes
   }

@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
-import { RoleGuard } from '../../guards/auth.guards';
-import { AdminLayoutComponent } from './admin-layout/admin-layout.component';
-import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
+import { RoleGuard } from '../../core/guards/auth.guards';
+import { AdminLayoutComponent } from '../../shared/layouts/admin-layout/admin-layout.component';
+import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -22,37 +22,37 @@ export const ADMIN_ROUTES: Routes = [
       },
       {
         path: 'users',
-        loadComponent: () => import('../features/admin/components/user-list/user-list.component').then(m => m.UserListComponent),
+        component: AdminDashboardComponent,
         title: 'User Management'
       },
       {
         path: 'roles',
-        loadComponent: () => import('../features/admin/components/role-list/role-list.component').then(m => m.RoleListComponent),
+        component: AdminDashboardComponent,
         title: 'Role Management'
       },
       {
         path: 'permissions',
-        loadComponent: () => import('../features/admin/components/permission-tree/permission-tree.component').then(m => m.PermissionTreeComponent),
+        component: AdminDashboardComponent,
         title: 'Permission Management'
       },
       {
         path: 'management',
-        loadComponent: () => import('../features/admin/components/admin-overview/admin-overview.component').then(m => m.AdminOverviewComponent),
+        component: AdminDashboardComponent,
         title: 'Admin Management'
       },
       {
         path: 'content',
-        component: AdminDashboardComponent, // Temporary placeholder
+        component: AdminDashboardComponent,
         title: 'Content Management'
       },
       {
         path: 'financials',
-        component: AdminDashboardComponent, // Temporary placeholder
+        component: AdminDashboardComponent,
         title: 'Financial Management'
       },
       {
         path: 'system',
-        component: AdminDashboardComponent, // Temporary placeholder
+        component: AdminDashboardComponent,
         title: 'System Management'
       }
     ]

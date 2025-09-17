@@ -2,10 +2,11 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
-import { AuthService } from '../services/auth.service';
-import { ProfileService } from '../services/profile.service';
-import { ToastService } from '../services/toast.service';
-import { User, UserProfile } from '../models/user.models';
+import { AuthService } from '../../../../shared/services/auth.service';
+import { ProfileService } from '../../../../shared/services/profile.service';
+import { ToastService } from '../../../../shared/services/toast.service';
+import { UserDto } from '../../../../shared/models/api.models';
+import { UserProfile } from '../../../../shared/models/user.models';
 
 @Component({
   selector: 'app-profile',
@@ -249,7 +250,7 @@ import { User, UserProfile } from '../models/user.models';
 })
 export class ProfileComponent implements OnInit, OnDestroy {
   profileForm: FormGroup;
-  currentUser: User | null = null;
+  currentUser: UserDto | null = null;
   userProfile: UserProfile | null = null;
   isLoading = false;
   private destroy$ = new Subject<void>();
@@ -389,7 +390,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     if (!this.currentUser?.displayName) return 'U';
     return this.currentUser.displayName
       .split(' ')
-      .map(name => name.charAt(0).toUpperCase())
+      .map((name: string) => name.charAt(0).toUpperCase())
       .join('')
       .substring(0, 2);
   }

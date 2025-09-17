@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { Subject, takeUntil, filter } from 'rxjs';
-import { AuthService } from '../../../services/auth.service';
+import { AuthService } from '../../services/auth.service';
 import { HeaderComponent } from '../header/header.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 
@@ -29,7 +29,6 @@ export interface LayoutConfig {
       <app-header 
         *ngIf="config.showHeader"
         [user]="currentUser" 
-        [layoutType]="config.sidebarType || 'public'"
         (logout)="handleLogout()"
         (toggleSidebar)="toggleSidebar()">
       </app-header>
@@ -41,7 +40,6 @@ export interface LayoutConfig {
           *ngIf="config.showSidebar"
           [isOpen]="sidebarOpen"
           [user]="currentUser"
-          [sidebarType]="config.sidebarType || 'public'"
           (close)="closeSidebar()">
         </app-sidebar>
         

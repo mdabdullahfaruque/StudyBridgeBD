@@ -23,9 +23,9 @@ import {
   buildApiUrl, 
   buildQueryString 
 } from './api.config';
-import { AuthService } from './auth.service';
+import { TokenService } from './token.service';
 import { NotificationService } from './notification.service';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -37,7 +37,7 @@ export class ApiService {
 
   constructor(
     private http: HttpClient,
-    private authService: AuthService,
+    private tokenService: TokenService,
     private notificationService: NotificationService
   ) {}
 
@@ -236,7 +236,7 @@ export class ApiService {
     }
     
     // Add authentication token if available
-    const token = this.authService.getToken();
+    const token = this.tokenService.getToken();
     if (token) {
       headers = headers.set(API_CONFIG.AUTH.TOKEN_HEADER, `${API_CONFIG.AUTH.TOKEN_PREFIX}${token}`);
     }
@@ -312,7 +312,8 @@ export class ApiService {
   private handleSpecificErrors(error: ApiError): void {
     switch (error.statusCode) {
       case API_CONFIG.STATUS_CODES.UNAUTHORIZED:
-        this.authService.logout();
+        this.tokenService.clearTokens();
+        // Note: Navigation to login is handled by the AuthInterceptor
         break;
       case API_CONFIG.STATUS_CODES.FORBIDDEN:
         // Could redirect to access denied page

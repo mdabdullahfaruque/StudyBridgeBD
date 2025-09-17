@@ -5,7 +5,7 @@ import { Subject, takeUntil, filter } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { HeaderComponent } from './header/header.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
-import { ToastContainerComponent } from '../shared/toast-container/toast-container.component';
+import { ToastContainerComponent } from '../toast-container/toast-container.component';
 
 @Component({
   selector: 'app-layout',

@@ -5,7 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { ChartModule } from 'primeng/chart';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { AdminService } from '../services/admin.service';
+// import { AdminService } from '../../services/admin.service';
 
 interface DashboardStats {
   totalUsers: number;
@@ -79,7 +79,7 @@ export class AdminDashboardComponent implements OnInit {
     }
   }));
 
-  constructor(private adminService: AdminService) {}
+  constructor() {} // private adminService: AdminService - will be added when service is ready
 
   async ngOnInit() {
     await this.loadDashboardData();

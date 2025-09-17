@@ -2,20 +2,22 @@ import { Injectable } from '@angular/core';
 import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { AuthService } from '../services/auth.service';
-import { ToastService } from '../services/toast.service';
+import { TokenService } from '../../shared/services/token.service';
+import { ToastService } from '../../shared/services/toast.service';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   
   constructor(
-    private authService: AuthService,
-    private toastService: ToastService
+    private tokenService: TokenService,
+    private toastService: ToastService,
+    private router: Router
   ) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     // Add Authorization header if token exists
-    const token = this.authService.getToken();
+    const token = this.tokenService.getToken();
     if (token) {
       request = request.clone({
         setHeaders: {
@@ -59,7 +61,8 @@ export class AuthInterceptor implements HttpInterceptor {
           break;
         case 401:
           errorMessage = 'Authentication required';
-          this.authService.logout();
+          this.tokenService.clearTokens();
+          this.router.navigate(['/auth/login']);
           break;
         case 403:
           errorMessage = 'You do not have permission to perform this action';

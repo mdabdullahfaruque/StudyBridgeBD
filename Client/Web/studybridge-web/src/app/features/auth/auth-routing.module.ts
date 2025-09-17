@@ -14,12 +14,12 @@ const routes: Routes = [
       },
       {
         path: 'login',
-        loadComponent: () => import('./login/login.component').then(m => m.LoginComponent),
+        loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent),
         title: 'Login - StudyBridge'
       },
       {
         path: 'register', 
-        loadComponent: () => import('./register/register.component').then(m => m.RegisterComponent),
+        loadComponent: () => import('./components/register/register.component').then(m => m.RegisterComponent),
         title: 'Register - StudyBridge'
       }
     ]

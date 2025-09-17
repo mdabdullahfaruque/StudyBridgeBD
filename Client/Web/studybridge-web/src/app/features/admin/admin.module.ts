@@ -13,11 +13,11 @@ import { PanelModule } from 'primeng/panel';
 import { ProgressBarModule } from 'primeng/progressbar';
 
 // Admin Components
-import { AdminLayoutComponent } from './admin-layout/admin-layout.component';
-import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
+// import { AdminLayoutComponent } from './admin-layout/admin-layout.component';
+import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
 
 // Admin Services
-import { AdminService } from './services/admin.service';
+// import { AdminService } from './services/admin.service';
 
 // Admin Routing
 import { AdminRoutingModule } from './admin-routing.module';
@@ -43,7 +43,7 @@ import { AdminRoutingModule } from './admin-routing.module';
     AdminRoutingModule
   ],
   providers: [
-    AdminService
+    // AdminService - will be added when service is created
     // Other admin-specific services
   ],
   exports: [

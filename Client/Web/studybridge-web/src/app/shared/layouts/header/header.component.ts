@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { User } from '../../models/user.models';
+import { UserDto } from '../../models/api.models';
 
 @Component({
   selector: 'app-header',
@@ -127,7 +127,7 @@ import { User } from '../../models/user.models';
   `]
 })
 export class HeaderComponent {
-  @Input() user: User | null = null;
+  @Input() user: UserDto | null = null;
   @Output() logout = new EventEmitter<void>();
   @Output() toggleSidebar = new EventEmitter<void>();
 

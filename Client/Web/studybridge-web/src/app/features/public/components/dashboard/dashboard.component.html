@@ -1,0 +1,77 @@
+<div class="dashboard-container p-6">
+  <div class="welcome-section mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">
+      Welcome back, {{ userFirstName || 'User' }}!
+    </h1>
+    <p class="text-gray-600 mt-2">Continue your IELTS vocabulary journey</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Vocabulary Tree Selection -->
+    <div class="vocabulary-tree-section">
+      <h2 class="text-xl font-semibold mb-4">Select Vocabulary Categories</h2>
+      <app-tree-wrapper
+        [treeData]="vocabularyTreeData"
+        [config]="treeConfig"
+        [selectedNodes]="selectedVocabularyNodes"
+        (selectedNodesChange)="onSelectionChange($event)"
+        (nodeSelect)="onNodeSelect($event)"
+        (nodeUnselect)="onNodeUnselect($event)"
+        (nodeExpand)="onNodeExpand($event)"
+        (nodeCollapse)="onNodeCollapse($event)">
+      </app-tree-wrapper>
+    </div>
+
+    <!-- Add New Vocabulary Form -->
+    <div class="vocabulary-form-section">
+      <h2 class="text-xl font-semibold mb-4">Quick Add Vocabulary</h2>
+      <app-dynamic-form
+        [config]="vocabularyFormConfig"
+        [fields]="vocabularyFormFields"
+        (formSubmit)="onVocabularyFormSubmit($event)"
+        (fieldChange)="onFormFieldChange($event)"
+        (validationChange)="onFormValidationChange($event)">
+      </app-dynamic-form>
+    </div>
+  </div>
+
+  <!-- Vocabulary Table -->
+  <div class="vocabulary-table-section mb-8">
+    <h2 class="text-xl font-semibold mb-4">Your Vocabulary Collection</h2>
+    <app-table-wrapper
+      [data]="vocabularyData"
+      [columns]="tableColumns"
+      [config]="tableConfig"
+      [selectedItems]="selectedVocabulary"
+      (selectedItemsChange)="selectedVocabulary = $event"
+      (onLazyLoad)="onTableLazyLoad($event)"
+      (onSort)="onTableSort($event)"
+      (onFilter)="onTableFilter($event)"
+      (onGlobalFilter)="onTableGlobalFilter($event)"
+      (onRowSelect)="onRowSelect($event)"
+      (onRowUnselect)="onRowUnselect($event)"
+      (onExport)="onTableExport($event)">
+    </app-table-wrapper>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions-section">
+    <h2 class="text-xl font-semibold mb-4">Quick Actions</h2>
+    <div class="flex flex-wrap gap-4">
+      <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+        Start Learning Session
+      </button>
+      <button class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors">
+        Take Quiz
+      </button>
+      <button class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors">
+        Review Flashcards
+      </button>
+      <button 
+        (click)="logout()"
+        class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
+        Logout
+      </button>
+    </div>
+  </div>
+</div>

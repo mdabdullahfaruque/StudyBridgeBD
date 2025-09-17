@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { environment } from '../../environments/environment.development';
+import { environment } from '../../../environments/environment.development';
 import { 
   UserDto, 
   LoginRequest, 
@@ -15,6 +15,7 @@ import {
 } from '../models/api.models';
 import { AuthApiService } from './auth-api.service';
 import { NotificationService } from './notification.service';
+import { TokenService } from './token.service';
 import { API_CONFIG } from './api.config';
 
 @Injectable({
@@ -33,16 +34,17 @@ export class AuthService {
     private http: HttpClient,
     private router: Router,
     private authApiService: AuthApiService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private tokenService: TokenService
   ) {
     this.initializeAuthState();
   }
 
   private initializeAuthState(): void {
-    const token = this.getStoredToken();
+    const token = this.tokenService.getToken();
     const user = this.getStoredUser();
     
-    if (token && user && !this.isTokenExpired(token)) {
+    if (token && user && !this.tokenService.isTokenExpired()) {
       this.currentUserSubject.next(user);
     } else {
       this.clearAuthData();
@@ -79,7 +81,7 @@ export class AuthService {
     };
     
     // Store mock data for demo
-    localStorage.setItem(API_CONFIG.AUTH.TOKEN_KEY, 'mock-jwt-token-for-demo');
+    this.tokenService.setToken('mock-jwt-token-for-demo');
     localStorage.setItem(API_CONFIG.AUTH.USER_KEY, JSON.stringify(mockUser));
     this.currentUserSubject.next(mockUser);
   }
@@ -202,7 +204,7 @@ export class AuthService {
 
   // Token Management
   getToken(): string | null {
-    return this.getStoredToken();
+    return this.tokenService.getToken();
   }
 
   getCurrentUser(): UserDto | null {
@@ -257,8 +259,8 @@ export class AuthService {
     const user = loginResponse.user;
 
     // Store auth data
-    localStorage.setItem(API_CONFIG.AUTH.TOKEN_KEY, loginResponse.token);
-    localStorage.setItem(API_CONFIG.AUTH.REFRESH_TOKEN_KEY, loginResponse.refreshToken);
+    this.tokenService.setToken(loginResponse.token);
+    this.tokenService.setRefreshToken(loginResponse.refreshToken);
     localStorage.setItem(API_CONFIG.AUTH.USER_KEY, JSON.stringify(user));
     
     // Update current user - use next() to immediately update the observable
@@ -266,13 +268,8 @@ export class AuthService {
   }
 
   private clearAuthData(): void {
-    localStorage.removeItem(API_CONFIG.AUTH.TOKEN_KEY);
-    localStorage.removeItem(API_CONFIG.AUTH.REFRESH_TOKEN_KEY);
+    this.tokenService.clearTokens();
     localStorage.removeItem(API_CONFIG.AUTH.USER_KEY);
-  }
-
-  private getStoredToken(): string | null {
-    return localStorage.getItem(API_CONFIG.AUTH.TOKEN_KEY);
   }
 
   private getStoredUser(): UserDto | null {
@@ -280,15 +277,8 @@ export class AuthService {
     return userJson ? JSON.parse(userJson) : null;
   }
 
-  private isTokenExpired(token: string): boolean {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const expirationTime = payload.exp * 1000; // Convert to milliseconds
-      return Date.now() >= expirationTime;
-    } catch {
-      return true; // If we can't parse the token, consider it expired
-    }
-  }
+  // Token expiration is now handled by TokenService
+  // private isTokenExpired method removed - use tokenService.isTokenExpired() instead
 
   private handleError(message: string, error: any): void {
     if (environment.enableLogging) {
