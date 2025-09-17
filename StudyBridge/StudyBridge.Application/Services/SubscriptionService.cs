@@ -18,7 +18,7 @@ public class SubscriptionService : ISubscriptionService
         _logger = logger;
     }
 
-    public async Task<bool> CreateSubscriptionAsync(string userId, SubscriptionType subscriptionType, decimal amount, DateTime endDate)
+    public async Task<bool> CreateSubscriptionAsync(Guid userId, SubscriptionType subscriptionType, decimal amount, DateTime endDate)
     {
         try
         {
@@ -51,7 +51,7 @@ public class SubscriptionService : ISubscriptionService
         }
     }
 
-    public async Task<UserSubscription?> GetActiveSubscriptionAsync(string userId)
+    public async Task<UserSubscription?> GetActiveSubscriptionAsync(Guid userId)
     {
         try
         {
@@ -74,7 +74,7 @@ public class SubscriptionService : ISubscriptionService
         }
     }
 
-    public async Task<IEnumerable<UserSubscription>> GetUserSubscriptionHistoryAsync(string userId)
+    public async Task<IEnumerable<UserSubscription>> GetUserSubscriptionHistoryAsync(Guid userId)
     {
         try
         {
@@ -87,7 +87,7 @@ public class SubscriptionService : ISubscriptionService
         }
     }
 
-    public async Task<bool> IsSubscriptionActiveAsync(string userId, SubscriptionType? requiredType = null)
+    public async Task<bool> IsSubscriptionActiveAsync(Guid userId, SubscriptionType? requiredType = null)
     {
         try
         {
@@ -112,7 +112,7 @@ public class SubscriptionService : ISubscriptionService
         }
     }
 
-    public async Task<bool> CancelSubscriptionAsync(string userId, string reason)
+    public async Task<bool> CancelSubscriptionAsync(Guid userId, string reason)
     {
         try
         {
@@ -136,7 +136,7 @@ public class SubscriptionService : ISubscriptionService
         }
     }
 
-    public async Task<bool> RenewSubscriptionAsync(string userId, DateTime newEndDate, decimal amount)
+    public async Task<bool> RenewSubscriptionAsync(Guid userId, DateTime newEndDate, decimal amount)
     {
         try
         {

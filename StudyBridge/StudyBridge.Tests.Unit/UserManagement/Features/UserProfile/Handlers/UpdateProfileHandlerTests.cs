@@ -35,7 +35,7 @@ public class UpdateProfileHandlerTests
         var user = TestDataBuilder.Users.ValidUser();
         var command = new UpdateProfile.Command
         {
-            UserId = user.Id.ToString(),
+            UserId = user.Id,
             DisplayName = "Updated Display Name",
             FirstName = "Updated First",
             LastName = "Updated Last",
@@ -72,7 +72,7 @@ public class UpdateProfileHandlerTests
         // Arrange
         var command = new UpdateProfile.Command
         {
-            UserId = Guid.NewGuid().ToString(),
+            UserId = Guid.NewGuid(),
             DisplayName = "Updated Display Name",
             FirstName = "Updated First",
             LastName = "Updated Last"
@@ -91,21 +91,24 @@ public class UpdateProfileHandlerTests
     }
 
     [Fact]
-    public async Task HandleAsync_WithInvalidGuidFormat_ShouldThrowArgumentException()
+    public async Task HandleAsync_WithNonExistentUserId_ShouldThrowNotFoundException()
     {
         // Arrange
         var command = new UpdateProfile.Command
         {
-            UserId = "invalid-guid-format",
+            UserId = Guid.NewGuid(),
             DisplayName = "Updated Display Name",
             FirstName = "Updated First",
             LastName = "Updated Last"
         };
 
+        var users = new List<AppUser>().AsQueryable().BuildMockDbSet();
+        _mockContext.Setup(x => x.Users).Returns(users.Object);
+
         // Act & Assert
         var act = async () => await _sut.HandleAsync(command, CancellationToken.None);
         
-        await act.Should().ThrowAsync<ArgumentException>();
+        await act.Should().ThrowAsync<NotFoundException>();
     }
 
     [Fact]
@@ -115,7 +118,7 @@ public class UpdateProfileHandlerTests
         var user = TestDataBuilder.Users.InactiveUser();
         var command = new UpdateProfile.Command
         {
-            UserId = user.Id.ToString(),
+            UserId = user.Id,
             DisplayName = "Updated Display Name",
             FirstName = "Updated First",
             LastName = "Updated Last"
@@ -138,7 +141,7 @@ public class UpdateProfileHandlerTests
         var user = TestDataBuilder.Users.ValidUser();
         var command = new UpdateProfile.Command
         {
-            UserId = user.Id.ToString(),
+            UserId = user.Id,
             DisplayName = "Updated Display Name",
             FirstName = "Updated First",
             LastName = "Updated Last",
@@ -166,7 +169,7 @@ public class UpdateProfileHandlerTests
         var user = TestDataBuilder.Users.ValidUser();
         var command = new UpdateProfile.Command
         {
-            UserId = user.Id.ToString(),
+            UserId = user.Id,
             DisplayName = "Updated Display Name",
             FirstName = "Updated First",
             LastName = "Updated Last"
@@ -192,7 +195,7 @@ public class UpdateProfileHandlerTests
         var user = TestDataBuilder.Users.ValidUser();
         var command = new UpdateProfile.Command
         {
-            UserId = user.Id.ToString(),
+            UserId = user.Id,
             DisplayName = "",
             FirstName = "",
             LastName = "",
@@ -229,7 +232,7 @@ public class UpdateProfileHandlerTests
         
         var command = new UpdateProfile.Command
         {
-            UserId = user.Id.ToString(),
+            UserId = user.Id,
             DisplayName = "New Display Name",
             FirstName = "New First",
             LastName = "New Last",
@@ -272,7 +275,7 @@ public class UpdateProfileHandlerTests
         
         var command = new UpdateProfile.Command
         {
-            UserId = user.Id.ToString(),
+            UserId = user.Id,
             DisplayName = longDisplayName,
             FirstName = longFirstName,
             LastName = longLastName,

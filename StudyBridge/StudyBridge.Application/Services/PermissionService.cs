@@ -40,7 +40,7 @@ public class PermissionService : IPermissionService
         _logger = logger;
     }
 
-    public async Task<bool> HasPermissionAsync(string userId, Permission permission)
+    public async Task<bool> HasPermissionAsync(Guid userId, Permission permission)
     {
         try
         {
@@ -54,7 +54,7 @@ public class PermissionService : IPermissionService
         }
     }
 
-    public async Task<bool> HasPermissionAsync(string userId, string permissionKey)
+    public async Task<bool> HasPermissionAsync(Guid userId, string permissionKey)
     {
         try
         {
@@ -74,7 +74,7 @@ public class PermissionService : IPermissionService
         }
     }
 
-    public async Task<IEnumerable<Permission>> GetUserPermissionsAsync(string userId)
+    public async Task<IEnumerable<Permission>> GetUserPermissionsAsync(Guid userId)
     {
         try
         {
@@ -87,7 +87,7 @@ public class PermissionService : IPermissionService
         }
     }
 
-    public async Task<IEnumerable<SystemRole>> GetUserRolesAsync(string userId)
+    public async Task<IEnumerable<SystemRole>> GetUserRolesAsync(Guid userId)
     {
         try
         {
@@ -113,7 +113,7 @@ public class PermissionService : IPermissionService
         }
     }
 
-    public async Task<bool> AssignRoleToUserAsync(string userId, SystemRole role, string assignedBy)
+    public async Task<bool> AssignRoleToUserAsync(Guid userId, SystemRole role, string assignedBy)
     {
         try
         {
@@ -157,7 +157,7 @@ public class PermissionService : IPermissionService
         }
     }
 
-    public async Task<bool> RemoveRoleFromUserAsync(string userId, SystemRole role)
+    public async Task<bool> RemoveRoleFromUserAsync(Guid userId, SystemRole role)
     {
         try
         {
@@ -260,7 +260,7 @@ public class PermissionService : IPermissionService
         }
     }
 
-    public async Task<IEnumerable<Menu>> GetUserMenusAsync(string userId)
+    public async Task<IEnumerable<Menu>> GetUserMenusAsync(Guid userId)
     {
         try
         {

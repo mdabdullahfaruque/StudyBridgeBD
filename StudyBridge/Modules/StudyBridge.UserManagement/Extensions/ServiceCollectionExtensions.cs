@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using StudyBridge.Application.Contracts.Persistence;
 using StudyBridge.UserManagement.Application.Contracts;
 using StudyBridge.UserManagement.Application.Services;
+using StudyBridge.UserManagement.Features.Admin;
 using StudyBridge.UserManagement.Features.Authentication;
 using StudyBridge.UserManagement.Features.UserProfile;
 using StudyBridge.Shared.CQRS;
@@ -35,6 +36,16 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IQueryHandler<GetProfile.Query, GetProfile.Response>, GetProfile.Handler>();
         services.AddScoped<ICommandHandler<UpdateProfile.Command, UpdateProfile.Response>, UpdateProfile.Handler>();
         services.AddScoped<UpdateProfile.Validator>();
+
+        // Register Admin Features - Query and Command Handlers
+        services.AddScoped<IQueryHandler<GetUsers.Query, GetUsers.Response>, GetUsers.Handler>();
+        services.AddScoped<GetUsers.Validator>();
+        services.AddScoped<IQueryHandler<GetUserById.Query, GetUserById.Response>, GetUserById.Handler>();
+        services.AddScoped<GetUserById.Validator>();
+        services.AddScoped<ICommandHandler<CreateUser.Command, CreateUser.Response>, CreateUser.Handler>();
+        services.AddScoped<CreateUser.Validator>();
+        services.AddScoped<IQueryHandler<GetRoles.Query, GetRoles.Response>, GetRoles.Handler>();
+        services.AddScoped<IQueryHandler<GetPermissions.Query, GetPermissions.Response>, GetPermissions.Handler>();
 
         // Register Application Services
         services.AddScoped<IAuthenticationService, AuthenticationService>();

@@ -45,10 +45,10 @@ public class GoogleLoginHandlerTests
         var users = new List<AppUser> { existingUser }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
 
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(existingUser.Id.ToString()))
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(existingUser.Id))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
 
-        _mockJwtTokenService.Setup(x => x.GenerateToken(existingUser.Id.ToString(), existingUser.Email, It.IsAny<List<string>>()))
+        _mockJwtTokenService.Setup(x => x.GenerateToken(existingUser.Id, existingUser.Email, It.IsAny<List<string>>()))
             .Returns("jwt_token_123");
 
         _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
@@ -81,13 +81,13 @@ public class GoogleLoginHandlerTests
         var users = new List<AppUser>().AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
 
-        _mockPermissionService.Setup(x => x.AssignRoleToUserAsync(It.IsAny<string>(), SystemRole.User, "Google OAuth"))
+        _mockPermissionService.Setup(x => x.AssignRoleToUserAsync(It.IsAny<Guid>(), SystemRole.User, "Google OAuth"))
             .ReturnsAsync(true);
 
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<string>()))
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<Guid>()))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
 
-        _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<string>(), command.Email, It.IsAny<List<string>>()))
+        _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<Guid>(), command.Email, It.IsAny<List<string>>()))
             .Returns("jwt_token_456");
 
         AppUser? capturedUser = null;
@@ -119,7 +119,7 @@ public class GoogleLoginHandlerTests
         capturedUser.IsActive.Should().BeTrue();
         capturedUser.LoginProvider.Should().Be(StudyBridge.Domain.Enums.LoginProvider.Google);
 
-        _mockPermissionService.Verify(x => x.AssignRoleToUserAsync(It.IsAny<string>(), SystemRole.User, "Google OAuth"), Times.Once);
+        _mockPermissionService.Verify(x => x.AssignRoleToUserAsync(It.IsAny<Guid>(), SystemRole.User, "Google OAuth"), Times.Once);
         _mockContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once); // Only once for user creation
     }
 
@@ -159,10 +159,10 @@ public class GoogleLoginHandlerTests
         var users = new List<AppUser> { existingUser }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
 
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<string>()))
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<Guid>()))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
 
-        _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()))
+        _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<List<string>>()))
             .Returns("token");
 
         _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
@@ -191,13 +191,13 @@ public class GoogleLoginHandlerTests
         var users = new List<AppUser>().AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
 
-        _mockPermissionService.Setup(x => x.AssignRoleToUserAsync(It.IsAny<string>(), SystemRole.User, "Google OAuth"))
+        _mockPermissionService.Setup(x => x.AssignRoleToUserAsync(It.IsAny<Guid>(), SystemRole.User, "Google OAuth"))
             .ReturnsAsync(true);
 
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<string>()))
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<Guid>()))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
 
-        _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()))
+        _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<List<string>>()))
             .Returns("token");
 
         AppUser? capturedUser = null;
@@ -229,10 +229,10 @@ public class GoogleLoginHandlerTests
         var users = new List<AppUser> { existingUser }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
 
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(existingUser.Id.ToString()))
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(existingUser.Id))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User, SystemRole.Admin });
 
-        _mockJwtTokenService.Setup(x => x.GenerateToken(existingUser.Id.ToString(), existingUser.Email, It.IsAny<List<string>>()))
+        _mockJwtTokenService.Setup(x => x.GenerateToken(existingUser.Id, existingUser.Email, It.IsAny<List<string>>()))
             .Returns("token");
 
         _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))

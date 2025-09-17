@@ -28,7 +28,7 @@ public class SubscriptionServiceTests
     public async Task CreateSubscriptionAsync_WhenValid_ShouldReturnTrue()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const SubscriptionType subscriptionType = SubscriptionType.Premium;
         const decimal amount = 99.99m;
         var endDate = DateTime.UtcNow.AddDays(30);
@@ -55,7 +55,7 @@ public class SubscriptionServiceTests
     public async Task CreateSubscriptionAsync_WhenExistingActiveSubscription_ShouldDeactivateOldAndCreateNew()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const SubscriptionType subscriptionType = SubscriptionType.Premium;
         const decimal amount = 99.99m;
         var endDate = DateTime.UtcNow.AddDays(30);
@@ -81,7 +81,7 @@ public class SubscriptionServiceTests
     public async Task GetActiveSubscriptionAsync_WhenSubscriptionExists_ShouldReturnSubscription()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         var activeSubscription = TestDataBuilder.Subscriptions.ActivePremium(userId);
 
         _mockSubscriptionRepository.Setup(x => x.GetActiveSubscriptionAsync(userId))
@@ -101,7 +101,7 @@ public class SubscriptionServiceTests
     public async Task GetActiveSubscriptionAsync_WhenSubscriptionExpired_ShouldReturnNull()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         var expiredSubscription = TestDataBuilder.Subscriptions.ExpiredBasic(userId);
         expiredSubscription.IsActive = true; // Simulate DB state before expiry check
 
@@ -120,7 +120,7 @@ public class SubscriptionServiceTests
     public async Task IsSubscriptionActiveAsync_WhenUserHasActiveSubscription_ShouldReturnTrue()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         var activeSubscription = TestDataBuilder.Subscriptions.ActivePremium(userId);
 
         _mockSubscriptionRepository.Setup(x => x.GetActiveSubscriptionAsync(userId))
@@ -137,7 +137,7 @@ public class SubscriptionServiceTests
     public async Task IsSubscriptionActiveAsync_WithSpecificType_WhenUserHasMatchingSubscription_ShouldReturnTrue()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         var activeSubscription = TestDataBuilder.Subscriptions.ActivePremium(userId);
 
         _mockSubscriptionRepository.Setup(x => x.GetActiveSubscriptionAsync(userId))
@@ -154,7 +154,7 @@ public class SubscriptionServiceTests
     public async Task CancelSubscriptionAsync_WhenSubscriptionExists_ShouldReturnTrue()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const string reason = "User requested cancellation";
         var activeSubscription = TestDataBuilder.Subscriptions.ActivePremium(userId);
 
@@ -174,7 +174,7 @@ public class SubscriptionServiceTests
     public async Task RenewSubscriptionAsync_WhenSubscriptionExists_ShouldReturnTrue()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const decimal renewalAmount = 99.99m;
         var newEndDate = DateTime.UtcNow.AddDays(60);
         var activeSubscription = TestDataBuilder.Subscriptions.ActivePremium(userId);
@@ -195,7 +195,7 @@ public class SubscriptionServiceTests
     public async Task GetActiveSubscriptionAsync_WhenNoSubscription_ShouldReturnNull()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
 
         _mockSubscriptionRepository.Setup(x => x.GetActiveSubscriptionAsync(userId))
             .ReturnsAsync((UserSubscription?)null);
@@ -211,7 +211,7 @@ public class SubscriptionServiceTests
     public async Task GetActiveSubscriptionAsync_WhenExceptionOccurs_ShouldReturnNull()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
 
         _mockSubscriptionRepository.Setup(x => x.GetActiveSubscriptionAsync(userId))
             .ThrowsAsync(new Exception("Database error"));
@@ -227,7 +227,7 @@ public class SubscriptionServiceTests
     public async Task GetUserSubscriptionHistoryAsync_WhenSubscriptionsExist_ShouldReturnHistory()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         var subscriptions = new List<UserSubscription>
         {
             TestDataBuilder.Subscriptions.ActivePremium(userId),
@@ -250,7 +250,7 @@ public class SubscriptionServiceTests
     public async Task GetUserSubscriptionHistoryAsync_WhenExceptionOccurs_ShouldReturnEmptyCollection()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
 
         _mockSubscriptionRepository.Setup(x => x.GetUserSubscriptionsAsync(userId))
             .ThrowsAsync(new Exception("Database error"));
@@ -267,7 +267,7 @@ public class SubscriptionServiceTests
     public async Task CreateSubscriptionAsync_WhenExceptionOccurs_ShouldReturnFalse()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const SubscriptionType subscriptionType = SubscriptionType.Premium;
         const decimal amount = 99.99m;
         var endDate = DateTime.UtcNow.AddDays(30);
@@ -286,7 +286,7 @@ public class SubscriptionServiceTests
     public async Task IsSubscriptionActiveAsync_WhenNoSubscription_ShouldReturnFalse()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
 
         _mockSubscriptionRepository.Setup(x => x.GetActiveSubscriptionAsync(userId))
             .ReturnsAsync((UserSubscription?)null);
@@ -302,7 +302,7 @@ public class SubscriptionServiceTests
     public async Task IsSubscriptionActiveAsync_WithSpecificType_WhenUserHasDifferentSubscription_ShouldReturnFalse()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         var basicSubscription = TestDataBuilder.Subscriptions.ActivePremium(userId);
         basicSubscription.SubscriptionType = SubscriptionType.Basic;
 
@@ -320,7 +320,7 @@ public class SubscriptionServiceTests
     public async Task CancelSubscriptionAsync_WhenNoActiveSubscription_ShouldReturnFalse()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const string reason = "User requested cancellation";
 
         _mockSubscriptionRepository.Setup(x => x.GetActiveSubscriptionAsync(userId))
@@ -338,7 +338,7 @@ public class SubscriptionServiceTests
     public async Task CancelSubscriptionAsync_WhenExceptionOccurs_ShouldReturnFalse()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const string reason = "User requested cancellation";
 
         _mockSubscriptionRepository.Setup(x => x.GetActiveSubscriptionAsync(userId))
@@ -355,7 +355,7 @@ public class SubscriptionServiceTests
     public async Task RenewSubscriptionAsync_WhenNoActiveSubscription_ShouldReturnFalse()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const decimal renewalAmount = 99.99m;
         var newEndDate = DateTime.UtcNow.AddDays(60);
 
@@ -374,7 +374,7 @@ public class SubscriptionServiceTests
     public async Task RenewSubscriptionAsync_WhenExceptionOccurs_ShouldReturnFalse()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const decimal renewalAmount = 99.99m;
         var newEndDate = DateTime.UtcNow.AddDays(60);
 

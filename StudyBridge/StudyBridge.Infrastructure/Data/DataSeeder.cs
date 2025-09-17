@@ -445,7 +445,7 @@ public class DataSeederService
                 var userRole = new UserRole
                 {
                     Id = Guid.NewGuid(),
-                    UserId = adminUser.Id.ToString(),
+                    UserId = adminUser.Id,
                     RoleId = superAdminRole.Id,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
@@ -495,7 +495,7 @@ public class DataSeederService
                 var testUserRole = new UserRole
                 {
                     Id = Guid.NewGuid(),
-                    UserId = testUser.Id.ToString(),
+                    UserId = testUser.Id,
                     RoleId = userRole.Id,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow

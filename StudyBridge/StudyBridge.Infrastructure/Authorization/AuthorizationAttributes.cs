@@ -28,8 +28,8 @@ public class RequirePermissionAttribute : Attribute, IAsyncAuthorizationFilter
             return;
         }
 
-        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userId))
+        var userIdString = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
         {
             context.Result = new UnauthorizedResult();
             return;
@@ -67,8 +67,8 @@ public class RequireRoleAttribute : Attribute, IAsyncAuthorizationFilter
             return;
         }
 
-        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userId))
+        var userIdString = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
         {
             context.Result = new UnauthorizedResult();
             return;
@@ -116,8 +116,8 @@ public class RequireSubscriptionAttribute : Attribute, IAsyncAuthorizationFilter
             return;
         }
 
-        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userId))
+        var userIdString = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
         {
             context.Result = new UnauthorizedResult();
             return;

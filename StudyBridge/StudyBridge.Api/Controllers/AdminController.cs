@@ -6,6 +6,8 @@ using StudyBridge.Domain.Entities;
 using StudyBridge.Domain.Enums;
 using StudyBridge.Infrastructure.Authorization;
 using StudyBridge.Shared.Common;
+using StudyBridge.Shared.CQRS;
+using StudyBridge.UserManagement.Features.Admin;
 using System.Security.Claims;
 
 namespace StudyBridge.Api.Controllers;
@@ -19,6 +21,11 @@ public class AdminController : ControllerBase
     private readonly IMenuRepository _menuRepository;
     private readonly IPermissionRepository _permissionRepository;
     private readonly IRoleRepository _roleRepository;
+    private readonly IQueryHandler<GetUsers.Query, GetUsers.Response> _getUsersHandler;
+    private readonly IQueryHandler<GetUserById.Query, GetUserById.Response> _getUserByIdHandler;
+    private readonly ICommandHandler<CreateUser.Command, CreateUser.Response> _createUserHandler;
+    private readonly IQueryHandler<GetRoles.Query, GetRoles.Response> _getRolesHandler;
+    private readonly IQueryHandler<GetPermissions.Query, GetPermissions.Response> _getPermissionsHandler;
     private readonly ILogger<AdminController> _logger;
 
     public AdminController(
@@ -27,6 +34,11 @@ public class AdminController : ControllerBase
         IMenuRepository menuRepository,
         IPermissionRepository permissionRepository,
         IRoleRepository roleRepository,
+        IQueryHandler<GetUsers.Query, GetUsers.Response> getUsersHandler,
+        IQueryHandler<GetUserById.Query, GetUserById.Response> getUserByIdHandler,
+        ICommandHandler<CreateUser.Command, CreateUser.Response> createUserHandler,
+        IQueryHandler<GetRoles.Query, GetRoles.Response> getRolesHandler,
+        IQueryHandler<GetPermissions.Query, GetPermissions.Response> getPermissionsHandler,
         ILogger<AdminController> logger)
     {
         _permissionService = permissionService;
@@ -34,31 +46,65 @@ public class AdminController : ControllerBase
         _menuRepository = menuRepository;
         _permissionRepository = permissionRepository;
         _roleRepository = roleRepository;
+        _getUsersHandler = getUsersHandler;
+        _getUserByIdHandler = getUserByIdHandler;
+        _createUserHandler = createUserHandler;
+        _getRolesHandler = getRolesHandler;
+        _getPermissionsHandler = getPermissionsHandler;
         _logger = logger;
     }
 
     [HttpGet("users")]
     [RequirePermission("users.view")]
-    public IActionResult GetUsers()
+    public async Task<IActionResult> GetUsers([FromQuery] GetUsers.Query query)
     {
-        _logger.LogInformation("Admin viewing users list");
-        return Ok(new { message = "Users list retrieved successfully" });
+        _logger.LogInformation("Admin viewing users list - Page: {PageNumber}, Size: {PageSize}", query.PageNumber, query.PageSize);
+        
+        var response = await _getUsersHandler.HandleAsync(query);
+        return Ok(ApiResponse<GetUsers.Response>.SuccessResult(response, "Users retrieved successfully"));
+    }
+
+    [HttpGet("users/{userId}")]
+    [RequirePermission("users.view")]
+    public async Task<IActionResult> GetUserById(Guid userId)
+    {
+        _logger.LogInformation("Admin viewing user details: {UserId}", userId);
+        
+        var query = new GetUserById.Query { UserId = userId };
+        var response = await _getUserByIdHandler.HandleAsync(query);
+        return Ok(ApiResponse<GetUserById.Response>.SuccessResult(response, "User details retrieved successfully"));
     }
 
     [HttpPost("users")]
-    // [RequirePermission(SystemPermission.CreateUsers)] // TODO: Update after RBAC implementation
-    public IActionResult CreateUser([FromBody] CreateUserRequest request)
+    [RequirePermission("users.create")]
+    public async Task<IActionResult> CreateUser([FromBody] CreateUser.Command command)
     {
-        _logger.LogInformation("Admin creating new user: {Email}", request.Email);
-        return Ok(new { message = "User created successfully" });
+        _logger.LogInformation("Admin creating new user: {Email}", command.Email);
+        
+        var response = await _createUserHandler.HandleAsync(command);
+        return Ok(ApiResponse<CreateUser.Response>.SuccessResult(response, "User created successfully"));
     }
 
-    [HttpDelete("users/{userId}")]
-    // [RequirePermission(SystemPermission.DeleteUsers)] // TODO: Update after RBAC implementation
-    public IActionResult DeleteUser(string userId)
+    [HttpGet("roles")]
+    [RequirePermission("roles.view")]
+    public async Task<IActionResult> GetRoles()
     {
-        _logger.LogWarning("Admin deleting user: {UserId}", userId);
-        return Ok(new { message = "User deleted successfully" });
+        _logger.LogInformation("Admin viewing roles list");
+        
+        var query = new GetRoles.Query();
+        var response = await _getRolesHandler.HandleAsync(query);
+        return Ok(ApiResponse<GetRoles.Response>.SuccessResult(response, "Roles retrieved successfully"));
+    }
+
+    [HttpGet("permissions")]
+    [RequirePermission("permissions.view")]
+    public async Task<IActionResult> GetPermissions()
+    {
+        _logger.LogInformation("Admin viewing permissions tree");
+        
+        var query = new GetPermissions.Query();
+        var response = await _getPermissionsHandler.HandleAsync(query);
+        return Ok(ApiResponse<GetPermissions.Response>.SuccessResult(response, "Permissions retrieved successfully"));
     }
 
     [HttpGet("financials")]
@@ -73,14 +119,14 @@ public class AdminController : ControllerBase
     // [RequirePermission(SystemPermission.ManageUserRoles)] // TODO: Update after RBAC implementation
     public async Task<IActionResult> AssignRole([FromBody] AssignRoleRequest request)
     {
-        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(currentUserId))
+        var currentUserIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(currentUserIdString) || !Guid.TryParse(currentUserIdString, out var currentUserId))
             return Unauthorized();
 
         var success = await _permissionService.AssignRoleToUserAsync(
             request.UserId, 
             request.Role, 
-            currentUserId);
+            currentUserIdString);
 
         if (success)
         {
@@ -300,5 +346,5 @@ public class AdminController : ControllerBase
 }
 
 public record CreateUserRequest(string Email, string DisplayName);
-public record AssignRoleRequest(string UserId, SystemRole Role);
-public record CreateSubscriptionRequest(string UserId, SubscriptionType SubscriptionType, decimal Amount, DateTime EndDate);
+public record AssignRoleRequest(Guid UserId, SystemRole Role);
+public record CreateSubscriptionRequest(Guid UserId, SubscriptionType SubscriptionType, decimal Amount, DateTime EndDate);

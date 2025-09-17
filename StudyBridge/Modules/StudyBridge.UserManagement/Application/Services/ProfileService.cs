@@ -19,7 +19,12 @@ public class ProfileService : IProfileService
     {
         try
         {
-            var query = new GetProfile.Query { UserId = userId };
+            if (!Guid.TryParse(userId, out var userGuid))
+            {
+                return ServiceResult<GetProfile.Response>.Failure("Invalid user ID format", 400);
+            }
+
+            var query = new GetProfile.Query { UserId = userGuid };
             var result = await _dispatcher.QueryAsync(query, cancellationToken);
             
             return ServiceResult<GetProfile.Response>.Success(result, "Profile retrieved successfully");
@@ -50,9 +55,14 @@ public class ProfileService : IProfileService
     {
         try
         {
+            if (!Guid.TryParse(userId, out var userGuid))
+            {
+                return ServiceResult<UpdateProfile.Response>.Failure("Invalid user ID format", 400);
+            }
+
             var command = new UpdateProfile.Command 
             {
-                UserId = userId,
+                UserId = userGuid,
                 DisplayName = request.DisplayName,
                 FirstName = request.FirstName,
                 LastName = request.LastName,

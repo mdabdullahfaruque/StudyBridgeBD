@@ -18,7 +18,7 @@ public class GetProfileValidatorTests
         // Arrange
         var query = new GetProfile.Query
         {
-            UserId = Guid.NewGuid().ToString()
+            UserId = Guid.NewGuid()
         };
 
         // Act
@@ -29,19 +29,14 @@ public class GetProfileValidatorTests
         result.Errors.Should().BeEmpty();
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    [InlineData(null)]
-    public void Validate_WithEmptyOrNullUserId_ShouldBeInvalid(string? userId)
+    [Fact]
+    public void Validate_WithEmptyUserId_ShouldBeInvalid()
     {
         // Arrange
         var query = new GetProfile.Query
         {
-            UserId = userId!
-        };
-
-        // Act
+            UserId = Guid.Empty
+        };        // Act
         var result = _sut.Validate(query);
 
         // Assert
@@ -51,12 +46,12 @@ public class GetProfileValidatorTests
     }
 
     [Fact]
-    public void Validate_WithValidGuidString_ShouldBeValid()
+    public void Validate_WithValidGuid_ShouldBeValid()
     {
         // Arrange
         var query = new GetProfile.Query
         {
-            UserId = "12345678-1234-1234-1234-123456789012"
+            UserId = new Guid("12345678-1234-1234-1234-123456789012")
         };
 
         // Act

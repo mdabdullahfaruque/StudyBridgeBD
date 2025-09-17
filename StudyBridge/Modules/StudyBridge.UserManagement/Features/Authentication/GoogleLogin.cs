@@ -109,7 +109,7 @@ public static class GoogleLogin
 
                     // Assign default User role
                     await _permissionService.AssignRoleToUserAsync(
-                        user.Id.ToString(), 
+                        user.Id, 
                         SystemRole.User, 
                         "Google OAuth");
 
@@ -145,11 +145,11 @@ public static class GoogleLogin
                 }
 
                 // Get user roles
-                var roles = await _permissionService.GetUserRolesAsync(user.Id.ToString());
+                var roles = await _permissionService.GetUserRolesAsync(user.Id);
                 var roleStrings = roles.Select(r => r.ToString()).ToList();
 
                 // Generate JWT token
-                var token = _jwtTokenService.GenerateToken(user.Id.ToString(), user.Email, roleStrings);
+                var token = _jwtTokenService.GenerateToken(user.Id, user.Email, roleStrings);
                 var expiresAt = DateTime.UtcNow.AddHours(24);
 
                 _logger.LogInformation("Google login successful for user: {Email}", command.Email);

@@ -50,7 +50,7 @@ public static class UpdateProfile
 
     public class Command : ICommand<Response>
     {
-        public string UserId { get; init; } = string.Empty;
+        public Guid UserId { get; init; }
         public string DisplayName { get; init; } = string.Empty;
         public string FirstName { get; init; } = string.Empty;
         public string LastName { get; init; } = string.Empty;
@@ -72,13 +72,8 @@ public static class UpdateProfile
 
         public async Task<Response> HandleAsync(Command request, CancellationToken cancellationToken)
         {
-            if (!Guid.TryParse(request.UserId, out var userId))
-            {
-                throw new ArgumentException("Invalid user ID format", nameof(request.UserId));
-            }
-
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive, cancellationToken);
+                .FirstOrDefaultAsync(u => u.Id == request.UserId && u.IsActive, cancellationToken);
 
             if (user == null)
             {

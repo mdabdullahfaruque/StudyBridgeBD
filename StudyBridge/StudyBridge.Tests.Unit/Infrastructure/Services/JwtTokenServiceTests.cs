@@ -32,7 +32,7 @@ public class JwtTokenServiceTests
     public void GenerateToken_WithValidParameters_ShouldReturnValidJwtToken()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const string email = "test@example.com";
         var roles = new List<string> { "User", "Admin" };
 
@@ -51,7 +51,7 @@ public class JwtTokenServiceTests
         
         var userIdClaim = jsonToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
         userIdClaim.Should().NotBeNull();
-        userIdClaim!.Value.Should().Be(userId);
+        userIdClaim!.Value.Should().Be(userId.ToString());
         
         var emailClaim = jsonToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email);
         emailClaim.Should().NotBeNull();
@@ -66,7 +66,7 @@ public class JwtTokenServiceTests
     public void GenerateToken_WithEmptyRoles_ShouldReturnTokenWithoutRoleClaims()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const string email = "test@example.com";
         var roles = new List<string>();
 
@@ -87,7 +87,7 @@ public class JwtTokenServiceTests
     public void GenerateToken_ShouldIncludeRequiredStandardClaims()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const string email = "test@example.com";
         var roles = new List<string> { "User" };
 
@@ -99,7 +99,7 @@ public class JwtTokenServiceTests
         var jsonToken = handler.ReadJwtToken(token);
         
         // Check standard JWT claims
-        jsonToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == userId);
+        jsonToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == userId.ToString());
         jsonToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Email && c.Value == email);
         jsonToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Jti);
         jsonToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Iat);
@@ -109,7 +109,7 @@ public class JwtTokenServiceTests
     public void ValidateToken_WithValidToken_ShouldReturnTrue()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const string email = "test@example.com";
         var roles = new List<string> { "User" };
         
@@ -147,7 +147,7 @@ public class JwtTokenServiceTests
         shortExpirationConfig.Setup(x => x["JWT:ExpirationMinutes"]).Returns("-1"); // Expired immediately
         
         var expiredTokenService = new JwtTokenService(shortExpirationConfig.Object);
-        var expiredToken = expiredTokenService.GenerateToken("user", "test@example.com", new List<string>());
+        var expiredToken = expiredTokenService.GenerateToken(Guid.NewGuid(), "test@example.com", new List<string>());
 
         // Act
         var result = _sut.ValidateToken(expiredToken);
@@ -160,7 +160,7 @@ public class JwtTokenServiceTests
     public void GetUserIdFromToken_WithValidToken_ShouldReturnUserId()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const string email = "test@example.com";
         var roles = new List<string> { "User" };
         
@@ -198,7 +198,7 @@ public class JwtTokenServiceTests
 
         // Act
         var service = new JwtTokenService(emptyConfig.Object);
-        var token = service.GenerateToken("user", "test@example.com", new List<string>());
+        var token = service.GenerateToken(Guid.NewGuid(), "test@example.com", new List<string>());
 
         // Assert
         token.Should().NotBeNullOrEmpty();
@@ -216,7 +216,7 @@ public class JwtTokenServiceTests
     public void GenerateToken_WithMultipleRoles_ShouldIncludeAllRoles()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const string email = "test@example.com";
         var roles = new List<string> { "User", "Admin", "SuperAdmin", "ContentManager" };
 
@@ -244,7 +244,7 @@ public class JwtTokenServiceTests
         differentConfig.Setup(x => x["JWT:ExpirationMinutes"]).Returns("60");
         
         var differentService = new JwtTokenService(differentConfig.Object);
-        var tokenFromDifferentService = differentService.GenerateToken("user", "test@example.com", new List<string>());
+        var tokenFromDifferentService = differentService.GenerateToken(Guid.NewGuid(), "test@example.com", new List<string>());
 
         // Act
         var result = _sut.ValidateToken(tokenFromDifferentService);

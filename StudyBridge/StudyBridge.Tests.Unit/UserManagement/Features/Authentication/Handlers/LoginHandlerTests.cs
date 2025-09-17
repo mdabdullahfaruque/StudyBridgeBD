@@ -52,10 +52,10 @@ public class LoginHandlerTests
         _mockPasswordHasher.Setup(x => x.VerifyHashedPassword(user, user.PasswordHash!, command.Password))
             .Returns(PasswordVerificationResult.Success);
 
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(user.Id.ToString()))
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(user.Id))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
 
-        _mockJwtTokenService.Setup(x => x.GenerateToken(user.Id.ToString(), user.Email, It.IsAny<List<string>>()))
+        _mockJwtTokenService.Setup(x => x.GenerateToken(user.Id, user.Email, It.IsAny<List<string>>()))
             .Returns("jwt_token_123");
 
         _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
@@ -168,10 +168,10 @@ public class LoginHandlerTests
         _mockPasswordHasher.Setup(x => x.VerifyHashedPassword(user, user.PasswordHash!, command.Password))
             .Returns(PasswordVerificationResult.Success);
 
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(user.Id.ToString()))
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(user.Id))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
 
-        _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()))
+        _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<List<string>>()))
             .Returns("token");
 
         _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
@@ -202,10 +202,10 @@ public class LoginHandlerTests
         _mockPasswordHasher.Setup(x => x.VerifyHashedPassword(user, user.PasswordHash!, command.Password))
             .Returns(PasswordVerificationResult.Success);
 
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(user.Id.ToString()))
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(user.Id))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User, SystemRole.Admin });
 
-        _mockJwtTokenService.Setup(x => x.GenerateToken(user.Id.ToString(), user.Email, It.IsAny<List<string>>()))
+        _mockJwtTokenService.Setup(x => x.GenerateToken(user.Id, user.Email, It.IsAny<List<string>>()))
             .Returns("token");
 
         _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
@@ -234,10 +234,10 @@ public class LoginHandlerTests
         _mockPasswordHasher.Setup(x => x.VerifyHashedPassword(user, user.PasswordHash!, command.Password))
             .Returns(PasswordVerificationResult.Success);
 
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(user.Id.ToString()))
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(user.Id))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
 
-        _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()))
+        _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<List<string>>()))
             .Returns("token");
 
         _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))

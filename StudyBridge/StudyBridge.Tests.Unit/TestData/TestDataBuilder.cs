@@ -207,7 +207,7 @@ public static class TestDataBuilder
 
     public static class UserRoles
     {
-        public static UserRole AdminUserRole(string userId) => new()
+        public static UserRole AdminUserRole(Guid userId) => new()
         {
             Id = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
             UserId = userId,
@@ -217,7 +217,7 @@ public static class TestDataBuilder
             Role = Roles.Admin()
         };
 
-        public static UserRole UserUserRole(string userId) => new()
+        public static UserRole UserUserRole(Guid userId) => new()
         {
             Id = new Guid("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
             UserId = userId,
@@ -258,9 +258,9 @@ public static class TestDataBuilder
 
     public static class Subscriptions
     {
-        public static UserSubscription ActivePremium(string userId) => new()
+        public static UserSubscription ActivePremium(Guid userId) => new()
         {
-            Id = new Guid("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+            Id = new Guid("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
             UserId = userId,
             SubscriptionType = SubscriptionType.Premium,
             StartDate = DateTime.UtcNow.AddDays(-30),
@@ -269,9 +269,9 @@ public static class TestDataBuilder
             IsActive = true
         };
 
-        public static UserSubscription ExpiredBasic(string userId) => new()
+        public static UserSubscription ExpiredBasic(Guid userId) => new()
         {
-            Id = new Guid("00000000-0000-0000-0000-000000000001"),
+            Id = new Guid("ffffffff-ffff-ffff-ffff-ffffffffffff"),
             UserId = userId,
             SubscriptionType = SubscriptionType.Basic,
             StartDate = DateTime.UtcNow.AddDays(-60),
@@ -283,7 +283,7 @@ public static class TestDataBuilder
 
     public static class Profiles
     {
-        public static UserProfile Complete(string userId) => new()
+        public static UserProfile Complete(Guid userId) => new()
         {
             Id = new Guid("00000000-0000-0000-0000-000000000002"),
             UserId = userId,

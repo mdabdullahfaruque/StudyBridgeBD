@@ -25,4 +25,9 @@ public class AppUser : BaseEntity
     
     // Helper method to check if user is Google user
     public bool IsGoogleUser => LoginProvider == LoginProvider.Google && !string.IsNullOrEmpty(GoogleSub);
+    
+    // Navigation properties
+    public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    public virtual ICollection<UserSubscription> UserSubscriptions { get; set; } = new List<UserSubscription>();
+    public virtual UserProfile? UserProfile { get; set; }
 }

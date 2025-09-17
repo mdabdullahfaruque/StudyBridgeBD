@@ -22,18 +22,23 @@ export const ADMIN_ROUTES: Routes = [
       },
       {
         path: 'users',
-        loadComponent: () => import('./user-management/user-list/user-list.component').then(m => m.UserListComponent),
+        loadComponent: () => import('../features/admin/components/user-list/user-list.component').then(m => m.UserListComponent),
         title: 'User Management'
       },
       {
         path: 'roles',
-        component: AdminDashboardComponent, // Temporary placeholder
+        loadComponent: () => import('../features/admin/components/role-list/role-list.component').then(m => m.RoleListComponent),
         title: 'Role Management'
       },
       {
         path: 'permissions',
-        component: AdminDashboardComponent, // Temporary placeholder
+        loadComponent: () => import('../features/admin/components/permission-tree/permission-tree.component').then(m => m.PermissionTreeComponent),
         title: 'Permission Management'
+      },
+      {
+        path: 'management',
+        loadComponent: () => import('../features/admin/components/admin-overview/admin-overview.component').then(m => m.AdminOverviewComponent),
+        title: 'Admin Management'
       },
       {
         path: 'content',

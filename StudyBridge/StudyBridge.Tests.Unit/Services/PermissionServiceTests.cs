@@ -48,7 +48,7 @@ public class PermissionServiceTests
     public async Task HasPermissionAsync_WithPermissionKey_WhenPermissionNotFound_ShouldReturnFalse()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const string permissionKey = "invalid.permission";
 
         _mockPermissionRepository
@@ -66,7 +66,7 @@ public class PermissionServiceTests
     public async Task HasPermissionAsync_WithPermissionKey_WhenPermissionExists_ShouldCheckUserPermissions()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const string permissionKey = "users.view";
         var permission = CreateTestPermission(permissionKey);
         var userPermissions = new List<Permission> { permission };
@@ -90,7 +90,7 @@ public class PermissionServiceTests
     public async Task GetUserPermissionsAsync_ShouldReturnPermissions()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         var permissions = new List<Permission>
         {
             CreateTestPermission("users.view"),
@@ -114,7 +114,7 @@ public class PermissionServiceTests
     public async Task AssignRoleToUserAsync_WhenRoleExists_ShouldReturnTrue()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const SystemRole role = SystemRole.Admin;
         const string assignedBy = "system-admin";
         var roleEntity = CreateTestRole(role);
@@ -142,7 +142,7 @@ public class PermissionServiceTests
     public async Task GetUserMenusAsync_ShouldReturnMenus()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         var menus = new List<Menu>
         {
             CreateTestMenu("dashboard", "Dashboard"),
@@ -184,7 +184,7 @@ public class PermissionServiceTests
     public async Task AssignRoleToUserAsync_WhenRoleNotFound_ShouldReturnFalse()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const SystemRole role = SystemRole.Admin;
         const string assignedBy = "system-admin";
 
@@ -251,7 +251,7 @@ public class PermissionServiceTests
     public async Task RemoveRoleFromUserAsync_WhenRoleExists_ShouldReturnTrue()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         const SystemRole role = SystemRole.Finance;
         var roleEntity = CreateTestRole(role);
         var userRole = CreateTestUserRole(userId, roleEntity.Id);
@@ -279,7 +279,7 @@ public class PermissionServiceTests
     public async Task GetUserRolesAsync_ShouldReturnUserRoles()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userId = Guid.NewGuid();
         var role1 = CreateTestRole(SystemRole.Admin);
         var role2 = CreateTestRole(SystemRole.Finance);
         var userRoles = new List<UserRole>
@@ -355,7 +355,7 @@ public class PermissionServiceTests
         };
     }
 
-    private static UserRole CreateTestUserRole(string userId, Guid roleId)
+    private static UserRole CreateTestUserRole(Guid userId, Guid roleId)
     {
         return new UserRole
         {

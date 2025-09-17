@@ -27,7 +27,8 @@ public class ProfileServiceTests
     public async Task GetProfileAsync_WithValidUserId_ShouldReturnSuccessResult()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userGuid = Guid.NewGuid();
+        var userId = userGuid.ToString();
         var expectedResponse = new GetProfile.Response
         {
             Id = Guid.NewGuid(),
@@ -43,7 +44,7 @@ public class ProfileServiceTests
         };
         var cancellationToken = CancellationToken.None;
 
-        _mockDispatcher.Setup(x => x.QueryAsync(It.Is<GetProfile.Query>(q => q.UserId == userId), cancellationToken))
+        _mockDispatcher.Setup(x => x.QueryAsync(It.Is<GetProfile.Query>(q => q.UserId == userGuid), cancellationToken))
             .ReturnsAsync(expectedResponse);
 
         // Act
@@ -56,14 +57,14 @@ public class ProfileServiceTests
         result.Message.Should().Be("Profile retrieved successfully");
         result.StatusCode.Should().Be(200);
 
-        _mockDispatcher.Verify(x => x.QueryAsync(It.Is<GetProfile.Query>(q => q.UserId == userId), cancellationToken), Times.Once);
+        _mockDispatcher.Verify(x => x.QueryAsync(It.Is<GetProfile.Query>(q => q.UserId == userGuid), cancellationToken), Times.Once);
     }
 
     [Fact]
     public async Task GetProfileAsync_WithNotFoundException_ShouldReturnFailureResult()
     {
         // Arrange
-        const string userId = "non-existent-user-id";
+        var userId = Guid.NewGuid().ToString();
         var exception = new NotFoundException("User profile not found");
         var cancellationToken = CancellationToken.None;
 
@@ -86,7 +87,7 @@ public class ProfileServiceTests
     public async Task GetProfileAsync_WithUnauthorizedException_ShouldReturnFailureResult()
     {
         // Arrange
-        const string userId = "unauthorized-user-id";
+        var userId = Guid.NewGuid().ToString();
         var exception = new UnauthorizedException("Access denied");
         var cancellationToken = CancellationToken.None;
 
@@ -108,7 +109,8 @@ public class ProfileServiceTests
     public async Task GetProfileAsync_WithStudyBridgeException_ShouldReturnFailureResult()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userGuid = Guid.NewGuid();
+        var userId = userGuid.ToString();
         var exception = new BusinessLogicException("Custom error");
         var cancellationToken = CancellationToken.None;
 
@@ -130,7 +132,8 @@ public class ProfileServiceTests
     public async Task GetProfileAsync_WithGenericException_ShouldReturnFailureResult()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userGuid = Guid.NewGuid();
+        var userId = userGuid.ToString();
         var exception = new Exception("Database connection failed");
         var cancellationToken = CancellationToken.None;
 
@@ -155,7 +158,8 @@ public class ProfileServiceTests
     public async Task UpdateProfileAsync_WithValidRequest_ShouldReturnSuccessResult()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userGuid = Guid.NewGuid();
+        var userId = userGuid.ToString();
         var request = new UpdateProfile.Request
         {
             DisplayName = "Updated Display Name",
@@ -171,7 +175,7 @@ public class ProfileServiceTests
         var cancellationToken = CancellationToken.None;
 
         _mockDispatcher.Setup(x => x.CommandAsync(It.Is<UpdateProfile.Command>(c => 
-            c.UserId == userId &&
+            c.UserId == userGuid &&
             c.DisplayName == request.DisplayName &&
             c.FirstName == request.FirstName &&
             c.LastName == request.LastName &&
@@ -189,7 +193,7 @@ public class ProfileServiceTests
         result.StatusCode.Should().Be(200);
 
         _mockDispatcher.Verify(x => x.CommandAsync(It.Is<UpdateProfile.Command>(c => 
-            c.UserId == userId &&
+            c.UserId == userGuid &&
             c.DisplayName == request.DisplayName &&
             c.FirstName == request.FirstName &&
             c.LastName == request.LastName &&
@@ -200,7 +204,7 @@ public class ProfileServiceTests
     public async Task UpdateProfileAsync_WithNotFoundException_ShouldReturnFailureResult()
     {
         // Arrange
-        const string userId = "non-existent-user-id";
+        var userId = Guid.NewGuid().ToString();
         var request = new UpdateProfile.Request
         {
             DisplayName = "Updated Display Name",
@@ -228,7 +232,7 @@ public class ProfileServiceTests
     public async Task UpdateProfileAsync_WithUnauthorizedException_ShouldReturnFailureResult()
     {
         // Arrange
-        const string userId = "unauthorized-user-id";
+        var userId = Guid.NewGuid().ToString();
         var request = new UpdateProfile.Request
         {
             DisplayName = "Updated Display Name",
@@ -256,7 +260,8 @@ public class ProfileServiceTests
     public async Task UpdateProfileAsync_WithValidationException_ShouldReturnFailureResult()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userGuid = Guid.NewGuid();
+        var userId = userGuid.ToString();
         var request = new UpdateProfile.Request
         {
             DisplayName = "",
@@ -284,7 +289,8 @@ public class ProfileServiceTests
     public async Task UpdateProfileAsync_WithStudyBridgeException_ShouldReturnFailureResult()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userGuid = Guid.NewGuid();
+        var userId = userGuid.ToString();
         var request = new UpdateProfile.Request
         {
             DisplayName = "Updated Display Name",
@@ -312,7 +318,8 @@ public class ProfileServiceTests
     public async Task UpdateProfileAsync_WithGenericException_ShouldReturnFailureResult()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userGuid = Guid.NewGuid();
+        var userId = userGuid.ToString();
         var request = new UpdateProfile.Request
         {
             DisplayName = "Updated Display Name",
@@ -339,7 +346,8 @@ public class ProfileServiceTests
     public async Task UpdateProfileAsync_WithNullRequest_ShouldCreateCommandWithEmptyValues()
     {
         // Arrange
-        const string userId = "test-user-id";
+        var userGuid = Guid.NewGuid();
+        var userId = userGuid.ToString();
         var request = new UpdateProfile.Request
         {
             DisplayName = null!,
@@ -365,7 +373,7 @@ public class ProfileServiceTests
         result.IsSuccess.Should().BeTrue();
 
         _mockDispatcher.Verify(x => x.CommandAsync(It.Is<UpdateProfile.Command>(c => 
-            c.UserId == userId &&
+            c.UserId == userGuid &&
             c.DisplayName == null &&
             c.FirstName == null &&
             c.LastName == null &&

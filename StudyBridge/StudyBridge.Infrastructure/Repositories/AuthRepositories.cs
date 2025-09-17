@@ -71,7 +71,7 @@ public class UserRoleRepository : IUserRoleRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<UserRole>> GetUserRolesAsync(string userId)
+    public async Task<IEnumerable<UserRole>> GetUserRolesAsync(Guid userId)
     {
         return await _context.UserRoles
             .Include(ur => ur.Role)
@@ -79,7 +79,7 @@ public class UserRoleRepository : IUserRoleRepository
             .ToListAsync();
     }
 
-    public async Task<UserRole?> GetUserRoleAsync(string userId, Guid roleId)
+    public async Task<UserRole?> GetUserRoleAsync(Guid userId, Guid roleId)
     {
         return await _context.UserRoles
             .Include(ur => ur.Role)
@@ -128,7 +128,7 @@ public class RolePermissionRepository : IRolePermissionRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Permission>> GetPermissionsByUserIdAsync(string userId)
+    public async Task<IEnumerable<Permission>> GetPermissionsByUserIdAsync(Guid userId)
     {
         var permissions = await _context.UserRoles
             .Where(ur => ur.UserId == userId && ur.IsActive)
@@ -185,14 +185,14 @@ public class UserSubscriptionRepository : IUserSubscriptionRepository
         _context = context;
     }
 
-    public async Task<UserSubscription?> GetActiveSubscriptionAsync(string userId)
+    public async Task<UserSubscription?> GetActiveSubscriptionAsync(Guid userId)
     {
         return await _context.UserSubscriptions
             .Where(s => s.UserId == userId && s.IsActive && s.EndDate > DateTime.UtcNow)
             .FirstOrDefaultAsync();
     }
 
-    public async Task<IEnumerable<UserSubscription>> GetUserSubscriptionsAsync(string userId)
+    public async Task<IEnumerable<UserSubscription>> GetUserSubscriptionsAsync(Guid userId)
     {
         return await _context.UserSubscriptions
             .Where(s => s.UserId == userId)
@@ -234,7 +234,7 @@ public class UserProfileRepository : IUserProfileRepository
         _context = context;
     }
 
-    public async Task<UserProfile?> GetByUserIdAsync(string userId)
+    public async Task<UserProfile?> GetByUserIdAsync(Guid userId)
     {
         return await _context.UserProfiles
             .FirstOrDefaultAsync(p => p.UserId == userId);

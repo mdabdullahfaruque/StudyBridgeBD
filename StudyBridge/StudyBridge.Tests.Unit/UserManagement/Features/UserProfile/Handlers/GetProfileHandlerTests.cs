@@ -33,7 +33,7 @@ public class GetProfileHandlerTests
     {
         // Arrange
         var user = TestDataBuilder.Users.ValidUser();
-        var query = new GetProfile.Query { UserId = user.Id.ToString() };
+        var query = new GetProfile.Query { UserId = user.Id };
         
         var users = new List<AppUser> { user }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
@@ -59,7 +59,7 @@ public class GetProfileHandlerTests
     public async Task HandleAsync_WithNonExistentUserId_ShouldThrowNotFoundException()
     {
         // Arrange
-        var query = new GetProfile.Query { UserId = Guid.NewGuid().ToString() };
+        var query = new GetProfile.Query { UserId = Guid.NewGuid() };
         
         var users = new List<AppUser>().AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
@@ -72,15 +72,18 @@ public class GetProfileHandlerTests
     }
 
     [Fact]
-    public async Task HandleAsync_WithInvalidGuidFormat_ShouldThrowArgumentException()
+    public async Task HandleAsync_WithEmptyGuid_ShouldThrowNotFoundException()
     {
         // Arrange
-        var query = new GetProfile.Query { UserId = "invalid-guid-format" };
+        var query = new GetProfile.Query { UserId = Guid.Empty };
+        
+        var users = new List<AppUser>().AsQueryable().BuildMockDbSet();
+        _mockContext.Setup(x => x.Users).Returns(users.Object);
 
         // Act & Assert
         var act = async () => await _sut.HandleAsync(query, CancellationToken.None);
         
-        await act.Should().ThrowAsync<ArgumentException>();
+        await act.Should().ThrowAsync<NotFoundException>();
     }
 
     [Fact]
@@ -88,7 +91,7 @@ public class GetProfileHandlerTests
     {
         // Arrange
         var user = TestDataBuilder.Users.InactiveUser();
-        var query = new GetProfile.Query { UserId = user.Id.ToString() };
+        var query = new GetProfile.Query { UserId = user.Id };
         
         var users = new List<AppUser> { user }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
@@ -110,7 +113,7 @@ public class GetProfileHandlerTests
         var user2 = TestDataBuilder.Users.InactiveUser();
         var user3 = TestDataBuilder.Users.GoogleUser();
         
-        var query = new GetProfile.Query { UserId = user2.Id.ToString() };
+        var query = new GetProfile.Query { UserId = user2.Id };
         
         var users = new List<AppUser> { user1, user2, user3 }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
@@ -129,7 +132,7 @@ public class GetProfileHandlerTests
     public async Task HandleAsync_WhenDatabaseThrowsException_ShouldRethrowException()
     {
         // Arrange
-        var query = new GetProfile.Query { UserId = Guid.NewGuid().ToString() };
+        var query = new GetProfile.Query { UserId = Guid.NewGuid() };
         
         _mockContext.Setup(x => x.Users)
             .Throws(new Exception("Database connection failed"));
@@ -147,7 +150,7 @@ public class GetProfileHandlerTests
         // Arrange
         var user = TestDataBuilder.Users.ValidUser();
         user.AvatarUrl = null;
-        var query = new GetProfile.Query { UserId = user.Id.ToString() };
+        var query = new GetProfile.Query { UserId = user.Id };
         
         var users = new List<AppUser> { user }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
@@ -166,7 +169,7 @@ public class GetProfileHandlerTests
         // Arrange
         var user = TestDataBuilder.Users.ValidUser();
         user.LastLoginAt = null;
-        var query = new GetProfile.Query { UserId = user.Id.ToString() };
+        var query = new GetProfile.Query { UserId = user.Id };
         
         var users = new List<AppUser> { user }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);

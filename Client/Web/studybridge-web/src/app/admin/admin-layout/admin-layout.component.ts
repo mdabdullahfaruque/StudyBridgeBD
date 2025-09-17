@@ -228,6 +228,13 @@ export class AdminLayoutComponent implements OnInit {
         permission: 'dashboard.view'
       },
       {
+        id: 'admin-management',
+        label: 'Admin Management',
+        icon: 'pi pi-sitemap',
+        route: '/admin/management',
+        permission: 'admin.view'
+      },
+      {
         id: 'user-management',
         label: 'User Management',
         icon: 'pi pi-users',

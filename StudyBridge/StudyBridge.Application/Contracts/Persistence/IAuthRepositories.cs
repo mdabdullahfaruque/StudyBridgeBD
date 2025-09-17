@@ -14,8 +14,8 @@ public interface IRoleRepository
 
 public interface IUserRoleRepository
 {
-    Task<IEnumerable<UserRole>> GetUserRolesAsync(string userId);
-    Task<UserRole?> GetUserRoleAsync(string userId, Guid roleId);
+    Task<IEnumerable<UserRole>> GetUserRolesAsync(Guid userId);
+    Task<UserRole?> GetUserRoleAsync(Guid userId, Guid roleId);
     Task<UserRole> AddAsync(UserRole userRole);
     Task UpdateAsync(UserRole userRole);
     Task DeleteAsync(Guid id);
@@ -24,7 +24,7 @@ public interface IUserRoleRepository
 public interface IRolePermissionRepository
 {
     Task<IEnumerable<RolePermission>> GetRolePermissionsAsync(Guid roleId);
-    Task<IEnumerable<Permission>> GetPermissionsByUserIdAsync(string userId);
+    Task<IEnumerable<Permission>> GetPermissionsByUserIdAsync(Guid userId);
     Task<RolePermission> AddAsync(RolePermission rolePermission);
     Task UpdateAsync(RolePermission rolePermission);
     Task DeleteAsync(Guid id);
@@ -38,7 +38,7 @@ public interface IMenuRepository
     Task<IEnumerable<Menu>> GetAllAsync();
     Task<IEnumerable<Menu>> GetByParentIdAsync(Guid? parentId);
     Task<IEnumerable<Menu>> GetMenuTreeAsync();
-    Task<IEnumerable<Menu>> GetUserMenusAsync(string userId);
+    Task<IEnumerable<Menu>> GetUserMenusAsync(Guid userId);
     Task<Menu> AddAsync(Menu menu);
     Task UpdateAsync(Menu menu);
     Task DeleteAsync(Guid id);
@@ -50,7 +50,7 @@ public interface IPermissionRepository
     Task<Permission?> GetByKeyAsync(string permissionKey);
     Task<IEnumerable<Permission>> GetAllAsync();
     Task<IEnumerable<Permission>> GetByMenuIdAsync(Guid menuId);
-    Task<IEnumerable<Permission>> GetUserPermissionsAsync(string userId);
+    Task<IEnumerable<Permission>> GetUserPermissionsAsync(Guid userId);
     Task<Permission> AddAsync(Permission permission);
     Task UpdateAsync(Permission permission);
     Task DeleteAsync(Guid id);
@@ -58,8 +58,8 @@ public interface IPermissionRepository
 
 public interface IUserSubscriptionRepository
 {
-    Task<UserSubscription?> GetActiveSubscriptionAsync(string userId);
-    Task<IEnumerable<UserSubscription>> GetUserSubscriptionsAsync(string userId);
+    Task<UserSubscription?> GetActiveSubscriptionAsync(Guid userId);
+    Task<IEnumerable<UserSubscription>> GetUserSubscriptionsAsync(Guid userId);
     Task<UserSubscription> AddAsync(UserSubscription subscription);
     Task UpdateAsync(UserSubscription subscription);
     Task DeleteAsync(Guid id);
@@ -67,7 +67,7 @@ public interface IUserSubscriptionRepository
 
 public interface IUserProfileRepository
 {
-    Task<UserProfile?> GetByUserIdAsync(string userId);
+    Task<UserProfile?> GetByUserIdAsync(Guid userId);
     Task<UserProfile> AddAsync(UserProfile profile);
     Task UpdateAsync(UserProfile profile);
     Task DeleteAsync(Guid id);

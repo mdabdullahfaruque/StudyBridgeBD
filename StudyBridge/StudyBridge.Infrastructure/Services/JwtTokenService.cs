@@ -24,16 +24,17 @@ public class JwtTokenService : IJwtTokenService
         _expirationMinutes = int.Parse(_configuration["JWT:ExpirationMinutes"] ?? "1440"); // 24 hours default
     }
 
-    public string GenerateToken(string userId, string email, IEnumerable<string> roles)
+    public string GenerateToken(Guid userId, string email, IEnumerable<string> roles)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var userIdString = userId.ToString();
 
         var claims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, userId),
+            new(ClaimTypes.NameIdentifier, userIdString),
             new(ClaimTypes.Email, email),
-            new(JwtRegisteredClaimNames.Sub, userId),
+            new(JwtRegisteredClaimNames.Sub, userIdString),
             new(JwtRegisteredClaimNames.Email, email),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
@@ -84,13 +85,15 @@ public class JwtTokenService : IJwtTokenService
         }
     }
 
-    public string? GetUserIdFromToken(string token)
+    public Guid? GetUserIdFromToken(string token)
     {
         try
         {
             var handler = new JwtSecurityTokenHandler();
             var jsonToken = handler.ReadJwtToken(token);
-            return jsonToken?.Claims?.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+            var userIdString = jsonToken?.Claims?.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+            
+            return Guid.TryParse(userIdString, out var userId) ? userId : null;
         }
         catch
         {

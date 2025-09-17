@@ -115,14 +115,14 @@ public static class Register
 
             // Assign default User role
             await _permissionService.AssignRoleToUserAsync(
-                user.Id.ToString(), 
+                user.Id, 
                 SystemRole.User, 
                 "System");
 
             // Generate JWT token
-            var roles = await _permissionService.GetUserRolesAsync(user.Id.ToString());
+            var roles = await _permissionService.GetUserRolesAsync(user.Id);
             var roleStrings = roles.Select(r => r.ToString()).ToList();
-            var token = _tokenService.GenerateToken(user.Id.ToString(), user.Email, roleStrings);
+            var token = _tokenService.GenerateToken(user.Id, user.Email, roleStrings);
             var expiresAt = DateTime.UtcNow.AddHours(24); // Assuming 24-hour token validity
 
             _logger.LogInformation("User registered successfully: {Email}", command.Email);

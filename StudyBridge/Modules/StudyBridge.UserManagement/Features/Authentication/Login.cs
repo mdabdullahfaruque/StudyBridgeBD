@@ -81,11 +81,11 @@ public static class Login
             await _context.SaveChangesAsync(cancellationToken);
 
             // Get user roles
-            var roles = await _permissionService.GetUserRolesAsync(user.Id.ToString());
+            var roles = await _permissionService.GetUserRolesAsync(user.Id);
             var roleStrings = roles.Select(r => r.ToString()).ToList();
 
             // Generate JWT token
-            var token = _jwtTokenService.GenerateToken(user.Id.ToString(), user.Email, roleStrings);
+            var token = _jwtTokenService.GenerateToken(user.Id, user.Email, roleStrings);
             var expiresAt = DateTime.UtcNow.AddHours(24); // Assuming 24-hour token validity
 
             _logger.LogInformation("User logged in successfully: {Email}", command.Email);

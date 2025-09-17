@@ -54,6 +54,11 @@ public class AppDbContext : DbContext, IApplicationDbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.UserId).IsRequired();
             
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.UserRoles)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
             entity.HasOne(e => e.Role)
                 .WithMany(r => r.UserRoles)
                 .HasForeignKey(e => e.RoleId)
@@ -92,6 +97,11 @@ public class AppDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.PaymentReference).HasMaxLength(200);
             entity.Property(e => e.Notes).HasMaxLength(1000);
             
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.UserSubscriptions)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => new { e.UserId, e.IsActive });
         });
@@ -110,6 +120,11 @@ public class AppDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.Bio).HasMaxLength(1000);
             entity.Property(e => e.PreferredLanguage).HasMaxLength(10);
             entity.Property(e => e.TimeZone).HasMaxLength(50);
+            
+            entity.HasOne(e => e.User)
+                .WithOne(u => u.UserProfile)
+                .HasForeignKey<UserProfile>(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
             
             entity.HasIndex(e => e.UserId).IsUnique();
         });

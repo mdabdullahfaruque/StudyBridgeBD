@@ -11,7 +11,7 @@ public static class GetProfile
 {
     public class Query : IQuery<Response>
     {
-        public string UserId { get; init; } = string.Empty;
+        public Guid UserId { get; init; }
     }
 
     public class Validator : AbstractValidator<Query>
@@ -52,13 +52,8 @@ public static class GetProfile
 
         public async Task<Response> HandleAsync(Query query, CancellationToken cancellationToken)
         {
-            if (!Guid.TryParse(query.UserId, out var userId))
-            {
-                throw new ArgumentException("Invalid user ID format", nameof(query.UserId));
-            }
-
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+                .FirstOrDefaultAsync(u => u.Id == query.UserId, cancellationToken);
 
             if (user == null)
             {

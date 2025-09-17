@@ -65,7 +65,7 @@ public class MenuRepository : IMenuRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Menu>> GetUserMenusAsync(string userId)
+    public async Task<IEnumerable<Menu>> GetUserMenusAsync(Guid userId)
     {
         // Get menus that the user has permission to access
         var userPermissions = await _context.RolePermissions
@@ -153,7 +153,7 @@ public class PermissionRepository : IPermissionRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Permission>> GetUserPermissionsAsync(string userId)
+    public async Task<IEnumerable<Permission>> GetUserPermissionsAsync(Guid userId)
     {
         return await _context.RolePermissions
             .Include(rp => rp.Permission)

@@ -4,7 +4,7 @@ namespace StudyBridge.Domain.Entities;
 
 public class UserProfile : BaseEntity
 {
-    public string UserId { get; set; } = string.Empty;
+    public Guid UserId { get; set; }
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
     public string? PhoneNumber { get; set; }
@@ -17,4 +17,7 @@ public class UserProfile : BaseEntity
     public string? TimeZone { get; set; }
     public bool IsEmailVerified { get; set; } = false;
     public bool IsPhoneVerified { get; set; } = false;
+    
+    // Navigation properties
+    public virtual AppUser User { get; set; } = null!;
 }

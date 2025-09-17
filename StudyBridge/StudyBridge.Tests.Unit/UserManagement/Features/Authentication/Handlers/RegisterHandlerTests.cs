@@ -51,13 +51,13 @@ public class RegisterHandlerTests
         _mockPasswordHasher.Setup(x => x.HashPassword(It.IsAny<AppUser>(), command.Password))
             .Returns("hashed_password_123");
             
-        _mockTokenService.Setup(x => x.GenerateToken(It.IsAny<string>(), command.Email, It.IsAny<List<string>>()))
+        _mockTokenService.Setup(x => x.GenerateToken(It.IsAny<Guid>(), command.Email, It.IsAny<List<string>>()))
             .Returns("jwt_token_123");
             
-        _mockPermissionService.Setup(x => x.AssignRoleToUserAsync(It.IsAny<string>(), SystemRole.User, "System"))
+        _mockPermissionService.Setup(x => x.AssignRoleToUserAsync(It.IsAny<Guid>(), SystemRole.User, "System"))
             .ReturnsAsync(true);
             
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<string>()))
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<Guid>()))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
 
         _mockContext.Setup(x => x.SaveChangesAsync(cancellationToken))
@@ -75,7 +75,7 @@ public class RegisterHandlerTests
         result.RequiresEmailConfirmation.Should().BeTrue();
 
         _mockContext.Verify(x => x.SaveChangesAsync(cancellationToken), Times.Once);
-        _mockPermissionService.Verify(x => x.AssignRoleToUserAsync(It.IsAny<string>(), SystemRole.User, "System"), Times.Once);
+        _mockPermissionService.Verify(x => x.AssignRoleToUserAsync(It.IsAny<Guid>(), SystemRole.User, "System"), Times.Once);
     }
 
     [Fact]
@@ -111,13 +111,13 @@ public class RegisterHandlerTests
         _mockPasswordHasher.Setup(x => x.HashPassword(It.IsAny<AppUser>(), command.Password))
             .Returns(expectedHashedPassword);
             
-        _mockTokenService.Setup(x => x.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()))
+        _mockTokenService.Setup(x => x.GenerateToken(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<List<string>>()))
             .Returns("token");
             
-        _mockPermissionService.Setup(x => x.AssignRoleToUserAsync(It.IsAny<string>(), SystemRole.User, "System"))
+        _mockPermissionService.Setup(x => x.AssignRoleToUserAsync(It.IsAny<Guid>(), SystemRole.User, "System"))
             .ReturnsAsync(true);
             
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<string>()))
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<Guid>()))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
 
         AppUser? capturedUser = null;
@@ -154,13 +154,13 @@ public class RegisterHandlerTests
         _mockPasswordHasher.Setup(x => x.HashPassword(It.IsAny<AppUser>(), It.IsAny<string>()))
             .Returns("hashed_password");
             
-        _mockTokenService.Setup(x => x.GenerateToken(It.IsAny<string>(), command.Email, It.IsAny<List<string>>()))
+        _mockTokenService.Setup(x => x.GenerateToken(It.IsAny<Guid>(), command.Email, It.IsAny<List<string>>()))
             .Returns(expectedToken);
             
-        _mockPermissionService.Setup(x => x.AssignRoleToUserAsync(It.IsAny<string>(), SystemRole.User, "System"))
+        _mockPermissionService.Setup(x => x.AssignRoleToUserAsync(It.IsAny<Guid>(), SystemRole.User, "System"))
             .ReturnsAsync(true);
             
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<string>()))
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<Guid>()))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
 
         _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
@@ -186,13 +186,13 @@ public class RegisterHandlerTests
         _mockPasswordHasher.Setup(x => x.HashPassword(It.IsAny<AppUser>(), It.IsAny<string>()))
             .Returns("hashed_password");
             
-        _mockTokenService.Setup(x => x.GenerateToken(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<string>>()))
+        _mockTokenService.Setup(x => x.GenerateToken(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<List<string>>()))
             .Returns("token");
             
-        _mockPermissionService.Setup(x => x.AssignRoleToUserAsync(It.IsAny<string>(), SystemRole.User, "System"))
+        _mockPermissionService.Setup(x => x.AssignRoleToUserAsync(It.IsAny<Guid>(), SystemRole.User, "System"))
             .ReturnsAsync(false); // Simulate failure
             
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<string>()))
+        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<Guid>()))
             .ReturnsAsync(new List<SystemRole>()); // No roles assigned
 
         _mockContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
