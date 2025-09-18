@@ -1,12 +1,83 @@
-<!-- Public Layout with Top Menu -->
+<!-- Public Layout with Top Navigation -->
 <div class="public-layout-container min-h-screen bg-gray-50">
-  <!-- Top Navigation Menu -->
-  <app-top-menu
-    [user]="currentUser()"
-    [menuItems]="topMenuItems()"
-    (logout)="logout()"
-    (profileClick)="navigateToProfile()">
-  </app-top-menu>
+  <!-- Top Navigation Bar -->
+  <nav class="bg-white shadow-lg border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <!-- Logo and Main Navigation -->
+        <div class="flex">
+          <!-- Logo -->
+          <div class="flex-shrink-0 flex items-center">
+            <a routerLink="/public" class="flex items-center">
+              <span class="text-2xl font-bold text-blue-600">StudyBridge</span>
+            </a>
+          </div>
+
+          <!-- Desktop Navigation -->
+          <div class="hidden md:ml-6 md:flex md:space-x-8">
+            <ng-container *ngFor="let item of topMenuItems()">
+              <a 
+                [routerLink]="item.route"
+                routerLinkActive="border-b-2 border-blue-500 text-blue-600"
+                class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-700 hover:text-blue-600 hover:border-b-2 hover:border-blue-300 transition-colors duration-200">
+                <i [class]="item.icon" class="mr-2" *ngIf="item.icon.startsWith('pi')"></i>
+                <span [innerHTML]="item.icon" class="w-4 h-4 mr-2" *ngIf="!item.icon.startsWith('pi')"></span>
+                {{ item.label }}
+                <span *ngIf="item.badge" 
+                      class="ml-2 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
+                  {{ item.badge }}
+                </span>
+              </a>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Right side - User Menu -->
+        <div class="flex items-center">
+          <!-- Notifications (Desktop) -->
+          <div class="hidden md:flex md:items-center md:space-x-4">
+            <button class="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-full transition-colors duration-200">
+              <i class="pi pi-bell text-lg"></i>
+            </button>
+          </div>
+
+          <!-- User Menu Component -->
+          <app-user-menu></app-user-menu>
+
+          <!-- Mobile Menu Button -->
+          <div class="md:hidden ml-4">
+            <button 
+              (click)="toggleMobileMenu()"
+              class="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+              <i class="pi pi-bars text-lg" *ngIf="!isMobileMenuVisible()"></i>
+              <i class="pi pi-times text-lg" *ngIf="isMobileMenuVisible()"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation Menu -->
+    <div *ngIf="isMobileMenuVisible()" class="md:hidden bg-white border-t border-gray-200">
+      <div class="px-2 pt-2 pb-3 space-y-1">
+        <ng-container *ngFor="let item of topMenuItems()">
+          <a 
+            [routerLink]="item.route"
+            (click)="toggleMobileMenu()"
+            routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-500"
+            class="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors duration-200">
+            <i [class]="item.icon" class="mr-3" *ngIf="item.icon.startsWith('pi')"></i>
+            <span [innerHTML]="item.icon" class="w-5 h-5 mr-3" *ngIf="!item.icon.startsWith('pi')"></span>
+            {{ item.label }}
+            <span *ngIf="item.badge" 
+                  class="ml-auto px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
+              {{ item.badge }}
+            </span>
+          </a>
+        </ng-container>
+      </div>
+    </div>
+  </nav>
 
   <!-- Main Content Area -->
   <main class="main-content">

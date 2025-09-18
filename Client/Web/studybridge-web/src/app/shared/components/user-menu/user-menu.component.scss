@@ -1,0 +1,225 @@
+/* User Menu Styles */
+
+.user-menu-container {
+  position: relative;
+  z-index: 50;
+}
+
+/* User Menu Trigger */
+.user-menu-trigger {
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.user-menu-trigger:hover {
+  background: rgba(59, 130, 246, 0.05);
+  border-color: rgba(59, 130, 246, 0.1);
+  transform: translateY(-1px);
+}
+
+.user-menu-trigger.active {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* User Avatar */
+.user-avatar {
+  transition: all 0.2s ease-in-out;
+}
+
+.user-menu-trigger:hover .user-avatar {
+  transform: scale(1.05);
+}
+
+.user-menu-trigger:hover .user-avatar img,
+.user-menu-trigger:hover .user-avatar div {
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+/* User Info */
+.user-info p {
+  line-height: 1.2;
+  transition: color 0.2s ease-in-out;
+}
+
+.user-menu-trigger:hover .user-info p:first-child {
+  color: #1d4ed8;
+}
+
+/* Dropdown Arrow Animation */
+.dropdown-arrow i {
+  transition: transform 0.2s ease-in-out;
+}
+
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* User Dropdown */
+.user-dropdown {
+  animation: fadeInDown 0.2s ease-out;
+  transform-origin: top right;
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-dropdown-enter {
+  animation: fadeInDown 0.2s ease-out;
+}
+
+/* Menu Items */
+.user-dropdown button,
+.user-dropdown a {
+  transition: all 0.15s ease-in-out;
+  border-radius: 6px;
+  margin: 0 4px;
+  font-weight: 500;
+}
+
+.user-dropdown button:hover,
+.user-dropdown a:hover {
+  transform: translateX(4px);
+}
+
+/* Status Badge */
+.user-dropdown .bg-green-100 {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+}
+
+.user-dropdown .bg-blue-100 {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+}
+
+/* Hover Effects */
+.group:hover i {
+  transform: scale(1.1);
+}
+
+/* Online Status Indicator */
+.user-avatar .bg-green-500 {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 0 0 2px white, 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .user-dropdown {
+    width: calc(100vw - 32px);
+    max-width: 320px;
+    right: 16px;
+  }
+  
+  .user-menu-trigger .user-info {
+    display: none;
+  }
+  
+  .user-menu-trigger .dropdown-arrow {
+    display: none;
+  }
+}
+
+/* Focus States */
+.user-menu-trigger:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.user-dropdown button:focus,
+.user-dropdown a:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .user-menu-trigger {
+    color: #e5e7eb;
+  }
+  
+  .user-menu-trigger:hover {
+    background: rgba(75, 85, 99, 0.1);
+    border-color: rgba(75, 85, 99, 0.2);
+  }
+  
+  .user-dropdown {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  
+  .user-dropdown button,
+  .user-dropdown a {
+    color: #e5e7eb;
+  }
+  
+  .user-dropdown button:hover,
+  .user-dropdown a:hover {
+    background: rgba(75, 85, 99, 0.1);
+    color: #93c5fd;
+  }
+  
+  .border-gray-100 {
+    border-color: #374151 !important;
+  }
+  
+  .text-gray-500 {
+    color: #9ca3af !important;
+  }
+  
+  .text-gray-700 {
+    color: #d1d5db !important;
+  }
+}
+
+/* Loading State */
+.user-menu-container.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.user-menu-container.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+  .user-menu-trigger,
+  .user-dropdown,
+  .user-dropdown button,
+  .user-dropdown a,
+  .user-avatar,
+  .dropdown-arrow i {
+    transition: none;
+    animation: none;
+    transform: none;
+  }
+}

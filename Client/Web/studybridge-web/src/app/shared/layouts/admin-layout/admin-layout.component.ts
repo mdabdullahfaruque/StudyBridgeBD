@@ -6,6 +6,7 @@ import { MenuService } from '../../services/menu.service';
 import { UserDto } from '../../models/api.models';
 import { MenuItem as AppMenuItem } from '../../models/menu.models';
 import { AdminSidebarComponent } from '../../components/admin-sidebar/admin-sidebar.component';
+import { UserMenuComponent } from '../../components/user-menu/user-menu.component';
 
 export interface AdminMenuItem {
   id: string;
@@ -34,7 +35,8 @@ export interface AdminUser {
   imports: [
     CommonModule,
     RouterOutlet,
-    AdminSidebarComponent
+    AdminSidebarComponent,
+    UserMenuComponent
   ],
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.scss'

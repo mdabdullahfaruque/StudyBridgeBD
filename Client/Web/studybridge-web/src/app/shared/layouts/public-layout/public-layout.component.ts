@@ -1,11 +1,11 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, Router } from '@angular/router';
+import { RouterOutlet, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { MenuService } from '../../services/menu.service';
 import { UserDto } from '../../models/api.models';
 import { MenuItem as AppMenuItem } from '../../models/menu.models';
-import { TopMenuComponent } from '../../components/top-menu/top-menu.component';
+import { UserMenuComponent } from '../../components/user-menu/user-menu.component';
 
 export interface PublicMenuItem {
   id: string;
@@ -21,7 +21,9 @@ export interface PublicMenuItem {
   imports: [
     CommonModule,
     RouterOutlet,
-    TopMenuComponent
+    RouterLink,
+    RouterLinkActive,
+    UserMenuComponent
   ],
   templateUrl: './public-layout.component.html',
   styleUrl: './public-layout.component.scss'
@@ -30,9 +32,7 @@ export class PublicLayoutComponent implements OnInit {
   // Signals for reactive state management
   currentUser = signal<UserDto | null>(null);
   topMenuItems = signal<PublicMenuItem[]>([]);
-  isUserMenuVisible = signal(false);
   isMobileMenuVisible = signal(false);
-  isVocabularyMenuOpen = signal(false);
   isLoading = signal(true);
 
   // Computed values
@@ -149,33 +149,7 @@ export class PublicLayoutComponent implements OnInit {
   }
 
   // Event handlers
-  toggleUserMenu() {
-    this.isUserMenuVisible.set(!this.isUserMenuVisible());
-  }
-
   toggleMobileMenu() {
     this.isMobileMenuVisible.set(!this.isMobileMenuVisible());
-  }
-
-  toggleVocabularyMenu() {
-    this.isVocabularyMenuOpen.set(!this.isVocabularyMenuOpen());
-  }
-
-  logout() {
-    this.authService.logout();
-  }
-
-  navigateToProfile() {
-    this.router.navigate(['/public/profile']);
-  }
-
-  // Handle outside clicks to close menus
-  onClickOutside(event: Event) {
-    if (this.isUserMenuVisible()) {
-      this.isUserMenuVisible.set(false);
-    }
-    if (this.isMobileMenuVisible()) {
-      this.isMobileMenuVisible.set(false);
-    }
   }
 }
