@@ -1,0 +1,168 @@
+<!-- Admin Sidebar Container -->
+<div class="admin-sidebar h-screen bg-white shadow-lg transition-all duration-300 ease-in-out"
+     [class.collapsed]="isCollapsed()">
+  
+  <!-- Sidebar Header -->
+  <div class="sidebar-header border-b border-gray-200 p-4">
+    <!-- Logo and Toggle Button -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-3" *ngIf="!isCollapsed()">
+        <div class="flex-shrink-0">
+          <img src="/assets/images/logo.png" 
+               alt="StudyBridge" 
+               class="h-8 w-8"
+               *ngIf="false">
+          <!-- Fallback logo -->
+          <div class="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <i class="pi pi-graduation-cap text-white text-sm"></i>
+          </div>
+        </div>
+        <div class="hidden lg:block">
+          <h1 class="text-xl font-bold text-gray-900">StudyBridge</h1>
+          <p class="text-xs text-gray-500">Admin Panel</p>
+        </div>
+      </div>
+      
+      <!-- Toggle Button -->
+      <button (click)="toggleSidebar()"
+              class="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+        <i class="pi pi-bars text-gray-600"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Navigation Menu -->
+  <nav class="sidebar-nav flex-1 overflow-y-auto">
+    <ul class="menu-list py-4 space-y-2">
+      <!-- Menu Items -->
+      <li *ngFor="let item of menuItems()" 
+          class="menu-item">
+        
+        <!-- Parent Menu Item -->
+        <div class="menu-item-content">
+          <!-- Single Link Item -->
+          <a *ngIf="!item.children && item.routerLink"
+             [routerLink]="item.routerLink"
+             routerLinkActive="active"
+             class="menu-link flex items-center px-4 py-3 mx-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 group">
+            
+            <!-- Icon -->
+            <div class="menu-icon flex-shrink-0">
+              <i [class]="item.icon" 
+                 class="text-lg group-hover:text-blue-600"></i>
+            </div>
+            
+            <!-- Label -->
+            <span *ngIf="!isCollapsed()" 
+                  class="ml-3 font-medium truncate">{{ item.label }}</span>
+            
+            <!-- Badge -->
+            <span *ngIf="item.badge && !isCollapsed()" 
+                  class="ml-auto px-2 py-1 bg-red-500 text-white text-xs rounded-full">
+              {{ item.badge }}
+            </span>
+          </a>
+
+          <!-- Parent Item with Children -->
+          <button *ngIf="item.children"
+                  (click)="onMenuClick(item)"
+                  class="menu-toggle w-full flex items-center px-4 py-3 mx-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 group">
+            
+            <!-- Icon -->
+            <div class="menu-icon flex-shrink-0">
+              <i [class]="item.icon" 
+                 class="text-lg group-hover:text-blue-600"></i>
+            </div>
+            
+            <!-- Label -->
+            <span *ngIf="!isCollapsed()" 
+                  class="ml-3 font-medium truncate flex-1 text-left">{{ item.label }}</span>
+            
+            <!-- Expand/Collapse Icon -->
+            <i *ngIf="!isCollapsed()" 
+               class="pi pi-chevron-down ml-auto transition-transform duration-200"
+               [class.rotate-180]="item.expanded"></i>
+          </button>
+        </div>
+
+        <!-- Submenu -->
+        <ul *ngIf="item.children && item.expanded && !isCollapsed()" 
+            class="submenu ml-4 mt-2 space-y-1 border-l-2 border-gray-100">
+          <li *ngFor="let child of item.children">
+            <a [routerLink]="child.routerLink"
+               routerLinkActive="active"
+               class="submenu-link flex items-center px-4 py-2 ml-4 rounded-lg text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">
+              
+              <!-- Child Icon -->
+              <i [class]="child.icon" class="text-sm mr-3"></i>
+              
+              <!-- Child Label -->
+              <span class="truncate">{{ child.label }}</span>
+              
+              <!-- Child Badge -->
+              <span *ngIf="child.badge" 
+                    class="ml-auto px-2 py-1 bg-red-500 text-white text-xs rounded-full">
+                {{ child.badge }}
+              </span>
+            </a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- User Section -->
+  <div class="sidebar-footer border-t border-gray-200 p-4">
+    <div class="user-section" *ngIf="user() as currentUser">
+      <!-- Collapsed View -->
+      <div *ngIf="isCollapsed()" class="text-center">
+        <div class="user-avatar w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-2">
+          <span class="text-white font-semibold text-sm">{{ getUserInitials() }}</span>
+        </div>
+      </div>
+
+      <!-- Expanded View -->
+      <div *ngIf="!isCollapsed()" class="user-info">
+        <div class="flex items-center space-x-3 mb-3">
+          <!-- User Avatar -->
+          <div class="user-avatar flex-shrink-0">
+            <img *ngIf="currentUser.avatarUrl" 
+                 [src]="currentUser.avatarUrl" 
+                 [alt]="currentUser.displayName"
+                 class="w-10 h-10 rounded-full object-cover">
+            <div *ngIf="!currentUser.avatarUrl" 
+                 class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+              <span class="text-white font-semibold text-sm">{{ getUserInitials() }}</span>
+            </div>
+          </div>
+
+          <!-- User Details -->
+          <div class="user-details flex-1 min-w-0">
+            <p class="font-medium text-gray-900 truncate">{{ currentUser.displayName }}</p>
+            <p class="text-sm text-gray-500 truncate">{{ currentUser.email }}</p>
+          </div>
+        </div>
+
+        <!-- User Actions -->
+        <div class="user-actions flex flex-col space-y-1">
+          <a routerLink="/admin/profile" 
+             class="flex items-center px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+            <i class="pi pi-user mr-2"></i>
+            Profile Settings
+          </a>
+          
+          <button (click)="onLogout()"
+                  class="flex items-center px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors duration-200 w-full text-left">
+            <i class="pi pi-sign-out mr-2"></i>
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tooltip for collapsed sidebar -->
+<div *ngIf="isCollapsed()" class="tooltip-container">
+  <!-- Add tooltips for collapsed menu items if needed -->
+</div>

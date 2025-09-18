@@ -181,9 +181,13 @@ export class AuthService {
   }
 
   logout(): void {
+    console.log('AuthService: Logout method called');
     this.clearAuthData();
+    console.log('AuthService: Auth data cleared');
     this.currentUserSubject.next(null);
+    console.log('AuthService: Current user set to null');
     this.router.navigate(['/auth/login']);
+    console.log('AuthService: Navigation to login initiated');
   }
 
   // Token Management

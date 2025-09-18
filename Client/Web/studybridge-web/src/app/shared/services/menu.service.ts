@@ -77,7 +77,12 @@ export class MenuService {
       return [];
     } catch (error) {
       console.error('Error loading public menus:', error);
-      return [];
+      
+      // Fallback: Return default public menus if API fails
+      const fallbackMenus = this.getDefaultPublicMenus();
+      this.publicMenusSubject.next(fallbackMenus);
+      this.publicMenusSignal.set(fallbackMenus);
+      return fallbackMenus;
     } finally {
       this.setLoading(false);
     }
@@ -272,5 +277,52 @@ export class MenuService {
     
     findPath(menus, []);
     return path;
+  }
+
+  /**
+   * Get default public menus as fallback when API fails
+   */
+  private getDefaultPublicMenus(): MenuItem[] {
+    return [
+      {
+        id: 'public-dashboard',
+        name: 'public-dashboard',
+        displayName: 'Dashboard',
+        icon: 'pi pi-home',
+        route: '/public/dashboard',
+        parentId: undefined,
+        sortOrder: 10,
+        isActive: true,
+        menuType: MenuType.Public,
+        requiredPermissions: ['public.dashboard'],
+        children: []
+      },
+      {
+        id: 'public-vocabulary',
+        name: 'public-vocabulary',
+        displayName: 'Vocabulary',
+        icon: 'pi pi-book',
+        route: '/public/vocabulary',
+        parentId: undefined,
+        sortOrder: 20,
+        isActive: true,
+        menuType: MenuType.Public,
+        requiredPermissions: ['public.vocabulary'],
+        children: []
+      },
+      {
+        id: 'public-learning',
+        name: 'public-learning',
+        displayName: 'Learning',
+        icon: 'pi pi-lightbulb',
+        route: '/public/learning',
+        parentId: undefined,
+        sortOrder: 30,
+        isActive: true,
+        menuType: MenuType.Public,
+        requiredPermissions: ['public.learning'],
+        children: []
+      }
+    ];
   }
 }

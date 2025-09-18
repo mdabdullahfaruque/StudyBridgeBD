@@ -1,0 +1,140 @@
+<nav class="bg-white shadow-lg border-b border-gray-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16">
+      <!-- Logo and Main Navigation -->
+      <div class="flex">
+        <!-- Logo -->
+        <div class="flex-shrink-0 flex items-center">
+          <a routerLink="/public" class="flex items-center">
+            <span class="text-2xl font-bold text-blue-600">StudyBridge</span>
+          </a>
+        </div>
+
+        <!-- Desktop Navigation -->
+        <div class="hidden md:ml-6 md:flex md:space-x-8">
+          <ng-container *ngFor="let item of menuItems">
+            <a 
+              [routerLink]="item.url"
+              routerLinkActive="border-b-2 border-blue-500 text-blue-600"
+              class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-700 hover:text-blue-600 hover:border-b-2 hover:border-blue-300 transition-colors duration-200">
+              <i [class]="item.icon" class="mr-2"></i>
+              {{ item.label }}
+            </a>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- User Menu and Mobile Menu Button -->
+      <div class="flex items-center">
+        <!-- User Menu (Desktop) -->
+        <div class="hidden md:ml-4 md:flex md:items-center md:space-x-4">
+          <!-- Notifications -->
+          <button class="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-full transition-colors duration-200">
+            <i class="pi pi-bell text-lg"></i>
+          </button>
+
+          <!-- User Profile Dropdown -->
+          <div class="relative">
+            <button 
+              (click)="toggleUserMenu()"
+              class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+              <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                {{ getUserInitials() }}
+              </div>
+              <div class="text-left">
+                <div class="text-sm font-medium text-gray-900">{{ user?.displayName || 'User' }}</div>
+                <div class="text-xs text-gray-500">{{ user?.email }}</div>
+              </div>
+              <i class="pi pi-chevron-down text-gray-400 text-xs transition-transform duration-200" 
+                 [class.rotate-180]="isUserMenuOpen"></i>
+            </button>
+
+            <!-- User Dropdown Menu -->
+            <div *ngIf="isUserMenuOpen" 
+                 class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+              <a (click)="onProfileClick()" 
+                 class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                <i class="pi pi-user mr-3 text-gray-400"></i>
+                Your Profile
+              </a>
+              <a routerLink="/public/settings" 
+                 class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                <i class="pi pi-cog mr-3 text-gray-400"></i>
+                Settings
+              </a>
+              <hr class="my-2 border-gray-200">
+              <button (click)="onLogout(); toggleUserMenu()" 
+                      class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                <i class="pi pi-sign-out mr-3"></i>
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden ml-4">
+          <button 
+            (click)="toggleMobileMenu()"
+            class="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+            <i class="pi pi-bars text-lg" *ngIf="!isMobileMenuOpen"></i>
+            <i class="pi pi-times text-lg" *ngIf="isMobileMenuOpen"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Navigation Menu -->
+  <div *ngIf="isMobileMenuOpen" class="md:hidden bg-white border-t border-gray-200">
+    <div class="px-2 pt-2 pb-3 space-y-1">
+      <ng-container *ngFor="let item of menuItems">
+        <a 
+          [routerLink]="item.url"
+          (click)="closeMobileMenu()"
+          routerLinkActive="bg-blue-50 text-blue-600 border-l-4 border-blue-500"
+          class="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors duration-200">
+          <i [class]="item.icon" class="mr-3"></i>
+          {{ item.label }}
+        </a>
+      </ng-container>
+      
+      <!-- Mobile User Section -->
+      <div class="pt-4 border-t border-gray-200 mt-4">
+        <div class="flex items-center px-3 py-2">
+          <div class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-semibold">
+            {{ getUserInitials() }}
+          </div>
+          <div class="ml-3">
+            <div class="text-sm font-medium text-gray-900">{{ user?.displayName || 'User' }}</div>
+            <div class="text-xs text-gray-500">{{ user?.email }}</div>
+          </div>
+        </div>
+        
+        <a (click)="onProfileClick(); closeMobileMenu()" 
+           class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+          <i class="pi pi-user mr-3 text-gray-400"></i>
+          Your Profile
+        </a>
+        
+        <a routerLink="/public/settings" 
+           (click)="closeMobileMenu()"
+           class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+          <i class="pi pi-cog mr-3 text-gray-400"></i>
+          Settings
+        </a>
+        
+        <button (click)="onLogout(); closeMobileMenu()" 
+                class="w-full flex items-center px-3 py-2 text-sm text-red-600 hover:bg-red-50">
+          <i class="pi pi-sign-out mr-3"></i>
+          Sign out
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Backdrop for mobile menu -->
+<div *ngIf="isMobileMenuOpen" 
+     class="fixed inset-0 bg-black bg-opacity-25 z-40 md:hidden"
+     (click)="closeMobileMenu()"></div>

@@ -1,237 +1,58 @@
-<div class="admin-layout min-h-screen bg-gray-50 dark:bg-gray-900">
+<!-- Admin Layout with Left Sidebar -->
+<div class="admin-layout min-h-screen bg-gray-50 flex">
   <!-- Loading overlay -->
-  @if (isLoading()) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75">
-      <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p class="text-gray-600 dark:text-gray-400">Loading admin panel...</p>
-      </div>
+  <div *ngIf="isLoading()" 
+       class="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-75">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <p class="text-gray-600">Loading admin panel...</p>
     </div>
-  }
+  </div>
 
-  <!-- Mobile sidebar backdrop -->
-  @if (isMobileSidebarVisible()) {
-    <div 
-      class="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
-      (click)="isMobileSidebarVisible.set(false)">
-    </div>
-  }
+  <!-- Left Sidebar -->
+  <app-admin-sidebar></app-admin-sidebar>
 
-  <!-- Sidebar -->
-  <aside 
-    class="fixed top-0 left-0 z-40 h-screen transition-transform duration-300 ease-in-out bg-white dark:bg-gray-800 shadow-lg border-r border-gray-200 dark:border-gray-700"
-    [class.w-64]="!isSidebarCollapsed()"
-    [class.w-16]="isSidebarCollapsed()"
-    [class.-translate-x-full]="!isMobileSidebarVisible()"
-    [class.translate-x-0]="isMobileSidebarVisible()"
-    [class.lg:translate-x-0]="true">
-    
-    <!-- Sidebar header -->
-    <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-      <div class="flex items-center space-x-3" [class.justify-center]="isSidebarCollapsed()">
-        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-          <i class="pi pi-graduation-cap text-white text-lg"></i>
-        </div>
-        @if (!isSidebarCollapsed()) {
-          <div class="flex flex-col">
-            <span class="text-lg font-bold text-gray-900 dark:text-white">StudyBridge</span>
-            <span class="text-xs text-gray-500 dark:text-gray-400">Admin Panel</span>
-          </div>
-        }
-      </div>
-      
-      @if (!isSidebarCollapsed()) {
-        <button
-          type="button"
-          class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 lg:hidden"
-          (click)="isMobileSidebarVisible.set(false)">
-          <i class="pi pi-times text-lg"></i>
-        </button>
-      }
-    </div>
-
-    <!-- Navigation menu -->
-    <nav class="flex-1 overflow-y-auto p-4 space-y-2">
-      @for (item of menuItems(); track item.id) {
-        <div class="menu-item-container">
-          <!-- Parent menu item -->
-          <div 
-            class="menu-item flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-            [class.bg-blue-50]="item.isActive && !isSidebarCollapsed()"
-            [class.border-r-2]="item.isActive && !isSidebarCollapsed()"
-            [class.border-blue-600]="item.isActive && !isSidebarCollapsed()"
-            [class.justify-center]="isSidebarCollapsed()"
-            (click)="onMenuItemClick(item, $event)"
-            [routerLink]="!hasChildren(item) ? item.route : null"
-            routerLinkActive="active">
-            
-            <div class="flex items-center space-x-3" [class.justify-center]="isSidebarCollapsed()">
-              <i [class]="item.icon + ' text-lg'" 
-                 [class.text-blue-600]="item.isActive"
-                 [class.text-gray-600]="!item.isActive"
-                 [class.dark:text-gray-400]="!item.isActive"></i>
-              
-              @if (!isSidebarCollapsed()) {
-                <span 
-                  class="font-medium"
-                  [class.text-blue-600]="item.isActive"
-                  [class.text-gray-700]="!item.isActive"
-                  [class.dark:text-white]="!item.isActive && !item.isActive">
-                  {{ item.label }}
-                </span>
-                
-                @if (item.badge) {
-                  <p-badge 
-                    [value]="item.badge" 
-                    severity="info" 
-                    size="small">
-                  </p-badge>
-                }
-              }
-            </div>
-
-            @if (hasChildren(item) && !isSidebarCollapsed()) {
-              <i 
-                class="pi text-sm transition-transform duration-200"
-                [class.pi-chevron-down]="!item.isExpanded"
-                [class.pi-chevron-up]="item.isExpanded"
-                [class.text-blue-600]="item.isActive"
-                [class.text-gray-400]="!item.isActive">
-              </i>
-            }
-          </div>
-
-          <!-- Submenu items -->
-          @if (hasChildren(item) && item.isExpanded && !isSidebarCollapsed()) {
-            <div class="ml-6 mt-2 space-y-1">
-              @for (child of item.children; track child.id) {
-                <a
-                  [routerLink]="child.route"
-                  routerLinkActive="active"
-                  class="submenu-item flex items-center space-x-3 p-2 rounded-md cursor-pointer transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                  <i [class]="child.icon + ' text-sm'" 
-                     [class.text-blue-600]="child.isActive"
-                     [class.text-gray-500]="!child.isActive"
-                     [class.dark:text-gray-400]="!child.isActive"></i>
-                  <span 
-                    class="text-sm"
-                    [class.text-blue-600]="child.isActive"
-                    [class.font-medium]="child.isActive"
-                    [class.text-gray-600]="!child.isActive"
-                    [class.dark:text-gray-300]="!child.isActive">
-                    {{ child.label }}
-                  </span>
-                  
-                  @if (child.badge) {
-                    <p-badge 
-                      [value]="child.badge" 
-                      severity="info" 
-                      size="small">
-                    </p-badge>
-                  }
-                </a>
-              }
-            </div>
-          }
-        </div>
-      }
-    </nav>
-  </aside>
-
-  <!-- Main content area -->
-  <div 
-    class="transition-all duration-300 ease-in-out"
-    [class.lg:ml-64]="!isSidebarCollapsed()"
-    [class.lg:ml-16]="isSidebarCollapsed()">
-    
-    <!-- Top header -->
-    <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
-      <div class="flex items-center justify-between p-4">
-        <!-- Left side - Menu toggle -->
+  <!-- Main Content Area -->
+  <div class="flex-1 flex flex-col min-h-screen ml-0 lg:ml-80">
+    <!-- Top Header Bar (Optional) -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+      <div class="flex items-center justify-between px-6 py-4">
+        <!-- Left side - Page title or breadcrumb -->
         <div class="flex items-center space-x-4">
-          <button
-            type="button"
-            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 lg:hidden"
-            (click)="toggleMobileSidebar()">
-            <i class="pi pi-bars text-lg"></i>
-          </button>
-          
-          <button
-            type="button"
-            class="hidden lg:block p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            (click)="toggleSidebar()">
-            <i class="pi" [class.pi-angle-left]="!isSidebarCollapsed()" [class.pi-angle-right]="isSidebarCollapsed()"></i>
-          </button>
-
-          <!-- Breadcrumb or page title can go here -->
-          <div class="hidden md:block">
-            <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Admin Dashboard</h1>
-          </div>
+          <h1 class="text-xl font-semibold text-gray-900">Admin Dashboard</h1>
         </div>
 
-        <!-- Right side - User menu -->
+        <!-- Right side - Quick actions -->
         <div class="flex items-center space-x-4">
           <!-- Notifications -->
-          <button
-            type="button"
-            class="relative p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+          <button type="button" 
+                  class="relative p-2 text-gray-500 hover:text-gray-700 transition-colors duration-200">
             <i class="pi pi-bell text-lg"></i>
             <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
           </button>
 
-          <!-- User menu -->
-          <div class="relative">
-            <button
-              type="button"
-              class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-              (click)="toggleUserMenu()">
-              
-              @if (currentUser()?.avatar) {
-                <img 
-                  [src]="currentUser()?.avatar" 
-                  [alt]="currentUser()?.displayName"
-                  class="w-8 h-8 rounded-full">
-              } @else {
-                <p-avatar 
-                  [label]="userInitials()" 
-                  size="normal" 
-                  shape="circle"
-                  styleClass="bg-blue-600 text-white">
-                </p-avatar>
-              }
-
-              <div class="hidden md:block text-left">
-                <p class="text-sm font-medium text-gray-900 dark:text-white">
-                  {{ currentUser()?.displayName }}
-                </p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                  {{ currentUser()?.roles?.join(', ') }}
-                </p>
-              </div>
-
-              <i class="pi pi-chevron-down text-xs text-gray-400"></i>
-            </button>
-
-            <!-- User dropdown menu -->
-            @if (isUserMenuVisible()) {
-              <div 
-                class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50"
-                (clickOutside)="onClickOutside($event)">
-                <p-menu 
-                  [model]="userMenuItems" 
-                  [popup]="false"
-                  styleClass="w-full border-0">
-                </p-menu>
-              </div>
-            }
-          </div>
+          <!-- Quick settings -->
+          <button type="button" 
+                  class="p-2 text-gray-500 hover:text-gray-700 transition-colors duration-200">
+            <i class="pi pi-cog text-lg"></i>
+          </button>
         </div>
       </div>
     </header>
 
-    <!-- Main content -->
-    <main class="p-6">
+    <!-- Main Content -->
+    <main class="flex-1 p-6">
       <router-outlet></router-outlet>
     </main>
+
+    <!-- Footer (Optional) -->
+    <footer class="bg-white border-t border-gray-200 mt-auto">
+      <div class="px-6 py-4">
+        <div class="text-center text-sm text-gray-500">
+          <p>© 2024 StudyBridge Admin Panel. All rights reserved.</p>
+          <p class="mt-1">Version 1.0.0</p>
+        </div>
+      </div>
+    </footer>
   </div>
 </div>

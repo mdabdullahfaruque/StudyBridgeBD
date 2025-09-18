@@ -1,10 +1,11 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { RouterOutlet, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { MenuService } from '../../services/menu.service';
 import { UserDto } from '../../models/api.models';
 import { MenuItem as AppMenuItem } from '../../models/menu.models';
+import { TopMenuComponent } from '../../components/top-menu/top-menu.component';
 
 export interface PublicMenuItem {
   id: string;
@@ -20,8 +21,7 @@ export interface PublicMenuItem {
   imports: [
     CommonModule,
     RouterOutlet,
-    RouterLink,
-    RouterLinkActive
+    TopMenuComponent
   ],
   templateUrl: './public-layout.component.html',
   styleUrl: './public-layout.component.scss'
@@ -69,11 +69,10 @@ export class PublicLayoutComponent implements OnInit {
       return;
     }
 
-    // Check if user should be in admin area
-    if (this.authService.isAdminUser()) {
-      this.router.navigate(['/admin/dashboard']);
-      return;
-    }
+    // Allow all authenticated users to access public layout
+    // Including Google OAuth users with "User" role
+    // Only redirect if the user specifically needs admin access and is not already in admin area
+    console.log('Public layout - User loaded:', user.displayName, 'Roles:', user.roles?.map(r => r.name));
 
     this.currentUser.set(user);
     await this.loadPublicMenusFromApi();
@@ -161,8 +160,13 @@ export class PublicLayoutComponent implements OnInit {
   }
 
   logout() {
+    console.log('PublicLayoutComponent: Logout method called');
     this.authService.logout();
-    this.router.navigate(['/auth/login']);
+    console.log('PublicLayoutComponent: Auth service logout completed');
+  }
+
+  navigateToProfile() {
+    this.router.navigate(['/public/profile']);
   }
 
   // Handle outside clicks to close menus

@@ -1,36 +1,62 @@
-/* ================================================= */
-/* Public Layout Component - Comprehensive Styles   */
-/* ================================================= */
+/* Public Layout with Top Menu - Simple Styles *//* Public Layout with Top Menu - Simple Styles */
 
-/* Layout Container */
-:host {
-  display: block;
-  height: 100vh;
-  overflow: hidden;
+
+
+:host {:host {
+
+  display: block;  display: block;
+
+  min-height: 100vh;  min-height: 100vh;
+
+}}
+
+
+
+.public-layout-container {.public-layout-container {
+
+  display: flex;  display: flex;
+
+  flex-direction: column;  flex-direction: column;
+
+  min-height: 100vh;  min-height: 100vh;
+
+  background-color: #f9fafb;  background-color: #f9fafb;
+
+}}
+
+
+
+.main-content {/* ================================================= */
+
+  flex: 1;/* Sidebar Styles                                   */
+
+  padding: 0; /* Content components will handle their own padding *//* ================================================= */
+
 }
-
-.layout-container {
-  display: flex;
-  min-height: 100vh;
-  background-color: #f9fafb;
-}
-
-/* ================================================= */
-/* Sidebar Styles                                   */
-/* ================================================= */
 
 .sidebar {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
+
+/* Footer Styles */  position: fixed;
+
+footer {  top: 0;
+
+  margin-top: auto;  bottom: 0;
+
+}  left: 0;
+
   z-index: 50;
-  width: 16rem; /* 256px */
-  background: white;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  transform: translateX(-100%);
-  transition: transform 300ms ease-in-out, opacity 300ms ease-in-out;
-  
+
+/* Responsive adjustments */  width: 16rem; /* 256px */
+
+@media (max-width: 768px) {  background: white;
+
+  .main-content {  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    padding: 0;  transform: translateX(-100%);
+
+  }  transition: transform 300ms ease-in-out, opacity 300ms ease-in-out;
+
+}  
   &.mobile-visible {
     transform: translateX(0);
   }

@@ -1,16 +1,11 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { MenuModule } from 'primeng/menu';
-import { AvatarModule } from 'primeng/avatar';
-import { BadgeModule } from 'primeng/badge';
-import { TooltipModule } from 'primeng/tooltip';
-import { MenuItem } from 'primeng/api';
+import { RouterOutlet, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { MenuService } from '../../services/menu.service';
 import { UserDto } from '../../models/api.models';
 import { MenuItem as AppMenuItem } from '../../models/menu.models';
+import { AdminSidebarComponent } from '../../components/admin-sidebar/admin-sidebar.component';
 
 export interface AdminMenuItem {
   id: string;
@@ -39,13 +34,7 @@ export interface AdminUser {
   imports: [
     CommonModule,
     RouterOutlet,
-    RouterLink,
-    RouterLinkActive,
-    ButtonModule,
-    MenuModule,
-    AvatarModule,
-    BadgeModule,
-    TooltipModule
+    AdminSidebarComponent
   ],
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.scss'
@@ -75,25 +64,7 @@ export class AdminLayoutComponent implements OnInit {
     };
   });
 
-  // User menu items
-  userMenuItems: MenuItem[] = [
-    {
-      label: 'Profile',
-      icon: 'pi pi-user',
-      command: () => this.navigateToProfile()
-    },
-    {
-      label: 'Settings',
-      icon: 'pi pi-cog',
-      command: () => this.navigateToSettings()
-    },
-    { separator: true },
-    {
-      label: 'Logout',
-      icon: 'pi pi-sign-out',
-      command: () => this.logout()
-    }
-  ];
+  // User menu items - handled by sidebar component now
 
   constructor(
     private authService: AuthService,
