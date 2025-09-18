@@ -1,4 +1,4 @@
-import { Component, inject, computed, signal, Input, Output, EventEmitter } from '@angular/core';
+import { Component, inject, computed, signal, Input, Output, EventEmitter, OnInit, OnDestroy, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -20,9 +20,10 @@ interface MenuItem {
   templateUrl: './admin-sidebar.component.html',
   styleUrls: ['./admin-sidebar.component.scss']
 })
-export class AdminSidebarComponent {
+export class AdminSidebarComponent implements OnInit, AfterViewInit, OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private elementRef = inject(ElementRef);
 
   // Input for mobile open state
   @Input() isMobileOpen: boolean = false;
@@ -43,6 +44,44 @@ export class AdminSidebarComponent {
   // Toggle sidebar collapse
   toggleSidebar(): void {
     this.isCollapsed.update(collapsed => !collapsed);
+  }
+
+  ngOnInit(): void {
+    this.setMobileHeight();
+    window.addEventListener('resize', this.setMobileHeight.bind(this));
+    window.addEventListener('orientationchange', this.setMobileHeight.bind(this));
+  }
+
+  ngAfterViewInit(): void {
+    this.setMobileHeight();
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('resize', this.setMobileHeight.bind(this));
+    window.removeEventListener('orientationchange', this.setMobileHeight.bind(this));
+  }
+
+  // Set mobile height programmatically
+  private setMobileHeight(): void {
+    if (typeof window === 'undefined') return;
+    
+    // Update CSS custom property for all elements
+    const vh = window.innerHeight;
+    document.documentElement.style.setProperty('--mobile-vh', `${vh}px`);
+    
+    const isMobile = window.innerWidth <= 1023;
+    if (isMobile && this.elementRef?.nativeElement) {
+      const sidebar = this.elementRef.nativeElement.querySelector('.admin-sidebar');
+      if (sidebar) {
+        // Force height to actual viewport height with multiple approaches
+        sidebar.style.setProperty('height', `${vh}px`, 'important');
+        sidebar.style.setProperty('min-height', `${vh}px`, 'important');
+        sidebar.style.setProperty('max-height', `${vh}px`, 'important');
+        // Also set positioning to ensure full coverage
+        sidebar.style.setProperty('top', '0px', 'important');
+        sidebar.style.setProperty('bottom', '0px', 'important');
+      }
+    }
   }
 
   // Close mobile sidebar
