@@ -20,9 +20,8 @@ export class TopMenuComponent {
   isMobileMenuOpen = false;
 
   onLogout(): void {
-    console.log('TopMenuComponent: Logout button clicked');
     this.logout.emit();
-    console.log('TopMenuComponent: Logout event emitted');
+      this.toggleUserMenu(); // Close dropdown after logout
   }
 
   onProfileClick(): void {

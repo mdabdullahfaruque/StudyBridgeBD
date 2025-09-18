@@ -6,10 +6,12 @@
 2. [Modular Monolith Structure](#modular-monolith-structure)
 3. [CQRS Pattern](#cqrs-pattern)
 4. [Domain-Driven Design](#domain-driven-design)
-5. [Dependency Injection](#dependency-injection)
-6. [Data Access Patterns](#data-access-patterns)
-7. [Cross-Cutting Concerns](#cross-cutting-concerns)
-8. [Scalability Considerations](#scalability-considerations)
+5. [Dynamic API-Driven Frontend](#dynamic-api-driven-frontend)
+6. [Role-Based Access Control (RBAC)](#role-based-access-control-rbac)
+7. [Dependency Injection](#dependency-injection)
+8. [Data Access Patterns](#data-access-patterns)
+9. [Cross-Cutting Concerns](#cross-cutting-concerns)
+10. [Scalability Considerations](#scalability-considerations)
 
 ---
 
@@ -390,6 +392,272 @@ sequenceDiagram
     SERVICE->>EXTERNAL: Update External System
     SERVICE->>HANDLER: Confirm
     HANDLER->>AGGREGATE: Event Handled
+```
+
+---
+
+## 🌐 Dynamic API-Driven Frontend
+
+StudyBridge frontend is designed to be completely dynamic and API-driven, eliminating hardcoded configurations and making the system adaptable to backend changes.
+
+### Frontend Architecture
+
+```mermaid
+graph TB
+    subgraph "Angular 20 Frontend Architecture"
+        subgraph "Presentation Layer"
+            LAYOUTS[Layout Components]
+            COMPONENTS[Feature Components]
+            GUARDS[Route Guards]
+        end
+        
+        subgraph "State Management"
+            SIGNALS[Angular Signals]
+            SERVICES[Injectable Services]
+            STORES[Local State Stores]
+        end
+        
+        subgraph "API Integration"
+            HTTP_CLIENT[HTTP Client]
+            API_SERVICES[API Services]
+            INTERCEPTORS[HTTP Interceptors]
+        end
+        
+        subgraph "Dynamic Configuration"
+            MENU_SERVICE[Menu Service]
+            AUTH_SERVICE[Auth Service]
+            PERMISSION_SERVICE[Permission Service]
+        end
+    end
+    
+    LAYOUTS --> SERVICES
+    COMPONENTS --> SERVICES
+    GUARDS --> AUTH_SERVICE
+    SERVICES --> API_SERVICES
+    API_SERVICES --> HTTP_CLIENT
+    HTTP_CLIENT --> INTERCEPTORS
+    MENU_SERVICE --> API_SERVICES
+    PERMISSION_SERVICE --> API_SERVICES
+```
+
+### Dynamic Menu System
+
+```mermaid
+sequenceDiagram
+    participant USER as User
+    participant FRONTEND as Angular Frontend
+    participant MENU_SVC as Menu Service
+    participant BACKEND as Backend API
+    participant DB as Database
+    
+    USER->>FRONTEND: Login/Access Application
+    FRONTEND->>MENU_SVC: Request Menus for User
+    MENU_SVC->>BACKEND: GET /api/admin/menus/user-menus
+    BACKEND->>DB: Query User Permissions & Menus
+    DB->>BACKEND: Return Filtered Menus
+    BACKEND->>MENU_SVC: Return Menu Structure
+    MENU_SVC->>FRONTEND: Provide Dynamic Menus
+    FRONTEND->>USER: Render User-Specific Navigation
+    
+    Note over MENU_SVC: Fallback to default menus if API fails
+    Note over FRONTEND: No hardcoded menu items
+```
+
+### Role-Based Layout Selection
+
+```mermaid
+flowchart TD
+    subgraph "Dynamic Layout Architecture"
+        USER_LOGIN[User Login]
+        AUTH_CHECK{Check User Role}
+        
+        ADMIN_LAYOUT[Admin Layout<br/>- Collapsible Sidebar<br/>- Admin Navigation<br/>- Full Management UI]
+        PUBLIC_LAYOUT[Public Layout<br/>- Top Navigation Bar<br/>- User-Friendly UI<br/>- Learning Interface]
+        
+        ADMIN_MENUS[Dynamic Admin Menus<br/>- User Management<br/>- Content Management<br/>- System Configuration]
+        PUBLIC_MENUS[Dynamic Public Menus<br/>- Dashboard<br/>- Vocabulary<br/>- Learning Modules]
+    end
+    
+    USER_LOGIN --> AUTH_CHECK
+    AUTH_CHECK -->|Admin Roles| ADMIN_LAYOUT
+    AUTH_CHECK -->|User Role| PUBLIC_LAYOUT
+    ADMIN_LAYOUT --> ADMIN_MENUS
+    PUBLIC_LAYOUT --> PUBLIC_MENUS
+    
+    style ADMIN_LAYOUT fill:#e1f5fe
+    style PUBLIC_LAYOUT fill:#f3e5f5
+```
+
+### API-Driven Configuration
+
+```mermaid
+graph LR
+    subgraph "Configuration Sources"
+        MENUS_API[Menus API<br/>/api/admin/menus]
+        PERMISSIONS_API[Permissions API<br/>/api/admin/permissions]
+        USER_API[User API<br/>/api/profile]
+        ROLES_API[Roles API<br/>/api/admin/roles]
+    end
+    
+    subgraph "Frontend Services"
+        MENU_SERVICE[MenuService<br/>- Dynamic menu loading<br/>- Fallback handling<br/>- Hierarchical structure]
+        AUTH_SERVICE[AuthService<br/>- Role detection<br/>- Permission checking<br/>- Route redirection]
+        PERMISSION_SERVICE[PermissionService<br/>- Dynamic permissions<br/>- Access control<br/>- UI element visibility]
+    end
+    
+    MENUS_API --> MENU_SERVICE
+    PERMISSIONS_API --> PERMISSION_SERVICE
+    USER_API --> AUTH_SERVICE
+    ROLES_API --> AUTH_SERVICE
+    
+    MENU_SERVICE --> |No Hardcoded Menus| LAYOUTS
+    AUTH_SERVICE --> |Dynamic Role Check| GUARDS
+    PERMISSION_SERVICE --> |Runtime Permissions| COMPONENTS
+```
+
+---
+
+## 🛡️ Role-Based Access Control (RBAC)
+
+StudyBridge implements a comprehensive RBAC system that dynamically controls access to features, menus, and data based on user roles and permissions.
+
+### RBAC Architecture
+
+```mermaid
+graph TB
+    subgraph "RBAC System Architecture"
+        subgraph "User Context"
+            USER[User Account]
+            USER_ROLES[User Roles]
+            USER_PERMISSIONS[Effective Permissions]
+        end
+        
+        subgraph "Permission System"
+            ROLES[System Roles]
+            PERMISSIONS[System Permissions]
+            ROLE_PERMISSIONS[Role-Permission Mapping]
+        end
+        
+        subgraph "Access Control"
+            MENU_ACCESS[Menu Access Control]
+            ROUTE_GUARDS[Route Guards]
+            COMPONENT_ACCESS[Component-Level Access]
+            API_ACCESS[API Endpoint Access]
+        end
+        
+        subgraph "Dynamic Enforcement"
+            FRONTEND_AUTH[Frontend Authorization]
+            BACKEND_AUTH[Backend Authorization]
+            REAL_TIME_CHECKS[Real-time Permission Checks]
+        end
+    end
+    
+    USER --> USER_ROLES
+    USER_ROLES --> ROLE_PERMISSIONS
+    ROLE_PERMISSIONS --> PERMISSIONS
+    PERMISSIONS --> USER_PERMISSIONS
+    
+    USER_PERMISSIONS --> MENU_ACCESS
+    USER_PERMISSIONS --> ROUTE_GUARDS
+    USER_PERMISSIONS --> COMPONENT_ACCESS
+    USER_PERMISSIONS --> API_ACCESS
+    
+    MENU_ACCESS --> FRONTEND_AUTH
+    ROUTE_GUARDS --> FRONTEND_AUTH
+    COMPONENT_ACCESS --> FRONTEND_AUTH
+    API_ACCESS --> BACKEND_AUTH
+    
+    FRONTEND_AUTH --> REAL_TIME_CHECKS
+    BACKEND_AUTH --> REAL_TIME_CHECKS
+```
+
+### Dynamic Permission Evaluation
+
+```mermaid
+sequenceDiagram
+    participant COMP as Component
+    participant AUTH_SVC as AuthService
+    participant PERM_SVC as PermissionService
+    participant MENU_SVC as MenuService
+    participant API as Backend API
+    
+    COMP->>AUTH_SVC: Check User Access
+    AUTH_SVC->>PERM_SVC: Get User Permissions
+    PERM_SVC->>API: Fetch Current Permissions
+    API->>PERM_SVC: Return Permission List
+    PERM_SVC->>MENU_SVC: Filter Available Menus
+    MENU_SVC->>API: Get Accessible Menus
+    API->>MENU_SVC: Return Filtered Menus
+    MENU_SVC->>COMP: Provide Authorized Content
+    
+    Note over COMP: UI updates dynamically based on permissions
+    Note over API: All permissions verified server-side
+```
+
+### Role-Based Menu Filtering
+
+```mermaid
+flowchart TD
+    subgraph "Menu Access Control Flow"
+        USER_LOGIN[User Authentication]
+        LOAD_ROLES[Load User Roles]
+        FETCH_PERMISSIONS[Fetch Role Permissions]
+        GET_MENUS[Get Available Menus]
+        FILTER_MENUS[Filter by Permissions]
+        RENDER_UI[Render Authorized UI]
+        
+        PERMISSION_CHECK{Has Required Permission?}
+        MENU_ITEM[Menu Item]
+        INCLUDE_MENU[Include in Navigation]
+        EXCLUDE_MENU[Hide from Navigation]
+    end
+    
+    USER_LOGIN --> LOAD_ROLES
+    LOAD_ROLES --> FETCH_PERMISSIONS
+    FETCH_PERMISSIONS --> GET_MENUS
+    GET_MENUS --> FILTER_MENUS
+    FILTER_MENUS --> PERMISSION_CHECK
+    PERMISSION_CHECK -->|Yes| INCLUDE_MENU
+    PERMISSION_CHECK -->|No| EXCLUDE_MENU
+    INCLUDE_MENU --> RENDER_UI
+    
+    style INCLUDE_MENU fill:#c8e6c9
+    style EXCLUDE_MENU fill:#ffcdd2
+```
+
+### System Roles and Permissions
+
+```mermaid
+graph TB
+    subgraph "StudyBridge Role Hierarchy"
+        subgraph "Administrative Roles"
+            SUPER_ADMIN[SuperAdmin<br/>- Full system access<br/>- User management<br/>- System configuration]
+            ADMIN[Admin<br/>- User management<br/>- Content management<br/>- Analytics access]
+            CONTENT_MANAGER[ContentManager<br/>- Vocabulary management<br/>- Learning content<br/>- Progress tracking]
+        end
+        
+        subgraph "User Roles"
+            USER[User<br/>- Learning dashboard<br/>- Vocabulary practice<br/>- Progress viewing<br/>- Profile management]
+        end
+        
+        subgraph "Permission Categories"
+            SYSTEM_PERMS[System Permissions<br/>- system.manage<br/>- system.view<br/>- system.configure]
+            USER_PERMS[User Permissions<br/>- users.view<br/>- users.create<br/>- users.edit<br/>- users.delete]
+            CONTENT_PERMS[Content Permissions<br/>- content.view<br/>- content.create<br/>- content.edit<br/>- content.delete]
+            PUBLIC_PERMS[Public Permissions<br/>- public.dashboard<br/>- public.vocabulary<br/>- public.learning]
+        end
+    end
+    
+    SUPER_ADMIN --> SYSTEM_PERMS
+    SUPER_ADMIN --> USER_PERMS
+    SUPER_ADMIN --> CONTENT_PERMS
+    
+    ADMIN --> USER_PERMS
+    ADMIN --> CONTENT_PERMS
+    
+    CONTENT_MANAGER --> CONTENT_PERMS
+    
+    USER --> PUBLIC_PERMS
 ```
 
 ---
@@ -810,6 +1078,50 @@ graph TB
     REQUEST_TRACKING --> DB_HEALTH
     DEPENDENCY_TRACKING --> EXTERNAL_HEALTH
 ```
+
+---
+
+---
+
+## 📝 Implementation Notes
+
+### Recent Updates (September 2025)
+
+**Dynamic API Integration Completed:**
+- ✅ Removed all hardcoded admin roles from `AuthService`
+- ✅ Replaced hardcoded permissions mapping with API-driven approach
+- ✅ Cleaned up hardcoded menu items in layout components
+- ✅ Implemented fallback mechanisms for graceful API failure handling
+- ✅ Added proper role-based layout selection (Admin vs User)
+- ✅ Enhanced MenuService with dynamic loading capabilities
+
+**Key Changes Made:**
+1. **AuthService Improvements:**
+   - `hasAdminRole()`: Now dynamically determines admin roles instead of hardcoded list
+   - `isAdminUser()`: Uses API-provided role data for authorization decisions
+   - Removed hardcoded role arrays: `['Admin', 'SuperAdmin', 'Administrator', ...]`
+
+2. **Layout Components:**
+   - **AdminLayoutComponent**: Uses `MenuService.loadAdminMenus()` for dynamic navigation
+   - **PublicLayoutComponent**: Integrated with `MenuService.loadPublicMenus()` 
+   - Fallback menus provide minimal navigation when API is unavailable
+
+3. **Menu System:**
+   - **MenuService**: Enhanced with hierarchical menu building and permission filtering
+   - Backend integration via `/api/admin/menus/user-menus` and `/api/admin/public-menus`
+   - Automatic fallback to default menus if API calls fail
+
+4. **Security & Permissions:**
+   - Dynamic permission checking based on API responses
+   - Real-time role validation without hardcoded assumptions
+   - Graceful handling of missing permissions data
+
+**Migration Path for Microservices:**
+The current implementation is designed to easily transition from the modular monolith to microservices:
+- Service abstractions allow easy extraction to separate APIs
+- Event-driven communication patterns already implemented  
+- Database per service preparation through module boundaries
+- CQRS foundation supports distributed query/command handling
 
 ---
 

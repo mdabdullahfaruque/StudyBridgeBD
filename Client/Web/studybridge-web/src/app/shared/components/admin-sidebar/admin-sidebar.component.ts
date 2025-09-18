@@ -145,31 +145,20 @@ export class AdminSidebarComponent {
       }
     ];
 
-    // Add system settings for super admin
-    if (user.roles?.some(role => role.name === 'SuperAdmin')) {
-      baseMenuItems.push({
-        label: 'System Settings',
-        icon: 'pi pi-cog',
-        children: [
-          {
-            label: 'Application Settings',
-            icon: 'pi pi-sliders-h',
-            routerLink: '/admin/settings/application'
-          },
-          {
-            label: 'Email Templates',
-            icon: 'pi pi-envelope',
-            routerLink: '/admin/settings/email-templates'
-          },
-          {
-            label: 'System Logs',
-            icon: 'pi pi-file-o',
-            routerLink: '/admin/settings/logs'
-          }
-        ]
-      });
-    }
-
-    return baseMenuItems;
+    console.warn('AdminSidebarComponent: This component uses hardcoded menus. Replace with MenuService integration.');
+    
+    // Return minimal fallback instead of hardcoded extensive menu
+    return [
+      {
+        label: 'Dashboard',
+        icon: 'pi pi-home',
+        routerLink: '/admin/dashboard'
+      },
+      {
+        label: 'User Management',
+        icon: 'pi pi-users',
+        routerLink: '/admin/users'
+      }
+    ];
   }
 }

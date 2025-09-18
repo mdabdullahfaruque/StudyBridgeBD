@@ -100,10 +100,15 @@ export class AdminLayoutComponent implements OnInit {
   }
 
   private async loadAdminUser(user: UserDto): Promise<AdminUser> {
-    // TODO: Replace with actual API call to get user permissions and roles
-    // For now, simulate based on user info
-    const roleNames = user.roles?.map(role => role.name) || ['SuperAdmin']; // Default to SuperAdmin for testing
-    const permissions = this.getPermissionsForRoles(roleNames);
+    // Use actual user roles from API response - no hardcoded defaults
+    const roleNames = user.roles?.map(role => role.name) || [];
+    
+    // If no roles are found, this might indicate a data issue
+    if (roleNames.length === 0) {
+      console.warn('No roles found for admin user:', user.email);
+    }
+    
+    const permissions = await this.loadUserPermissions(user);
 
     return {
       id: user.id || '',
@@ -112,6 +117,18 @@ export class AdminLayoutComponent implements OnInit {
       roles: roleNames,
       permissions
     };
+  }
+
+  private async loadUserPermissions(user: UserDto): Promise<string[]> {
+    try {
+      // TODO: Implement API call to get user-specific permissions
+      // For now, derive permissions from roles
+      const roleNames = user.roles?.map(role => role.name) || [];
+      return this.getPermissionsForRoles(roleNames);
+    } catch (error) {
+      console.error('Failed to load user permissions:', error);
+      return [];
+    }
   }
 
   private async loadUserMenusFromApi() {
@@ -168,44 +185,23 @@ export class AdminLayoutComponent implements OnInit {
   }
 
   private getPermissionsForRoles(roles: string[]): string[] {
-    // TODO: Replace with actual API call to get permissions
-    // For now, simulate based on roles
-    const allPermissions: Record<string, string[]> = {
-      'SuperAdmin': [
-        'users.view', 'users.create', 'users.edit', 'users.delete', 'users.manage',
-        'roles.view', 'roles.create', 'roles.edit', 'roles.delete', 'roles.manage',
-        'permissions.view', 'permissions.create', 'permissions.edit', 'permissions.delete', 'permissions.manage',
-        'menus.view', 'menus.create', 'menus.edit', 'menus.delete', 'menus.manage',
-        'system.view', 'system.manage', 'system.logs', 'system.settings',
-        'content.view', 'content.create', 'content.edit', 'content.delete', 'content.manage',
-        'financials.view', 'financials.manage', 'reports.view', 'analytics.view'
-      ],
-      'Admin': [
-        'users.view', 'users.create', 'users.edit', 'users.delete',
-        'roles.view', 'roles.create', 'roles.edit', 
-        'permissions.view', 'content.view', 'content.create', 'content.edit',
-        'system.view', 'reports.view'
-      ],
-      'Finance': [
-        'users.view', 'financials.view', 'financials.manage', 'reports.view'
-      ],
-      'ContentManager': [
-        'users.view', 'content.view', 'content.create', 'content.edit', 'content.delete'
-      ],
-      'User': ['dashboard.view']
-    };
-
-    const userPermissions = new Set<string>();
-    roles.forEach(role => {
-      const rolePermissions = allPermissions[role] || [];
-      rolePermissions.forEach(permission => userPermissions.add(permission));
-    });
-
-    return Array.from(userPermissions);
+    // Return empty array - permissions should be loaded from API
+    // This is a temporary placeholder until proper API integration
+    console.warn('Using placeholder permissions. Implement API call to get role permissions.');
+    
+    // Basic fallback permissions to prevent complete failure
+    if (roles.some(role => role.toLowerCase().includes('admin') || role.toLowerCase().includes('super'))) {
+      return ['users.view', 'content.view', 'system.view'];
+    }
+    
+    return [];
   }
 
   private buildAdminMenu(permissions: string[]): AdminMenuItem[] {
-    const allMenuItems: AdminMenuItem[] = [
+    console.warn('buildAdminMenu: This method should be replaced with dynamic menu loading from MenuService');
+    
+    // This is a minimal fallback menu - the real menu should come from the API
+    const fallbackMenuItems: AdminMenuItem[] = [
       {
         id: 'dashboard',
         label: 'Dashboard',
@@ -214,174 +210,15 @@ export class AdminLayoutComponent implements OnInit {
         permission: 'dashboard.view'
       },
       {
-        id: 'admin-management',
-        label: 'Admin Management',
-        icon: 'pi pi-sitemap',
-        route: '/admin/management',
-        permission: 'admin.view'
-      },
-      {
         id: 'user-management',
         label: 'User Management',
         icon: 'pi pi-users',
         route: '/admin/users',
-        permission: 'users.view',
-        children: [
-          {
-            id: 'users-list',
-            label: 'All Users',
-            icon: 'pi pi-list',
-            route: '/admin/users',
-            permission: 'users.view'
-          },
-          {
-            id: 'users-create',
-            label: 'Add User',
-            icon: 'pi pi-plus',
-            route: '/admin/users/create',
-            permission: 'users.create'
-          },
-          {
-            id: 'users-roles',
-            label: 'User Roles',
-            icon: 'pi pi-key',
-            route: '/admin/users/roles',
-            permission: 'roles.view'
-          }
-        ]
-      },
-      {
-        id: 'role-management',
-        label: 'Role Management',
-        icon: 'pi pi-key',
-        route: '/admin/roles',
-        permission: 'roles.view',
-        children: [
-          {
-            id: 'roles-list',
-            label: 'All Roles',
-            icon: 'pi pi-list',
-            route: '/admin/roles',
-            permission: 'roles.view'
-          },
-          {
-            id: 'roles-create',
-            label: 'Create Role',
-            icon: 'pi pi-plus',
-            route: '/admin/roles/create',
-            permission: 'roles.create'
-          }
-        ]
-      },
-      {
-        id: 'permission-management',
-        label: 'Permissions',
-        icon: 'pi pi-shield',
-        route: '/admin/permissions',
-        permission: 'permissions.view',
-        children: [
-          {
-            id: 'permissions-list',
-            label: 'All Permissions',
-            icon: 'pi pi-list',
-            route: '/admin/permissions',
-            permission: 'permissions.view'
-          },
-          {
-            id: 'permissions-create',
-            label: 'Create Permission',
-            icon: 'pi pi-plus',
-            route: '/admin/permissions/create',
-            permission: 'permissions.create'
-          }
-        ]
-      },
-      {
-        id: 'content-management',
-        label: 'Content',
-        icon: 'pi pi-file-edit',
-        route: '/admin/content',
-        permission: 'content.view',
-        children: [
-          {
-            id: 'content-vocabulary',
-            label: 'Vocabulary',
-            icon: 'pi pi-book',
-            route: '/admin/content/vocabulary',
-            permission: 'content.view'
-          },
-          {
-            id: 'content-categories',
-            label: 'Categories',
-            icon: 'pi pi-tags',
-            route: '/admin/content/categories',
-            permission: 'content.view'
-          }
-        ]
-      },
-      {
-        id: 'financial-management',
-        label: 'Financials',
-        icon: 'pi pi-dollar',
-        route: '/admin/financials',
-        permission: 'financials.view',
-        children: [
-          {
-            id: 'financials-overview',
-            label: 'Overview',
-            icon: 'pi pi-chart-bar',
-            route: '/admin/financials',
-            permission: 'financials.view'
-          },
-          {
-            id: 'financials-subscriptions',
-            label: 'Subscriptions',
-            icon: 'pi pi-credit-card',
-            route: '/admin/financials/subscriptions',
-            permission: 'financials.view'
-          },
-          {
-            id: 'financials-reports',
-            label: 'Reports',
-            icon: 'pi pi-chart-line',
-            route: '/admin/financials/reports',
-            permission: 'reports.view'
-          }
-        ]
-      },
-      {
-        id: 'system-management',
-        label: 'System',
-        icon: 'pi pi-cog',
-        route: '/admin/system',
-        permission: 'system.view',
-        children: [
-          {
-            id: 'system-settings',
-            label: 'Settings',
-            icon: 'pi pi-sliders-h',
-            route: '/admin/system/settings',
-            permission: 'system.manage'
-          },
-          {
-            id: 'system-logs',
-            label: 'Logs',
-            icon: 'pi pi-file',
-            route: '/admin/system/logs',
-            permission: 'system.logs'
-          },
-          {
-            id: 'system-analytics',
-            label: 'Analytics',
-            icon: 'pi pi-chart-pie',
-            route: '/admin/system/analytics',
-            permission: 'analytics.view'
-          }
-        ]
+        permission: 'users.view'
       }
     ];
 
-    return this.filterMenuByPermissions(allMenuItems, permissions);
+    return this.filterMenuByPermissions(fallbackMenuItems, permissions);
   }
 
   private filterMenuByPermissions(items: AdminMenuItem[], permissions: string[]): AdminMenuItem[] {

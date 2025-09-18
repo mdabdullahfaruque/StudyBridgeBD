@@ -72,7 +72,7 @@ export class PublicLayoutComponent implements OnInit {
     // Allow all authenticated users to access public layout
     // Including Google OAuth users with "User" role
     // Only redirect if the user specifically needs admin access and is not already in admin area
-    console.log('Public layout - User loaded:', user.displayName, 'Roles:', user.roles?.map(r => r.name));
+
 
     this.currentUser.set(user);
     await this.loadPublicMenusFromApi();
@@ -119,7 +119,9 @@ export class PublicLayoutComponent implements OnInit {
   }
 
   private loadFallbackPublicMenus() {
-    // Define fallback public menu items - only top-level navigation for users
+    console.warn('PublicLayoutComponent: Using fallback menus. MenuService should provide dynamic menus from API.');
+    
+    // Minimal fallback menu - real menus should come from MenuService
     const publicMenus: PublicMenuItem[] = [
       {
         id: 'dashboard',
@@ -160,9 +162,7 @@ export class PublicLayoutComponent implements OnInit {
   }
 
   logout() {
-    console.log('PublicLayoutComponent: Logout method called');
     this.authService.logout();
-    console.log('PublicLayoutComponent: Auth service logout completed');
   }
 
   navigateToProfile() {

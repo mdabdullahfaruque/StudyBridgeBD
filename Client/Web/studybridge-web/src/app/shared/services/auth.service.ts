@@ -181,13 +181,9 @@ export class AuthService {
   }
 
   logout(): void {
-    console.log('AuthService: Logout method called');
     this.clearAuthData();
-    console.log('AuthService: Auth data cleared');
     this.currentUserSubject.next(null);
-    console.log('AuthService: Current user set to null');
     this.router.navigate(['/auth/login']);
-    console.log('AuthService: Navigation to login initiated');
   }
 
   // Token Management
@@ -223,30 +219,38 @@ export class AuthService {
     console.log('getRedirectUrlForUser - Current user:', user);
     
     if (!user) {
-      console.log('No user found, redirecting to login');
       return '/auth/login';
     }
     
     // Check for admin roles first (higher priority)
-    const adminRoles = ['Admin', 'SuperAdmin', 'Administrator', 'SuperAdmin', 'Finance', 'Accounts', 'ContentManager'];
-    const hasAdminRole = user.roles?.some(role => adminRoles.includes(role.name));
-    
-    console.log('User roles:', user.roles?.map(r => r.name));
-    console.log('Has admin role:', hasAdminRole);
+    // Use dynamic role checking based on actual user roles from API
+    const hasAdminRole = this.hasAdminRole(user);
     
     if (hasAdminRole) {
-      console.log('Redirecting to admin dashboard');
       return '/admin/dashboard';
     }
-    
+
     // Default to public area for regular users
-    console.log('Redirecting to public dashboard');
     return '/public/dashboard';
   }
 
+  /**
+   * Check if user has admin role based on actual role data from API
+   * This method dynamically determines admin roles instead of using hardcoded values
+   */
+  hasAdminRole(user?: UserDto): boolean {
+    const currentUser = user || this.getCurrentUser();
+    if (!currentUser?.roles) return false;
+    
+    // Check for admin-type roles dynamically
+    // Any role that is not 'User' is considered administrative
+    return currentUser.roles.some(role => 
+      role.name && role.name.toLowerCase() !== 'user'
+    );
+  }
+
   isAdminUser(): boolean {
-    const adminRoles = ['Admin', 'SuperAdmin', 'Administrator', 'SuperAdmin', 'Finance', 'Accounts', 'ContentManager'];
-    return this.hasAnyRole(adminRoles);
+    return this.hasAdminRole();
   }
 
   /**
