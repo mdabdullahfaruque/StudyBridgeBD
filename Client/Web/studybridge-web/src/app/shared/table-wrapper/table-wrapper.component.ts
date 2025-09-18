@@ -9,7 +9,7 @@ import { TooltipModule } from 'primeng/tooltip';
 export interface TableColumn {
   field: string;
   header: string;
-  type?: 'text' | 'number' | 'date' | 'boolean' | 'enum' | 'custom';
+  type?: 'text' | 'number' | 'date' | 'boolean' | 'enum' | 'status' | 'custom';
   sortable?: boolean;
   filterable?: boolean;
   filterType?: 'text' | 'dropdown' | 'date' | 'number' | 'multiselect';

@@ -19,6 +19,7 @@ graph TB
             API[🌐 API Reference<br/>Endpoint Documentation]
             DEV[👨‍💻 Development Guide<br/>Getting Started]
             IMPL[🚀 Implementation Status<br/>Current Progress]
+            ADMIN_TABLE[🔧 Admin Table Guide<br/>Table Implementation]
         end
         
         subgraph "Project Files"
@@ -85,7 +86,7 @@ graph TB
 - Git workflow and deployment process
 - **Best for**: Developers joining the project, daily development reference
 
-### 🚀 [Implementation Status](./IMPLEMENTATION_STATUS.md) **NEW**
+### 🚀 [Implementation Status](./IMPLEMENTATION_STATUS.md)
 **Current project status and progress tracking**
 - Detailed breakdown of completed features
 - Backend (.NET 8) and Frontend (Angular 20) implementation
@@ -93,6 +94,15 @@ graph TB
 - Testing coverage and metrics
 - Recent enhancements and technical achievements
 - **Best for**: Understanding current project state, tracking progress
+
+### 🔧 [Admin Table Implementation Guide](./ADMIN_TABLE_IMPLEMENTATION.md) **NEW**
+**Standardized pattern for admin data tables**
+- Complete implementation guide using app-table-wrapper
+- Column configuration and data processing
+- API response handling patterns
+- Troubleshooting common issues
+- Reference implementation (Role Management)
+- **Best for**: Developers implementing admin interfaces, maintaining consistency
 
 ---
 

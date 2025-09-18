@@ -1,3 +1,19 @@
+/**
+ * Role List Component for Admin Dashboard
+ * 
+ * Reference implementation for admin table components using the standardized
+ * app-table-wrapper component as mandated by the UI Components Guide.
+ * 
+ * Key Implementation Notes:
+ * - Backend returns nested API response: response.data.roles (not direct array)
+ * - SystemRole field comes as boolean (true=system, false=custom) not number
+ * - Uses 'status' column type for styled badges in table display
+ * - Processes raw data into display-friendly format before table binding
+ * 
+ * This component serves as the reference implementation for all admin table components.
+ * See docs/ADMIN_TABLE_IMPLEMENTATION.md for the complete pattern guide.
+ */
+
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -55,16 +71,20 @@ export class RoleListComponent implements OnInit, OnDestroy {
     {
       field: 'systemRoleDisplay',
       header: 'System Role',
-      type: 'text',
+      type: 'status',
       sortable: true,
       filterable: true,
-      filterType: 'text',
+      filterType: 'dropdown',
+      filterOptions: [
+        { label: 'System Role', value: 'System Role' },
+        { label: 'Custom Role', value: 'Custom Role' }
+      ],
       width: '150px'
     },
     {
       field: 'statusDisplay',
       header: 'Status',
-      type: 'text',
+      type: 'status',
       sortable: true,
       filterable: true,
       filterType: 'dropdown',
