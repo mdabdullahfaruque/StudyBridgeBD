@@ -3,11 +3,24 @@
 .admin-sidebar {
   width: 280px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
   z-index: 1000;
   background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
   border-right: 1px solid rgba(226, 232, 240, 0.8);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 1023px) {
+  .admin-sidebar {
+    transform: translateX(-100%);
+  }
+  
+  .admin-sidebar.mobile-open {
+    transform: translateX(0);
+  }
 }
 
 .admin-sidebar.collapsed {
