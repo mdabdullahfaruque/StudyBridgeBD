@@ -7,7 +7,7 @@ using System.Security.Claims;
 namespace StudyBridge.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 public class ContentController : ControllerBase
 {
     private readonly ILogger<ContentController> _logger;

@@ -170,46 +170,10 @@
     </ng-template>
 
     <!-- Table Body -->
-    <ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
+    <ng-template pTemplate="body" let-rowData>
       <tr>
-        <td *ngFor="let col of getVisibleColumns()" class="cell-content">
-          <!-- Custom Template -->
-          <div *ngIf="col.customTemplate" [innerHTML]="col.customTemplate"></div>
-          
-          <!-- Default Content -->
-          <span *ngIf="!col.customTemplate" [ngSwitch]="col.type">
-            
-            <!-- Boolean Display -->
-            <i *ngSwitchCase="'boolean'" 
-               class="pi text-sm"
-               [ngClass]="{
-                 'pi-check text-green-500': getFieldValue(rowData, col.field),
-                 'pi-times text-red-500': !getFieldValue(rowData, col.field)
-               }">
-            </i>
-
-            <!-- Number Display -->
-            <span *ngSwitchCase="'number'" class="font-mono">
-              {{ formatCellValue(rowData, col) }}
-            </span>
-
-            <!-- Date Display -->
-            <span *ngSwitchCase="'date'">
-              {{ formatCellValue(rowData, col) }}
-            </span>
-
-            <!-- Enum/Tag Display -->
-            <span *ngSwitchCase="'enum'" 
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              {{ formatCellValue(rowData, col) }}
-            </span>
-
-            <!-- Default Text -->
-            <span *ngSwitchDefault>
-              {{ formatCellValue(rowData, col) }}
-            </span>
-
-          </span>
+        <td *ngFor="let col of getVisibleColumns()">
+          {{ getFieldValue(rowData, col.field) }}
         </td>
       </tr>
     </ng-template>

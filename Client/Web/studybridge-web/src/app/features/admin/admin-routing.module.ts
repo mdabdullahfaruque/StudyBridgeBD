@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AdminGuard } from '../../core/guards/auth.guards';
 import { AdminLayoutComponent } from '../../shared/layouts/admin-layout/admin-layout.component';
 import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
+import { RoleListComponent } from './components/role-management/role-list.component';
 
 const routes: Routes = [
   {
@@ -27,7 +28,7 @@ const routes: Routes = [
       },
       {
         path: 'roles',
-        component: AdminDashboardComponent, // Placeholder until components are created
+        component: RoleListComponent,
         title: 'Role Management - StudyBridge'
       },
       {

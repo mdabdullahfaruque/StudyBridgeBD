@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Table, TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
 
 export interface TableColumn {
   field: string;
@@ -79,7 +80,8 @@ export interface TableLazyLoadEvent {
     FormsModule,
     TableModule, 
     InputTextModule, 
-    ButtonModule
+    ButtonModule,
+    TooltipModule
   ],
   templateUrl: './table-wrapper.component.html',
   styleUrl: './table-wrapper.component.scss'

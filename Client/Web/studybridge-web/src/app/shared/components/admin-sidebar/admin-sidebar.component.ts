@@ -147,7 +147,7 @@ export class AdminSidebarComponent {
 
     console.warn('AdminSidebarComponent: This component uses hardcoded menus. Replace with MenuService integration.');
     
-    // Return minimal fallback instead of hardcoded extensive menu
+    // Return basic admin menu including role management
     return [
       {
         label: 'Dashboard',
@@ -157,7 +157,23 @@ export class AdminSidebarComponent {
       {
         label: 'User Management',
         icon: 'pi pi-users',
-        routerLink: '/admin/users'
+        children: [
+          {
+            label: 'All Users',
+            icon: 'pi pi-list',
+            routerLink: '/admin/users'
+          },
+          {
+            label: 'User Roles',
+            icon: 'pi pi-shield',
+            routerLink: '/admin/roles'
+          }
+        ]
+      },
+      {
+        label: 'Role Management',
+        icon: 'pi pi-key',
+        routerLink: '/admin/roles'
       }
     ];
   }

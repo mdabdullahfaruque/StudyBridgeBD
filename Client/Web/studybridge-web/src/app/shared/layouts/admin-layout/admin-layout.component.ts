@@ -97,8 +97,11 @@ export class AdminLayoutComponent implements OnInit {
     const adminUser = await this.loadAdminUser(user);
     this.currentUser.set(adminUser);
 
-    // Load dynamic menu from backend API
-    await this.loadUserMenusFromApi();
+    // TODO: Load dynamic menu from backend API when menu endpoints are implemented
+    // await this.loadUserMenusFromApi();
+    
+    // For now, use fallback menu to prevent 404 errors
+    this.loadFallbackMenu();
   }
 
   private async loadAdminUser(user: UserDto): Promise<AdminUser> {
@@ -192,8 +195,8 @@ export class AdminLayoutComponent implements OnInit {
     console.warn('Using placeholder permissions. Implement API call to get role permissions.');
     
     // Basic fallback permissions to prevent complete failure
-    if (roles.some(role => role.toLowerCase().includes('admin') || role.toLowerCase().includes('super'))) {
-      return ['users.view', 'content.view', 'system.view'];
+    if (roles && roles.length > 0 && roles.some(role => role && typeof role === 'string' && (role.toLowerCase().includes('admin') || role.toLowerCase().includes('super')))) {
+      return ['users.view', 'content.view', 'system.view', 'roles.view', 'roles.manage'];
     }
     
     return [];
@@ -217,6 +220,13 @@ export class AdminLayoutComponent implements OnInit {
         icon: 'pi pi-users',
         route: '/admin/users',
         permission: 'users.view'
+      },
+      {
+        id: 'role-management',
+        label: 'Role Management',
+        icon: 'pi pi-key',
+        route: '/admin/roles',
+        permission: 'roles.view'
       }
     ];
 

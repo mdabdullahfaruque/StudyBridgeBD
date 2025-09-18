@@ -13,7 +13,7 @@ using System.Security.Claims;
 namespace StudyBridge.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 public class AdminController : ControllerBase
 {
     private readonly IPermissionService _permissionService;
