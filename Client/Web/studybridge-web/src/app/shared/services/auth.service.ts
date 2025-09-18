@@ -44,36 +44,49 @@ export class AuthService {
   }
 
   private initializeAuthState(): void {
-    const token = this.tokenService.getToken();
-    const user = this.getStoredUser();
-    
-    if (token && user && !this.tokenService.isTokenExpired()) {
-      this.currentUserSubject.next(user);
-    } else {
+    try {
+      const token = this.tokenService.getToken();
+      const user = this.getStoredUser();
+      
+      if (token && user && !this.tokenService.isTokenExpired()) {
+        this.currentUserSubject.next(user);
+      } else {
+        this.clearAuthData();
+        // No mock user - user needs to login properly
+      }
+    } catch (error) {
+      console.error('Error initializing auth state:', error);
+      // Clear any corrupted data and start fresh
       this.clearAuthData();
-      // No mock user - user needs to login properly
     }
   }
 
 
 
   // Authentication Methods
-  async login(credentials: LoginRequest): Promise<LoginResponse> {
+  async login(credentials: LoginRequest): Promise<any> {
+    console.log('Login called with:', credentials);
     this.isLoadingSubject.next(true);
     
     try {
-      const response = await this.http.post<ApiResponse<LoginResponse>>(
+      console.log('Making API call to:', `${this.apiUrl}/auth/login`);
+      const response = await this.http.post<any>(
         `${this.apiUrl}/auth/login`,
         credentials
       ).toPromise();
 
+      console.log('API response received:', response);
+
       if (response?.data) {
+        console.log('Response data exists, calling handleAuthSuccess');
         this.handleAuthSuccess(response.data);
         return response.data;
       }
       
+      console.error('No response data found');
       throw new Error('Invalid response format');
     } catch (error) {
+      console.error('Login error:', error);
       this.handleError('Login failed', error);
       throw error;
     } finally {
@@ -203,17 +216,27 @@ export class AuthService {
   // Role-based navigation helpers
   getRedirectUrlForUser(): string {
     const user = this.getCurrentUser();
-    if (!user) return '/auth/login';
+    console.log('getRedirectUrlForUser - Current user:', user);
+    
+    if (!user) {
+      console.log('No user found, redirecting to login');
+      return '/auth/login';
+    }
     
     // Check for admin roles first (higher priority)
     const adminRoles = ['Admin', 'SuperAdmin', 'Administrator', 'SuperAdmin', 'Finance', 'Accounts', 'ContentManager'];
-    const hasAdminRole = user.roles.some(role => adminRoles.includes(role.name));
+    const hasAdminRole = user.roles?.some(role => adminRoles.includes(role.name));
+    
+    console.log('User roles:', user.roles?.map(r => r.name));
+    console.log('Has admin role:', hasAdminRole);
     
     if (hasAdminRole) {
+      console.log('Redirecting to admin dashboard');
       return '/admin/dashboard';
     }
     
     // Default to public area for regular users
+    console.log('Redirecting to public dashboard');
     return '/public/dashboard';
   }
 
@@ -226,11 +249,15 @@ export class AuthService {
    * Navigate user to appropriate dashboard after login
    */
   async navigateToUserDashboard(): Promise<void> {
+    console.log('navigateToUserDashboard called');
+    
     // Get redirect URL first
     const redirectUrl = this.getRedirectUrlForUser();
+    console.log('Navigating to:', redirectUrl);
     
     // Navigate immediately - don't wait for menu loading
-    this.router.navigate([redirectUrl]);
+    const navigationResult = await this.router.navigate([redirectUrl]);
+    console.log('Navigation result:', navigationResult);
 
     // Load menus for the current user (async, don't block navigation)
     try {
@@ -247,16 +274,33 @@ export class AuthService {
   }
 
   // Private Helper Methods
-  private handleAuthSuccess(loginResponse: LoginResponse): void {
-    const user = loginResponse.user;
+  private handleAuthSuccess(loginResponse: any): void {
+    console.log('handleAuthSuccess called with:', loginResponse);
+    
+    // Backend sends user data directly in response, not in a nested 'user' object
+    const user: UserDto = {
+      id: loginResponse.userId,
+      email: loginResponse.email,
+      firstName: loginResponse.displayName?.split(' ')[0] || '',
+      lastName: loginResponse.displayName?.split(' ').slice(1).join(' ') || '',
+      displayName: loginResponse.displayName,
+      isActive: true,
+      emailConfirmed: true,
+      roles: loginResponse.roles || [],
+      createdAt: new Date().toISOString()
+    };
+    
+    console.log('Constructed user object:', user);
 
     // Store auth data
     this.tokenService.setToken(loginResponse.token);
-    this.tokenService.setRefreshToken(loginResponse.refreshToken);
+    this.tokenService.setRefreshToken(loginResponse.refreshToken || '');
     localStorage.setItem(API_CONFIG.AUTH.USER_KEY, JSON.stringify(user));
     
     // Update current user - use next() to immediately update the observable
     this.currentUserSubject.next(user);
+    
+    console.log('User state updated, current user now:', this.getCurrentUser());
   }
 
   private clearAuthData(): void {
@@ -265,8 +309,18 @@ export class AuthService {
   }
 
   private getStoredUser(): UserDto | null {
-    const userJson = localStorage.getItem(API_CONFIG.AUTH.USER_KEY);
-    return userJson ? JSON.parse(userJson) : null;
+    try {
+      const userJson = localStorage.getItem(API_CONFIG.AUTH.USER_KEY);
+      if (!userJson || userJson === 'undefined' || userJson === 'null') {
+        return null;
+      }
+      return JSON.parse(userJson);
+    } catch (error) {
+      console.error('Error parsing stored user data:', error);
+      // Clear corrupted data
+      localStorage.removeItem(API_CONFIG.AUTH.USER_KEY);
+      return null;
+    }
   }
 
   // Token expiration is now handled by TokenService
