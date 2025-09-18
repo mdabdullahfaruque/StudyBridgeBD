@@ -105,8 +105,8 @@ export class AdminLayoutComponent implements OnInit {
   }
 
   private async loadAdminUser(user: UserDto): Promise<AdminUser> {
-    // Use actual user roles from API response - no hardcoded defaults
-    const roleNames = user.roles?.map(role => role.name) || [];
+    // Use actual user roles from API response - roles are now strings, not objects
+    const roleNames = user.roles || [];
     
     // If no roles are found, this might indicate a data issue
     if (roleNames.length === 0) {
@@ -127,8 +127,8 @@ export class AdminLayoutComponent implements OnInit {
   private async loadUserPermissions(user: UserDto): Promise<string[]> {
     try {
       // TODO: Implement API call to get user-specific permissions
-      // For now, derive permissions from roles
-      const roleNames = user.roles?.map(role => role.name) || [];
+      // For now, derive permissions from roles (roles are now strings)
+      const roleNames = user.roles || [];
       return this.getPermissionsForRoles(roleNames);
     } catch (error) {
       console.error('Failed to load user permissions:', error);

@@ -3,6 +3,7 @@ import { RoleGuard } from '../../core/guards/auth.guards';
 import { AdminLayoutComponent } from '../../shared/layouts/admin-layout/admin-layout.component';
 import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
 import { RoleListComponent } from './components/role-management/role-list.component';
+import { UserListComponent } from './components/user-management/user-list.component';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -23,7 +24,7 @@ export const ADMIN_ROUTES: Routes = [
       },
       {
         path: 'users',
-        component: AdminDashboardComponent,
+        component: UserListComponent,
         title: 'User Management'
       },
       {

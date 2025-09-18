@@ -255,7 +255,7 @@ export class SidebarComponent {
       return false;
     }
     
-    return item.roles.some(role => this.user?.roles?.some(userRole => userRole.name === role));
+    return item.roles.some(role => this.user?.roles?.some(userRole => userRole === role));
   }
 
   getUserInitials(displayName: string): string {

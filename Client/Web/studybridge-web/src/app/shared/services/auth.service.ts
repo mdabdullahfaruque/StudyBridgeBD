@@ -197,7 +197,7 @@ export class AuthService {
 
   hasRole(roleName: string): boolean {
     const user = this.getCurrentUser();
-    return user?.roles?.some(role => role.name === roleName) ?? false;
+    return user?.roles?.some(role => role === roleName) ?? false;
   }
 
   hasAnyRole(roles: string[]): boolean {
@@ -206,11 +206,9 @@ export class AuthService {
 
   hasPermission(permissionKey: string): boolean {
     const user = this.getCurrentUser();
-    if (!user?.roles) return false;
+    if (!user?.permissions) return false;
     
-    return user.roles.some(role => 
-      role.permissions?.some(permission => permission.permissionKey === permissionKey)
-    );
+    return user.permissions.includes(permissionKey);
   }
 
   // Role-based navigation helpers
@@ -242,7 +240,7 @@ export class AuthService {
     // Check for admin-type roles dynamically
     // Any role that is not 'User' is considered administrative
     return currentUser.roles.some(role => 
-      role.name && role.name.toLowerCase() !== 'user'
+      role && role.toLowerCase() !== 'user'
     );
   }
 
@@ -292,6 +290,8 @@ export class AuthService {
       isActive: true,
       emailConfirmed: true,
       roles: loginResponse.roles || [],
+      permissions: loginResponse.permissions || [],
+      subscriptions: loginResponse.subscriptions || [],
       createdAt: new Date().toISOString(),
       isPublicUser: loginResponse.isPublicUser ?? true
     };

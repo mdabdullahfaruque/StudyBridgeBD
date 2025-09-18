@@ -80,16 +80,27 @@ export interface MenuDto {
 export interface UserDto {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  firstName?: string;
+  lastName?: string;
   displayName: string;
   avatarUrl?: string;
   isActive: boolean;
   emailConfirmed: boolean;
-  roles: RoleDto[];
+  roles: string[]; // Updated to match backend response
+  permissions: string[];
+  subscriptions: UserSubscriptionDto[];
   createdAt: string;
   lastLoginAt?: string;
-  isPublicUser: boolean;
+  isPublicUser?: boolean; // Made optional as backend doesn't include this
+}
+
+export interface UserSubscriptionDto {
+  id: string;
+  plan: string;
+  status: string;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
 }
 
 export interface RoleDto {
