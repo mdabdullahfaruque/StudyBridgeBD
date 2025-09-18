@@ -42,7 +42,9 @@ export class GuestGuard implements CanActivate {
       take(1),
       map(isAuthenticated => {
         if (isAuthenticated) {
-          this.router.navigate(['/dashboard']);
+          // Use the auth service to determine proper redirect URL based on user roles
+          const redirectUrl = this.authService.getRedirectUrlForUser();
+          this.router.navigate([redirectUrl]);
           return false;
         }
         return true;

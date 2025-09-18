@@ -8,8 +8,9 @@ import { BadgeModule } from 'primeng/badge';
 import { TooltipModule } from 'primeng/tooltip';
 import { MenuItem } from 'primeng/api';
 import { AuthService } from '../../services/auth.service';
-// import { AdminService } from '../services/admin.service'; // TODO: Create AdminService
+import { MenuService } from '../../services/menu.service';
 import { UserDto } from '../../models/api.models';
+import { MenuItem as AppMenuItem } from '../../models/menu.models';
 
 export interface AdminMenuItem {
   id: string;
@@ -96,7 +97,7 @@ export class AdminLayoutComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    // private adminService: AdminService, // TODO: Create AdminService
+    private menuService: MenuService,
     private router: Router
   ) {}
 
@@ -143,9 +144,22 @@ export class AdminLayoutComponent implements OnInit {
   }
 
   private async loadUserMenusFromApi() {
-    // TODO: Implement AdminService calls
-    // For now, load fallback menu
-    this.loadFallbackMenu();
+    try {
+      // Load admin menus from API using MenuService
+      const adminMenus = await this.menuService.loadAdminMenus();
+      
+      if (adminMenus.length > 0) {
+        const convertedMenus = this.convertAppMenuItemsToAdminMenuItems(adminMenus);
+        this.menuItems.set(convertedMenus);
+      } else {
+        // Fallback to static menu if API fails
+        this.loadFallbackMenu();
+      }
+    } catch (error) {
+      console.error('Failed to load admin menus from API:', error);
+      // Fallback to static menu
+      this.loadFallbackMenu();
+    }
   }
 
   private loadFallbackMenu() {
@@ -164,6 +178,19 @@ export class AdminLayoutComponent implements OnInit {
       route: menu.route || '',
       permission: menu.requiredPermissions?.[0], // Use first permission as primary
       children: menu.children ? this.convertBackendMenusToAdminMenuItems(menu.children) : undefined,
+      isActive: false,
+      isExpanded: false
+    }));
+  }
+
+  private convertAppMenuItemsToAdminMenuItems(appMenus: AppMenuItem[]): AdminMenuItem[] {
+    return appMenus.map(menu => ({
+      id: menu.name,
+      label: menu.displayName,
+      icon: menu.icon || 'pi pi-circle',
+      route: menu.route || '',
+      permission: menu.requiredPermissions?.[0], // Use first permission as primary
+      children: menu.children ? this.convertAppMenuItemsToAdminMenuItems(menu.children) : undefined,
       isActive: false,
       isExpanded: false
     }));

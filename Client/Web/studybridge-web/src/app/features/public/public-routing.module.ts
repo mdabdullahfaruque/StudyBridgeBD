@@ -16,6 +16,16 @@ const routes: Routes = [
         path: 'dashboard',
         loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent),
         title: 'Dashboard - StudyBridge'
+      },
+      {
+        path: 'vocabulary',
+        loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent), // Placeholder until vocabulary component is created
+        title: 'Vocabulary - StudyBridge'
+      },
+      {
+        path: 'learning',
+        loadComponent: () => import('./components/dashboard/dashboard.component').then(m => m.DashboardComponent), // Placeholder until learning component is created
+        title: 'Learning - StudyBridge'
       }
       // More routes will be added when components are organized
     ]

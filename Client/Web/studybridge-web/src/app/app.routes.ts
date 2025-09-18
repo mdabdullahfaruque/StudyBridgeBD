@@ -1,15 +1,16 @@
 import { Routes } from '@angular/router';
-import { AuthGuard } from './core/guards/auth.guards';
+import { AuthGuard, GuestGuard } from './core/guards/auth.guards';
 
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/auth',
-    pathMatch: 'full'
+    loadComponent: () => import('./core/components/dashboard-redirect.component').then(m => m.DashboardRedirectComponent)
+    // No guard here - let DashboardRedirectComponent handle the auth check and redirect
   },
   {
     path: 'auth',
-    loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule)
+    loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule),
+    canActivate: [GuestGuard]
   },
   {
     path: 'public',

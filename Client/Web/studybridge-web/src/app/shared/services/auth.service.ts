@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, Injector } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
@@ -30,12 +30,15 @@ export class AuthService {
   public isLoading$ = this.isLoadingSubject.asObservable();
   public isAuthenticated$ = this.currentUser$.pipe(map(user => !!user));
 
+  private menuService: any; // Lazy-loaded to avoid circular dependency
+
   constructor(
     private http: HttpClient,
     private router: Router,
     private authApiService: AuthApiService,
     private notificationService: NotificationService,
-    private tokenService: TokenService
+    private tokenService: TokenService,
+    private injector: Injector
   ) {
     this.initializeAuthState();
   }
@@ -48,43 +51,11 @@ export class AuthService {
       this.currentUserSubject.next(user);
     } else {
       this.clearAuthData();
-      // FOR DEMO PURPOSES: Create a mock user to test PrimeNG styling
-      this.createMockUser();
+      // No mock user - user needs to login properly
     }
   }
 
-  private createMockUser(): void {
-    const mockUser: UserDto = {
-      id: '1',
-      email: 'demo@studybridge.com',
-      firstName: 'Demo',
-      lastName: 'User',
-      displayName: 'Demo User',
-      isActive: true,
-      emailConfirmed: true,
-      roles: [{ 
-        id: '1', 
-        name: 'User', 
-        description: 'Standard user role', 
-        isActive: true,
-        systemRole: 1,
-        permissions: [{ 
-          id: '1', 
-          permissionKey: 'dashboard.view', 
-          displayName: 'View Dashboard',
-          description: 'View dashboard', 
-          permissionType: 1, 
-          isSystemPermission: true 
-        }] 
-      }],
-      createdAt: new Date().toISOString()
-    };
-    
-    // Store mock data for demo
-    this.tokenService.setToken('mock-jwt-token-for-demo');
-    localStorage.setItem(API_CONFIG.AUTH.USER_KEY, JSON.stringify(mockUser));
-    this.currentUserSubject.next(mockUser);
-  }
+
 
   // Authentication Methods
   async login(credentials: LoginRequest): Promise<LoginResponse> {
@@ -234,24 +205,45 @@ export class AuthService {
     const user = this.getCurrentUser();
     if (!user) return '/auth/login';
     
-    // If user has only 'User' role, redirect to public area
-    if (user.roles.length === 1 && user.roles[0].name === 'User') {
-      return '/public/dashboard';
-    }
+    // Check for admin roles first (higher priority)
+    const adminRoles = ['Admin', 'SuperAdmin', 'Administrator', 'SuperAdmin', 'Finance', 'Accounts', 'ContentManager'];
+    const hasAdminRole = user.roles.some(role => adminRoles.includes(role.name));
     
-    // If user has admin roles (Admin, SuperAdmin, etc.), redirect to admin area
-    const adminRoles = ['Admin', 'SuperAdmin', 'Administrator'];
-    if (user.roles.some(role => adminRoles.includes(role.name))) {
+    if (hasAdminRole) {
       return '/admin/dashboard';
     }
     
-    // Default fallback
+    // Default to public area for regular users
     return '/public/dashboard';
   }
 
   isAdminUser(): boolean {
-    const adminRoles = ['Admin', 'SuperAdmin', 'Administrator'];
+    const adminRoles = ['Admin', 'SuperAdmin', 'Administrator', 'SuperAdmin', 'Finance', 'Accounts', 'ContentManager'];
     return this.hasAnyRole(adminRoles);
+  }
+
+  /**
+   * Navigate user to appropriate dashboard after login
+   */
+  async navigateToUserDashboard(): Promise<void> {
+    // Get redirect URL first
+    const redirectUrl = this.getRedirectUrlForUser();
+    
+    // Navigate immediately - don't wait for menu loading
+    this.router.navigate([redirectUrl]);
+
+    // Load menus for the current user (async, don't block navigation)
+    try {
+      // Lazy-load MenuService to avoid circular dependency
+      if (!this.menuService) {
+        const { MenuService } = await import('./menu.service');
+        this.menuService = this.injector.get(MenuService);
+      }
+      await this.menuService.loadMenusForCurrentUser();
+    } catch (error) {
+      console.error('Error loading menus:', error);
+      // Menu loading failure should not prevent navigation
+    }
   }
 
   // Private Helper Methods

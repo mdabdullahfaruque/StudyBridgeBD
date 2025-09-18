@@ -9,6 +9,7 @@ export { UserApiService } from './user-api.service';
 export { MenuApiService } from './menu-api.service';
 export { RolePermissionApiService } from './role-permission-api.service';
 export { NotificationService } from './notification.service';
+export { MenuService } from './menu.service';
 
 // Re-export API configuration and models for convenience
 export * from './api.config';

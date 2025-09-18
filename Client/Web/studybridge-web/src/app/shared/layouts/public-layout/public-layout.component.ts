@@ -2,7 +2,9 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { MenuService } from '../../services/menu.service';
 import { UserDto } from '../../models/api.models';
+import { MenuItem as AppMenuItem } from '../../models/menu.models';
 
 export interface PublicMenuItem {
   id: string;
@@ -44,6 +46,7 @@ export class PublicLayoutComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private menuService: MenuService,
     private router: Router
   ) {}
 
@@ -73,29 +76,69 @@ export class PublicLayoutComponent implements OnInit {
     }
 
     this.currentUser.set(user);
-    this.loadPublicMenus();
+    await this.loadPublicMenusFromApi();
   }
 
-  private loadPublicMenus() {
-    // Define public menu items - only top-level navigation for users
+  private async loadPublicMenusFromApi() {
+    try {
+      // Load public menus from API using MenuService
+      const publicMenus = await this.menuService.loadPublicMenus();
+      
+      if (publicMenus.length > 0) {
+        const convertedMenus = this.convertAppMenuItemsToPublicMenuItems(publicMenus);
+        this.topMenuItems.set(convertedMenus);
+      } else {
+        // Fallback to static menu if API fails
+        this.loadFallbackPublicMenus();
+      }
+    } catch (error) {
+      console.error('Failed to load public menus from API:', error);
+      // Fallback to static menu
+      this.loadFallbackPublicMenus();
+    }
+  }
+
+  private convertAppMenuItemsToPublicMenuItems(appMenus: AppMenuItem[]): PublicMenuItem[] {
+    return appMenus.map(menu => ({
+      id: menu.name,
+      label: menu.displayName,
+      icon: this.getIconForMenu(menu.icon),
+      route: menu.route || '',
+      badge: menu.name.includes('vocabulary') || menu.name.includes('learning') ? 'Coming Soon' : undefined
+    }));
+  }
+
+  private getIconForMenu(iconName?: string): string {
+    // Map PrimeNG icons to custom SVGs or use default
+    const iconMap: { [key: string]: string } = {
+      'pi pi-home': '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6a2 2 0 01-2 2H10a2 2 0 01-2-2V5z"></path></svg>',
+      'pi pi-book': '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>',
+      'pi pi-lightbulb': '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>'
+    };
+    
+    return iconMap[iconName || ''] || iconMap['pi pi-home'];
+  }
+
+  private loadFallbackPublicMenus() {
+    // Define fallback public menu items - only top-level navigation for users
     const publicMenus: PublicMenuItem[] = [
       {
         id: 'dashboard',
         label: 'Dashboard',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6a2 2 0 01-2 2H10a2 2 0 01-2-2V5z"></path></svg>',
+        icon: this.getIconForMenu('pi pi-home'),
         route: '/public/dashboard'
       },
       {
         id: 'vocabulary',
         label: 'Vocabulary',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>',
+        icon: this.getIconForMenu('pi pi-book'),
         route: '/public/vocabulary',
         badge: 'Coming Soon'
       },
       {
         id: 'learning',
         label: 'Learning',
-        icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>',
+        icon: this.getIconForMenu('pi pi-lightbulb'),
         route: '/public/learning',
         badge: 'Coming Soon'
       }

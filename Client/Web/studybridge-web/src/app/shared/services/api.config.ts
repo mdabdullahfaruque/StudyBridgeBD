@@ -162,7 +162,12 @@ export const API_ENDPOINTS = {
   // Public endpoints (future vocabulary, learning modules)
   PUBLIC: {
     GET_VOCABULARY: { path: '/public/vocabulary', method: 'GET' as const, requiresAuth: false },
-    GET_CATEGORIES: { path: '/public/categories', method: 'GET' as const, requiresAuth: false }
+    GET_CATEGORIES: { path: '/public/categories', method: 'GET' as const, requiresAuth: false },
+    GET_PUBLIC_MENUS: { 
+      path: '/admin/public-menus', 
+      method: 'GET' as const, 
+      requiresAuth: true 
+    }
   }
 };
 

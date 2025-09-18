@@ -41,12 +41,13 @@ export class LoginComponent implements OnInit, OnDestroy {
     // Initialize Google Auth
     this.initializeGoogleAuth();
 
+    // Check if user is already authenticated and redirect
     this.authService.isAuthenticated$
       .pipe(takeUntil(this.destroy$))
       .subscribe(isAuthenticated => {
         if (isAuthenticated) {
-          const redirectUrl = this.authService.getRedirectUrlForUser();
-          this.router.navigate([redirectUrl]);
+          // Use the service method for consistent navigation
+          this.authService.navigateToUserDashboard();
         }
       });
   }
@@ -65,13 +66,8 @@ export class LoginComponent implements OnInit, OnDestroy {
         await this.authService.login({ email, password });
         this.toastService.success('Login Successful', 'Welcome back to StudyBridge!');
         
-        // Use role-based redirection with a slight delay to ensure auth state is updated
-        setTimeout(() => {
-          const redirectUrl = this.authService.getRedirectUrlForUser();
-          this.router.navigate([redirectUrl]).then(() => {
-            console.log('Navigation completed to:', redirectUrl);
-          });
-        }, 100);
+        // Explicitly navigate after successful login
+        await this.authService.navigateToUserDashboard();
       } catch (error: any) {
         const message = error.error?.message || 'Login failed. Please check your credentials.';
         this.toastService.error('Login Failed', message);

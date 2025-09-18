@@ -37,11 +37,11 @@ export class MenuApiService {
   }
 
   /**
-   * Get public menus (for unauthenticated users)
+   * Get public menus (for authenticated regular users)
    */
   getPublicMenus(): Observable<ApiResponse<MenuDto[]>> {
     return this.apiService.get<MenuDto[]>(
-      API_ENDPOINTS.PUBLIC.GET_VOCABULARY.path, // This should be updated to correct public menu endpoint
+      API_ENDPOINTS.PUBLIC.GET_PUBLIC_MENUS.path,
       { 
         showErrorToast: false
       }
