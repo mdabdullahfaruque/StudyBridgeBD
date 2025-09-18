@@ -17,6 +17,12 @@ public class AppUser : BaseEntity
     public bool IsActive { get; set; } = true;
     public LoginProvider LoginProvider { get; set; } = LoginProvider.Local;
     
+    /// <summary>
+    /// Determines user's layout and access level. 
+    /// true = Public user (public layout), false = Admin user (admin layout)
+    /// </summary>
+    public bool IsPublicUser { get; set; } = true;
+    
     // Helper method to check if user is OAuth user
     public bool IsOAuthUser => LoginProvider != LoginProvider.Local;
     

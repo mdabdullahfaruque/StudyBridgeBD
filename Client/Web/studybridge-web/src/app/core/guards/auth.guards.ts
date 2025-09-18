@@ -88,3 +88,71 @@ export class RoleGuard implements CanActivate {
     );
   }
 }
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AdminGuard implements CanActivate {
+  
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  canActivate(): Observable<boolean> {
+    return this.authService.isAuthenticated$.pipe(
+      take(1),
+      map(isAuthenticated => {
+        if (!isAuthenticated) {
+          this.router.navigate(['/auth/login']);
+          return false;
+        }
+
+        const currentUser = this.authService.getCurrentUser();
+        // Admin users have IsPublicUser = false
+        if (currentUser?.isPublicUser !== false) {
+          // User is not an admin, redirect to their appropriate dashboard
+          const redirectUrl = this.authService.getRedirectUrlForUser();
+          this.router.navigate([redirectUrl]);
+          return false;
+        }
+
+        return true;
+      })
+    );
+  }
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class PublicGuard implements CanActivate {
+  
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  canActivate(): Observable<boolean> {
+    return this.authService.isAuthenticated$.pipe(
+      take(1),
+      map(isAuthenticated => {
+        if (!isAuthenticated) {
+          this.router.navigate(['/auth/login']);
+          return false;
+        }
+
+        const currentUser = this.authService.getCurrentUser();
+        // Public users have IsPublicUser = true
+        if (currentUser?.isPublicUser !== true) {
+          // User is not a public user, redirect to their appropriate dashboard
+          const redirectUrl = this.authService.getRedirectUrlForUser();
+          this.router.navigate([redirectUrl]);
+          return false;
+        }
+
+        return true;
+      })
+    );
+  }
+}

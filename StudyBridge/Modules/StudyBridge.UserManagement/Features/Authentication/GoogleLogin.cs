@@ -51,6 +51,7 @@ public static class GoogleLogin
         public string UserId { get; init; } = string.Empty;
         public List<string> Roles { get; init; } = new();
         public bool IsNewUser { get; init; }
+        public bool IsPublicUser { get; init; } = true;
     }
 
     public class Handler : ICommandHandler<Command, Response>
@@ -163,7 +164,8 @@ public static class GoogleLogin
                     DisplayName = user.DisplayName,
                     UserId = user.Id.ToString(),
                     Roles = roleStrings,
-                    IsNewUser = isNewUser
+                    IsNewUser = isNewUser,
+                    IsPublicUser = user.IsPublicUser
                 };
             }
             catch (Exception ex)

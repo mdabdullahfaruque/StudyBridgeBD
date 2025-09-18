@@ -89,6 +89,7 @@ export interface UserDto {
   roles: RoleDto[];
   createdAt: string;
   lastLoginAt?: string;
+  isPublicUser: boolean;
 }
 
 export interface RoleDto {
@@ -121,6 +122,7 @@ export interface LoginResponse {
   refreshToken: string;
   user: UserDto;
   expiresAt: string;
+  isPublicUser: boolean;
 }
 
 export interface RegisterRequest {

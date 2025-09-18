@@ -40,6 +40,7 @@ public static class Login
         public string DisplayName { get; init; } = string.Empty;
         public string UserId { get; init; } = string.Empty;
         public List<string> Roles { get; init; } = new();
+        public bool IsPublicUser { get; init; } = true;
     }
 
     public class Handler(
@@ -98,7 +99,8 @@ public static class Login
                 Email = user.Email,
                 DisplayName = user.DisplayName,
                 UserId = user.Id.ToString(),
-                Roles = roleStrings
+                Roles = roleStrings,
+                IsPublicUser = user.IsPublicUser
             };
         }
     }

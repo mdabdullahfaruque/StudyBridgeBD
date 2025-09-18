@@ -427,6 +427,7 @@ public class DataSeederService
                 EmailConfirmed = true,
                 IsActive = true,
                 LoginProvider = LoginProvider.Local,
+                IsPublicUser = false, // Admin user - should access admin layout
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -477,6 +478,7 @@ public class DataSeederService
                 EmailConfirmed = true,
                 IsActive = true,
                 LoginProvider = LoginProvider.Local,
+                IsPublicUser = true, // Regular user - should access public layout
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };

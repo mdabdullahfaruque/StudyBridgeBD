@@ -56,6 +56,7 @@ public static class Register
         public string UserId { get; init; } = string.Empty;
         public List<string> Roles { get; init; } = new();
         public bool RequiresEmailConfirmation { get; init; }
+        public bool IsPublicUser { get; init; } = true;
     }
 
     public class Handler : ICommandHandler<Command, Response>
@@ -136,7 +137,8 @@ public static class Register
                 DisplayName = user.DisplayName,
                 UserId = user.Id.ToString(),
                 Roles = roleStrings,
-                RequiresEmailConfirmation = !user.EmailConfirmed
+                RequiresEmailConfirmation = !user.EmailConfirmed,
+                IsPublicUser = user.IsPublicUser
             };
         }
     }

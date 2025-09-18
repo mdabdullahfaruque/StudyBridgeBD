@@ -25,9 +25,26 @@ export class DashboardRedirectComponent implements OnInit {
     this.authService.isAuthenticated$.subscribe(isAuthenticated => {
       if (isAuthenticated) {
         this.loadingMessage = 'Redirecting to your dashboard...';
-        // User is authenticated - redirect to appropriate dashboard
-        const redirectUrl = this.authService.getRedirectUrlForUser();
-        this.router.navigate([redirectUrl], { replaceUrl: true });
+        
+        // Get current user and redirect based on IsPublicUser flag
+        const currentUser = this.authService.getCurrentUser();
+        console.log('DashboardRedirectComponent - Current user:', currentUser);
+        
+        if (currentUser) {
+          let redirectUrl: string;
+          if (currentUser.isPublicUser === true) {
+            redirectUrl = '/public/dashboard';
+            console.log('Redirecting public user to:', redirectUrl);
+          } else {
+            redirectUrl = '/admin/dashboard';
+            console.log('Redirecting admin user to:', redirectUrl);
+          }
+          
+          this.router.navigate([redirectUrl], { replaceUrl: true });
+        } else {
+          console.log('No current user found, redirecting to login');
+          this.router.navigate(['/auth/login'], { replaceUrl: true });
+        }
       } else {
         this.loadingMessage = 'Redirecting to login...';
         // User is not authenticated - redirect to login

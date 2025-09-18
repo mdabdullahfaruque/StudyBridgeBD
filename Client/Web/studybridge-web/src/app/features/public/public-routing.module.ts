@@ -1,11 +1,13 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { PublicGuard } from '../../core/guards/auth.guards';
 import { PublicLayoutComponent } from '../../shared/layouts/public-layout/public-layout.component';
 
 const routes: Routes = [
   {
     path: '',
     component: PublicLayoutComponent,
+    canActivate: [PublicGuard],
     children: [
       {
         path: '',

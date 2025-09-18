@@ -222,16 +222,13 @@ export class AuthService {
       return '/auth/login';
     }
     
-    // Check for admin roles first (higher priority)
-    // Use dynamic role checking based on actual user roles from API
-    const hasAdminRole = this.hasAdminRole(user);
-    
-    if (hasAdminRole) {
+    // Use IsPublicUser flag for redirection
+    // true = public layout, false = admin layout
+    if (user.isPublicUser) {
+      return '/public/dashboard';
+    } else {
       return '/admin/dashboard';
     }
-
-    // Default to public area for regular users
-    return '/public/dashboard';
   }
 
   /**
@@ -295,7 +292,8 @@ export class AuthService {
       isActive: true,
       emailConfirmed: true,
       roles: loginResponse.roles || [],
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      isPublicUser: loginResponse.isPublicUser ?? true
     };
     
     console.log('Constructed user object:', user);
