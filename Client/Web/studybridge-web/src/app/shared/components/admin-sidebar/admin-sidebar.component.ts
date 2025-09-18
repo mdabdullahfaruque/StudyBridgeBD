@@ -1,4 +1,4 @@
-import { Component, inject, computed, signal } from '@angular/core';
+import { Component, inject, computed, signal, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -24,6 +24,12 @@ export class AdminSidebarComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
 
+  // Input for mobile open state
+  @Input() isMobileOpen: boolean = false;
+
+  // Output for mobile close event
+  @Output() onCloseMobile = new EventEmitter<void>();
+
   // Reactive signals
   isCollapsed = signal(false);
   user = computed(() => this.authService.getCurrentUser());
@@ -37,6 +43,11 @@ export class AdminSidebarComponent {
   // Toggle sidebar collapse
   toggleSidebar(): void {
     this.isCollapsed.update(collapsed => !collapsed);
+  }
+
+  // Close mobile sidebar
+  closeMobileSidebar(): void {
+    this.onCloseMobile.emit();
   }
 
   // Handle menu item click

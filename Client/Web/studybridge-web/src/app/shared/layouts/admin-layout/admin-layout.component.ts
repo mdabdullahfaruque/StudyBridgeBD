@@ -254,6 +254,14 @@ export class AdminLayoutComponent implements OnInit {
     this.isMobileSidebarVisible.set(!this.isMobileSidebarVisible());
   }
 
+  closeMobileSidebar() {
+    this.isMobileSidebarVisible.set(false);
+  }
+
+  get isMobileSidebarOpen(): boolean {
+    return this.isMobileSidebarVisible();
+  }
+
   toggleUserMenu() {
     this.isUserMenuVisible.set(!this.isUserMenuVisible());
   }

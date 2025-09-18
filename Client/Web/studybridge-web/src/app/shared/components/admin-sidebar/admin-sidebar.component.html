@@ -1,6 +1,7 @@
 <!-- Admin Sidebar Container -->
 <div class="admin-sidebar h-screen bg-white shadow-lg transition-all duration-300 ease-in-out flex flex-col"
-     [class.collapsed]="isCollapsed()">
+     [class.collapsed]="isCollapsed()"
+     [class.mobile-open]="isMobileOpen">
   
   <!-- Sidebar Header -->
   <div class="sidebar-header border-b border-gray-200 p-4">
@@ -17,16 +18,26 @@
             <i class="pi pi-graduation-cap text-white text-sm"></i>
           </div>
         </div>
-        <div class="hidden lg:block">
+        <div>
           <h1 class="text-xl font-bold text-gray-900">StudyBridge</h1>
           <p class="text-xs text-gray-500">Admin Panel</p>
         </div>
       </div>
       
-      <!-- Toggle Button -->
+      <!-- Desktop Toggle Button (collapse/expand) -->
       <button (click)="toggleSidebar()"
-              class="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+              class="hidden lg:block p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
         <i class="pi pi-bars text-gray-600"></i>
+      </button>
+
+      <!-- Mobile Close Button -->
+      <button *ngIf="isMobileOpen"
+              (click)="closeMobileSidebar()"
+              class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+        <!-- Close X icon -->
+        <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
       </button>
     </div>
   </div>
