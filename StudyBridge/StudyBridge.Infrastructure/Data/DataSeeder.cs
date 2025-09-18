@@ -89,47 +89,47 @@ public class DataSeederService
 
         logger.LogInformation("Seeding admin menus...");
 
-        // Parent menu definitions
+        // Parent menu definitions with proper routes and required permissions
         var parentMenus = new[]
         {
-            new { Name = "dashboard", DisplayName = "Dashboard", Icon = "pi pi-home", Route = "/admin/dashboard", SortOrder = 10, HasCrud = false },
-            new { Name = "user-management", DisplayName = "User Management", Icon = "pi pi-users", Route = "", SortOrder = 20, HasCrud = true },
-            new { Name = "role-management", DisplayName = "Role Management", Icon = "pi pi-key", Route = "", SortOrder = 30, HasCrud = true },
-            new { Name = "permission-management", DisplayName = "Permissions", Icon = "pi pi-shield", Route = "", SortOrder = 40, HasCrud = true },
-            new { Name = "content-management", DisplayName = "Content", Icon = "pi pi-file-edit", Route = "", SortOrder = 50, HasCrud = true },
-            new { Name = "financial-management", DisplayName = "Financials", Icon = "pi pi-dollar", Route = "", SortOrder = 60, HasCrud = true },
-            new { Name = "system-management", DisplayName = "System", Icon = "pi pi-cog", Route = "", SortOrder = 70, HasCrud = false }
+            new { Name = "dashboard", DisplayName = "Dashboard", Icon = "pi pi-home", Route = "/admin/dashboard", SortOrder = 10, HasCrud = false, RequiredPermissions = new[] { "dashboard.view" } },
+            new { Name = "user-management", DisplayName = "User Management", Icon = "pi pi-users", Route = "/admin/users", SortOrder = 20, HasCrud = true, RequiredPermissions = new[] { "users.view" } },
+            new { Name = "role-management", DisplayName = "Role Management", Icon = "pi pi-key", Route = "/admin/roles", SortOrder = 30, HasCrud = true, RequiredPermissions = new[] { "roles.view" } },
+            new { Name = "permission-management", DisplayName = "Permissions", Icon = "pi pi-shield", Route = "/admin/permissions", SortOrder = 40, HasCrud = true, RequiredPermissions = new[] { "permissions.view" } },
+            new { Name = "content-management", DisplayName = "Content", Icon = "pi pi-file-edit", Route = "/admin/content", SortOrder = 50, HasCrud = true, RequiredPermissions = new[] { "content.view" } },
+            new { Name = "financial-management", DisplayName = "Financials", Icon = "pi pi-dollar", Route = "/admin/financials", SortOrder = 60, HasCrud = true, RequiredPermissions = new[] { "financials.view" } },
+            new { Name = "system-management", DisplayName = "System", Icon = "pi pi-cog", Route = "/admin/system", SortOrder = 70, HasCrud = false, RequiredPermissions = new[] { "system.view" } }
         };
 
         // Child menu definitions
         var childMenus = new[]
         {
             // User Management sub-menus
-            new { Name = "users-list", DisplayName = "All Users", Icon = "pi pi-list", Route = "/admin/users", ParentName = "user-management", SortOrder = 10, HasCrud = false },
-            new { Name = "users-create", DisplayName = "Add User", Icon = "pi pi-plus", Route = "/admin/users/create", ParentName = "user-management", SortOrder = 20, HasCrud = false },
-            new { Name = "users-roles", DisplayName = "User Roles", Icon = "pi pi-key", Route = "/admin/users/roles", ParentName = "user-management", SortOrder = 30, HasCrud = false },
+            new { Name = "users-list", DisplayName = "All Users", Icon = "pi pi-list", Route = "/admin/users", ParentName = "user-management", SortOrder = 10, HasCrud = false, RequiredPermissions = new[] { "users.view" } },
+            new { Name = "users-create", DisplayName = "Add User", Icon = "pi pi-plus", Route = "/admin/users/create", ParentName = "user-management", SortOrder = 20, HasCrud = false, RequiredPermissions = new[] { "users.create" } },
+            new { Name = "users-roles", DisplayName = "User Roles", Icon = "pi pi-key", Route = "/admin/users/roles", ParentName = "user-management", SortOrder = 30, HasCrud = false, RequiredPermissions = new[] { "users.view" } },
             
             // Role Management sub-menus
-            new { Name = "roles-list", DisplayName = "All Roles", Icon = "pi pi-list", Route = "/admin/roles", ParentName = "role-management", SortOrder = 10, HasCrud = false },
-            new { Name = "roles-create", DisplayName = "Create Role", Icon = "pi pi-plus", Route = "/admin/roles/create", ParentName = "role-management", SortOrder = 20, HasCrud = false },
+            new { Name = "roles-list", DisplayName = "All Roles", Icon = "pi pi-list", Route = "/admin/roles", ParentName = "role-management", SortOrder = 10, HasCrud = false, RequiredPermissions = new[] { "roles.view" } },
+            new { Name = "roles-create", DisplayName = "Create Role", Icon = "pi pi-plus", Route = "/admin/roles/create", ParentName = "role-management", SortOrder = 20, HasCrud = false, RequiredPermissions = new[] { "roles.create" } },
             
             // Permission Management sub-menus  
-            new { Name = "permissions-list", DisplayName = "All Permissions", Icon = "pi pi-list", Route = "/admin/permissions", ParentName = "permission-management", SortOrder = 10, HasCrud = false },
-            new { Name = "permissions-create", DisplayName = "Create Permission", Icon = "pi pi-plus", Route = "/admin/permissions/create", ParentName = "permission-management", SortOrder = 20, HasCrud = false },
+            new { Name = "permissions-list", DisplayName = "All Permissions", Icon = "pi pi-list", Route = "/admin/permissions", ParentName = "permission-management", SortOrder = 10, HasCrud = false, RequiredPermissions = new[] { "permissions.view" } },
+            new { Name = "permissions-create", DisplayName = "Create Permission", Icon = "pi pi-plus", Route = "/admin/permissions/create", ParentName = "permission-management", SortOrder = 20, HasCrud = false, RequiredPermissions = new[] { "permissions.create" } },
             
             // Content Management sub-menus
-            new { Name = "content-vocabulary", DisplayName = "Vocabulary", Icon = "pi pi-book", Route = "/admin/content/vocabulary", ParentName = "content-management", SortOrder = 10, HasCrud = false },
-            new { Name = "content-categories", DisplayName = "Categories", Icon = "pi pi-tags", Route = "/admin/content/categories", ParentName = "content-management", SortOrder = 20, HasCrud = false },
+            new { Name = "content-vocabulary", DisplayName = "Vocabulary", Icon = "pi pi-book", Route = "/admin/content/vocabulary", ParentName = "content-management", SortOrder = 10, HasCrud = false, RequiredPermissions = new[] { "content.view" } },
+            new { Name = "content-categories", DisplayName = "Categories", Icon = "pi pi-tags", Route = "/admin/content/categories", ParentName = "content-management", SortOrder = 20, HasCrud = false, RequiredPermissions = new[] { "content.view" } },
             
             // Financial Management sub-menus
-            new { Name = "financials-overview", DisplayName = "Overview", Icon = "pi pi-chart-bar", Route = "/admin/financials", ParentName = "financial-management", SortOrder = 10, HasCrud = false },
-            new { Name = "financials-subscriptions", DisplayName = "Subscriptions", Icon = "pi pi-credit-card", Route = "/admin/financials/subscriptions", ParentName = "financial-management", SortOrder = 20, HasCrud = false },
-            new { Name = "financials-reports", DisplayName = "Reports", Icon = "pi pi-chart-line", Route = "/admin/financials/reports", ParentName = "financial-management", SortOrder = 30, HasCrud = false },
+            new { Name = "financials-overview", DisplayName = "Overview", Icon = "pi pi-chart-bar", Route = "/admin/financials", ParentName = "financial-management", SortOrder = 10, HasCrud = false, RequiredPermissions = new[] { "financials.view" } },
+            new { Name = "financials-subscriptions", DisplayName = "Subscriptions", Icon = "pi pi-credit-card", Route = "/admin/financials/subscriptions", ParentName = "financial-management", SortOrder = 20, HasCrud = false, RequiredPermissions = new[] { "financials.view" } },
+            new { Name = "financials-reports", DisplayName = "Reports", Icon = "pi pi-chart-line", Route = "/admin/financials/reports", ParentName = "financial-management", SortOrder = 30, HasCrud = false, RequiredPermissions = new[] { "reports.view" } },
             
             // System Management sub-menus
-            new { Name = "system-settings", DisplayName = "Settings", Icon = "pi pi-sliders-h", Route = "/admin/system/settings", ParentName = "system-management", SortOrder = 10, HasCrud = false },
-            new { Name = "system-logs", DisplayName = "Logs", Icon = "pi pi-file", Route = "/admin/system/logs", ParentName = "system-management", SortOrder = 20, HasCrud = false },
-            new { Name = "system-analytics", DisplayName = "Analytics", Icon = "pi pi-chart-pie", Route = "/admin/system/analytics", ParentName = "system-management", SortOrder = 30, HasCrud = false }
+            new { Name = "system-settings", DisplayName = "Settings", Icon = "pi pi-sliders-h", Route = "/admin/system/settings", ParentName = "system-management", SortOrder = 10, HasCrud = false, RequiredPermissions = new[] { "system.view" } },
+            new { Name = "system-logs", DisplayName = "Logs", Icon = "pi pi-file", Route = "/admin/system/logs", ParentName = "system-management", SortOrder = 20, HasCrud = false, RequiredPermissions = new[] { "system.logs" } },
+            new { Name = "system-analytics", DisplayName = "Analytics", Icon = "pi pi-chart-pie", Route = "/admin/system/analytics", ParentName = "system-management", SortOrder = 30, HasCrud = false, RequiredPermissions = new[] { "analytics.view" } }
         };
 
         var createdMenus = new Dictionary<string, Menu>();

@@ -343,8 +343,155 @@ public class AdminController : ControllerBase
             return StatusCode(500, ApiResponse<List<MenuDto>>.FailureResult("An error occurred while retrieving public menus"));
         }
     }
+
+    // Menu CRUD Operations
+    [HttpGet("menus/{id}")]
+    [RequirePermission("system.view")]
+    public async Task<IActionResult> GetMenuById(Guid id)
+    {
+        try
+        {
+            var menu = await _menuRepository.GetByIdAsync(id);
+            if (menu == null)
+            {
+                return NotFound(ApiResponse<MenuDto>.FailureResult("Menu not found"));
+            }
+
+            var menuDto = MapToMenuDto(menu);
+            return Ok(ApiResponse<MenuDto>.SuccessResult(menuDto, "Menu retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving menu with ID {MenuId}", id);
+            return StatusCode(500, ApiResponse<MenuDto>.FailureResult("Failed to retrieve menu"));
+        }
+    }
+
+    [HttpPost("menus")]
+    [RequirePermission("system.manage")]
+    public async Task<IActionResult> CreateMenu([FromBody] CreateMenuRequest request)
+    {
+        try
+        {
+            var menu = new Menu
+            {
+                Name = request.Name,
+                DisplayName = request.DisplayName,
+                Description = request.Description,
+                Icon = request.Icon,
+                Route = request.Route,
+                MenuType = (MenuType)request.MenuType,
+                ParentMenuId = request.ParentMenuId,
+                SortOrder = request.SortOrder,
+                IsActive = request.IsActive,
+                HasCrudPermissions = request.HasCrudPermissions
+            };
+
+            var createdMenu = await _menuRepository.AddAsync(menu);
+            var menuDto = MapToMenuDto(createdMenu);
+
+            return CreatedAtAction(nameof(GetMenuById), new { id = createdMenu.Id }, 
+                ApiResponse<MenuDto>.SuccessResult(menuDto, "Menu created successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating menu");
+            return StatusCode(500, ApiResponse<MenuDto>.FailureResult("Failed to create menu"));
+        }
+    }
+
+    [HttpPut("menus/{id}")]
+    [RequirePermission("system.manage")]
+    public async Task<IActionResult> UpdateMenu(Guid id, [FromBody] UpdateMenuRequest request)
+    {
+        try
+        {
+            var menu = await _menuRepository.GetByIdAsync(id);
+            if (menu == null)
+            {
+                return NotFound(ApiResponse<MenuDto>.FailureResult("Menu not found"));
+            }
+
+            // Update menu properties
+            menu.Name = request.Name;
+            menu.DisplayName = request.DisplayName;
+            menu.Description = request.Description;
+            menu.Icon = request.Icon;
+            menu.Route = request.Route;
+            menu.ParentMenuId = request.ParentMenuId;
+            menu.SortOrder = request.SortOrder;
+            menu.IsActive = request.IsActive;
+            menu.HasCrudPermissions = request.HasCrudPermissions;
+            menu.UpdatedAt = DateTime.UtcNow;
+
+            await _menuRepository.UpdateAsync(menu);
+            var menuDto = MapToMenuDto(menu);
+
+            return Ok(ApiResponse<MenuDto>.SuccessResult(menuDto, "Menu updated successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating menu with ID {MenuId}", id);
+            return StatusCode(500, ApiResponse<MenuDto>.FailureResult("Failed to update menu"));
+        }
+    }
+
+    [HttpDelete("menus/{id}")]
+    [RequirePermission("system.manage")]
+    public async Task<IActionResult> DeleteMenu(Guid id)
+    {
+        try
+        {
+            var menu = await _menuRepository.GetByIdAsync(id);
+            if (menu == null)
+            {
+                return NotFound(ApiResponse<object>.FailureResult("Menu not found"));
+            }
+
+            // Check if menu has children
+            var childMenus = await _menuRepository.GetByParentIdAsync(id);
+            if (childMenus.Any())
+            {
+                return BadRequest(ApiResponse<object>.FailureResult("Cannot delete menu with child items. Delete child items first."));
+            }
+
+            await _menuRepository.DeleteAsync(id);
+            return Ok(ApiResponse<object>.SuccessResult(new { }, "Menu deleted successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting menu with ID {MenuId}", id);
+            return StatusCode(500, ApiResponse<object>.FailureResult("Failed to delete menu"));
+        }
+    }
 }
 
 public record CreateUserRequest(string Email, string DisplayName);
 public record AssignRoleRequest(Guid UserId, SystemRole Role);
 public record CreateSubscriptionRequest(Guid UserId, SubscriptionType SubscriptionType, decimal Amount, DateTime EndDate);
+
+// Menu request DTOs
+public record CreateMenuRequest(
+    string Name,
+    string DisplayName,
+    string? Description,
+    string? Icon,
+    string? Route,
+    int MenuType,
+    Guid? ParentMenuId,
+    int SortOrder,
+    bool IsActive,
+    bool HasCrudPermissions
+);
+
+public record UpdateMenuRequest(
+    string Name,
+    string DisplayName,
+    string? Description,
+    string? Icon,
+    string? Route,
+    Guid? ParentMenuId,
+    int SortOrder,
+    bool IsActive,
+    bool HasCrudPermissions
+);

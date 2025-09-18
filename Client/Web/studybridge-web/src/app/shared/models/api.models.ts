@@ -66,6 +66,7 @@ export interface MenuDto {
   id: string;
   name: string;
   displayName: string;
+  description?: string;
   icon?: string;
   route?: string;
   parentId?: string;
@@ -74,6 +75,37 @@ export interface MenuDto {
   menuType: number;
   requiredPermissions: string[];
   children?: MenuDto[];
+}
+
+export enum MenuType {
+  Admin = 0,
+  Public = 1
+}
+
+// Menu request models
+export interface CreateMenuRequest {
+  name: string;
+  displayName: string;
+  description?: string;
+  icon?: string;
+  route?: string;
+  menuType: number;
+  parentMenuId?: string;
+  sortOrder: number;
+  isActive: boolean;
+  hasCrudPermissions: boolean;
+}
+
+export interface UpdateMenuRequest {
+  name: string;
+  displayName: string;
+  description?: string;
+  icon?: string;
+  route?: string;
+  parentMenuId?: string;
+  sortOrder: number;
+  isActive: boolean;
+  hasCrudPermissions: boolean;
 }
 
 // User Models (matching backend DTOs)

@@ -6,7 +6,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { ApiResponse, MenuDto } from '../models/api.models';
+import { ApiResponse, MenuDto, CreateMenuRequest, UpdateMenuRequest } from '../models/api.models';
 import { API_ENDPOINTS } from './api.config';
 
 @Injectable({
@@ -45,6 +45,44 @@ export class MenuApiService {
       { 
         showErrorToast: false
       }
+    );
+  }
+
+  /**
+   * Get menu by ID
+   */
+  getMenuById(id: string): Observable<ApiResponse<MenuDto>> {
+    return this.apiService.get<MenuDto>(
+      `${API_ENDPOINTS.ADMIN.GET_ALL_MENUS.path}/${id}`
+    );
+  }
+
+  /**
+   * Create a new menu
+   */
+  createMenu(request: CreateMenuRequest): Observable<ApiResponse<MenuDto>> {
+    return this.apiService.post<MenuDto>(
+      API_ENDPOINTS.ADMIN.GET_ALL_MENUS.path,
+      request
+    );
+  }
+
+  /**
+   * Update an existing menu
+   */
+  updateMenu(id: string, request: UpdateMenuRequest): Observable<ApiResponse<MenuDto>> {
+    return this.apiService.put<MenuDto>(
+      `${API_ENDPOINTS.ADMIN.GET_ALL_MENUS.path}/${id}`,
+      request
+    );
+  }
+
+  /**
+   * Delete a menu
+   */
+  deleteMenu(id: string): Observable<ApiResponse<void>> {
+    return this.apiService.delete<void>(
+      `${API_ENDPOINTS.ADMIN.GET_ALL_MENUS.path}/${id}`
     );
   }
 }

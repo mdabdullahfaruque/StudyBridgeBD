@@ -1,0 +1,143 @@
+/* Menu List Component Styles */
+.menu-list-container {
+  .table-row-hover {
+    @apply transition-colors duration-200;
+    
+    &:hover {
+      @apply bg-gray-50;
+    }
+  }
+
+  .dialog-backdrop {
+    backdrop-filter: blur(4px);
+  }
+
+  .form-field {
+    @apply mb-4;
+
+    label {
+      @apply block text-sm font-medium text-gray-700 mb-1;
+    }
+
+    input, select, textarea {
+      @apply w-full px-3 py-2 border border-gray-300 rounded-lg;
+      @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+      @apply transition-colors duration-200;
+    }
+
+    input.font-mono, select.font-mono, textarea.font-mono {
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    }
+  }
+
+  .status-badge {
+    @apply inline-flex px-2 py-1 text-xs font-semibold rounded-full;
+
+    &.active {
+      @apply bg-green-100 text-green-800;
+    }
+
+    &.inactive {
+      @apply bg-red-100 text-red-800;
+    }
+  }
+
+  .menu-type-badge {
+    @apply inline-flex px-2 py-1 text-xs font-semibold rounded-full;
+
+    &.admin {
+      @apply bg-blue-100 text-blue-800;
+    }
+
+    &.public {
+      @apply bg-green-100 text-green-800;
+    }
+  }
+
+  .action-button {
+    @apply p-1 rounded transition-colors duration-200;
+
+    &.edit {
+      @apply text-blue-600 hover:text-blue-900 hover:bg-blue-50;
+    }
+
+    &.delete {
+      @apply text-red-600 hover:text-red-900 hover:bg-red-50;
+    }
+  }
+
+  .expand-button {
+    @apply p-1 rounded hover:bg-gray-200 transition-colors duration-200;
+  }
+
+  .loading-spinner {
+    @apply animate-spin rounded-full border-b-2 border-blue-600;
+  }
+}
+
+/* Custom scrollbar for dialog */
+.dialog-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(156 163 175) transparent;
+}
+
+.dialog-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dialog-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dialog-content::-webkit-scrollbar-thumb {
+  background-color: rgb(156 163 175);
+  border-radius: 3px;
+}
+
+.dialog-content::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(107 114 128);
+}
+
+/* Hierarchy indentation animation */
+.menu-hierarchy-item {
+  transition: padding-left 0.2s ease-in-out;
+}
+
+/* Form validation styles */
+.form-field input.ng-invalid.ng-touched,
+.form-field select.ng-invalid.ng-touched,
+.form-field textarea.ng-invalid.ng-touched {
+  @apply border-red-300 focus:border-red-500 focus:ring-red-500;
+}
+
+/* Disabled button styles */
+button:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+/* Focus styles for accessibility */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  @apply outline-none;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 640px) {
+  .menu-list-container {
+    @apply p-4;
+    
+    .dialog-content {
+      @apply mx-2;
+    }
+    
+    table {
+      font-size: 0.875rem;
+    }
+    
+    .action-button {
+      @apply p-2;
+    }
+  }
+}

@@ -50,84 +50,118 @@
 
   <!-- Navigation Menu -->
   <nav class="sidebar-nav flex-1 overflow-y-auto">
-    <ul class="menu-list py-4 space-y-1">
-      <!-- Menu Items -->
-      <li *ngFor="let item of menuItems()" 
-          class="menu-item">
+    <!-- Loading State -->
+    <div *ngIf="isLoadingMenus()" class="py-4 px-4">
+      <div class="animate-pulse space-y-3">
+        <div *ngFor="let i of [1,2,3,4,5]" class="h-10 bg-gray-200 rounded-lg"></div>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="menuError() && !isLoadingMenus()" class="py-4 px-4">
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+        <i class="pi pi-exclamation-triangle text-red-500 text-xl mb-2"></i>
+        <p class="text-sm text-red-700 mb-3">{{ menuError() }}</p>
+        <button (click)="retryLoadMenus()" 
+                class="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600 transition-colors">
+          Retry
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoadingMenus()" class="flex items-center justify-center py-8">
+      <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+      <span class="ml-2 text-gray-500">Loading menus...</span>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="menuError()" class="p-4 bg-red-50 border border-red-200 rounded-lg mx-4 mb-4">
+      <div class="flex items-center">
+        <i class="pi pi-exclamation-triangle text-red-500 mr-2"></i>
+        <p class="text-red-700 text-sm">{{ menuError() }}</p>
+      </div>
+      <button (click)="retryLoadMenus()" 
+              class="mt-2 px-3 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200 transition-colors">
+        Retry
+      </button>
+    </div>
+
+    <!-- Menu Items -->
+    <ul *ngIf="!isLoadingMenus()" class="menu-list py-4 space-y-1">
+      <ng-container *ngFor="let item of menuItems(); trackBy: trackByItemId">
+        <li class="menu-item">
         
-        <!-- Parent Menu Item -->
+          <!-- Parent Menu Item -->
         <div class="menu-item-content">
           <!-- Single Link Item -->
-          <a *ngIf="!item.children && item.routerLink"
-             [routerLink]="item.routerLink"
+          <a *ngIf="(!item.children || item.children.length === 0) && item.route"
+             [routerLink]="item.route"
              routerLinkActive="active"
-             [title]="item.label"
+             [title]="item.displayName"
              class="menu-link flex items-center px-4 py-3 mx-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 group">
             
             <!-- Icon -->
             <div class="menu-icon flex-shrink-0">
-              <i [class]="item.icon" 
+              <i [class]="item.icon || 'pi pi-circle'" 
                  class="text-lg group-hover:text-blue-600"></i>
             </div>
             
             <!-- Label -->
             <span *ngIf="!isCollapsed()" 
-                  class="ml-3 font-medium truncate">{{ item.label }}</span>
-            
-            <!-- Badge -->
-            <span *ngIf="item.badge && !isCollapsed()" 
-                  class="ml-auto px-2 py-1 bg-red-500 text-white text-xs rounded-full">
-              {{ item.badge }}
-            </span>
+                  class="ml-3 font-medium truncate">{{ item.displayName }}</span>
           </a>
 
           <!-- Parent Item with Children -->
-          <button *ngIf="item.children"
+          <button *ngIf="item.children && item.children.length > 0"
                   (click)="onMenuClick(item)"
-                  [title]="item.label"
+                  [title]="item.displayName"
                   class="menu-toggle w-full flex items-center px-4 py-3 mx-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 group">
             
             <!-- Icon -->
             <div class="menu-icon flex-shrink-0">
-              <i [class]="item.icon" 
+              <i [class]="item.icon || 'pi pi-folder'" 
                  class="text-lg group-hover:text-blue-600"></i>
             </div>
             
             <!-- Label -->
             <span *ngIf="!isCollapsed()" 
-                  class="ml-3 font-medium truncate flex-1 text-left">{{ item.label }}</span>
+                  class="ml-3 font-medium truncate flex-1 text-left">{{ item.displayName }}</span>
             
             <!-- Expand/Collapse Icon -->
             <i *ngIf="!isCollapsed()" 
                class="pi pi-chevron-down ml-auto transition-transform duration-200"
-               [class.rotate-180]="item.expanded"></i>
+               [class.rotate-180]="isItemExpanded(item.id)"></i>
           </button>
         </div>
 
         <!-- Submenu -->
-        <ul *ngIf="item.children && item.expanded && !isCollapsed()" 
+        <ul *ngIf="item.children && item.children.length > 0 && isItemExpanded(item.id) && !isCollapsed()" 
             class="submenu ml-4 mt-2 space-y-1 border-l-2 border-gray-100">
-          <li *ngFor="let child of item.children">
-            <a [routerLink]="child.routerLink"
+          <li *ngFor="let child of item.children; trackBy: trackByItemId">
+            <a *ngIf="child.route"
+               [routerLink]="child.route"
                routerLinkActive="active"
                class="submenu-link flex items-center px-4 py-2 ml-4 rounded-lg text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200">
               
               <!-- Child Icon -->
-              <i [class]="child.icon" class="text-sm mr-3"></i>
+              <i [class]="child.icon || 'pi pi-circle'" class="text-sm mr-3"></i>
               
               <!-- Child Label -->
-              <span class="truncate">{{ child.label }}</span>
-              
-              <!-- Child Badge -->
-              <span *ngIf="child.badge" 
-                    class="ml-auto px-2 py-1 bg-red-500 text-white text-xs rounded-full">
-                {{ child.badge }}
-              </span>
+              <span class="truncate">{{ child.displayName }}</span>
             </a>
           </li>
         </ul>
-      </li>
+        </li>
+      </ng-container>
     </ul>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoadingMenus() && !menuError() && menuItems().length === 0" 
+         class="py-8 px-4 text-center text-gray-500">
+      <i class="pi pi-info-circle text-2xl mb-2"></i>
+      <p class="text-sm">No menu items available</p>
+    </div>
   </nav>
 </div>
 

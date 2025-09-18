@@ -2,15 +2,17 @@ import { Component, inject, computed, signal, Input, Output, EventEmitter, OnIni
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { MenuService } from '../../services/menu.service';
 import { UserDto } from '../../models/api.models';
+import { MenuItem } from '../../models/menu.models';
 
-interface MenuItem {
+interface MenuItemDisplay {
   label: string;
   icon: string;
   routerLink?: string;
   badge?: string;
   expanded?: boolean;
-  children?: MenuItem[];
+  children?: MenuItemDisplay[];
 }
 
 @Component({
@@ -22,6 +24,7 @@ interface MenuItem {
 })
 export class AdminSidebarComponent implements OnInit, AfterViewInit, OnDestroy {
   private authService = inject(AuthService);
+  private menuService = inject(MenuService);
   private router = inject(Router);
   private elementRef = inject(ElementRef);
 
@@ -34,12 +37,16 @@ export class AdminSidebarComponent implements OnInit, AfterViewInit, OnDestroy {
   // Reactive signals
   isCollapsed = signal(false);
   user = computed(() => this.authService.getCurrentUser());
-  menuItems = computed<MenuItem[]>(() => {
-    const user = this.user();
-    if (!user) return [];
-    
-    return this.getMenuItemsForUser(user);
-  });
+  
+  // Menu signals from MenuService
+  menuItems = this.menuService.adminMenusSignal;
+  isLoadingMenus = this.menuService.isLoadingSignal;
+  
+  // Internal UI state for expanded items
+  private expandedItems = signal<Set<string>>(new Set());
+  
+  // Error state for menu loading
+  menuError = signal<string | null>(null);
 
   // Toggle sidebar collapse
   toggleSidebar(): void {
@@ -50,6 +57,25 @@ export class AdminSidebarComponent implements OnInit, AfterViewInit, OnDestroy {
     this.setMobileHeight();
     window.addEventListener('resize', this.setMobileHeight.bind(this));
     window.addEventListener('orientationchange', this.setMobileHeight.bind(this));
+    
+    // Load admin menus
+    this.loadMenus();
+  }
+
+  private async loadMenus(): Promise<void> {
+    try {
+      this.menuError.set(null);
+      await this.menuService.loadAdminMenus();
+    } catch (error) {
+      console.error('Failed to load admin menus:', error);
+      this.menuError.set('Failed to load menu items. Please refresh the page.');
+      // MenuService will provide fallback menus if API fails
+    }
+  }
+
+  // Retry loading menus
+  retryLoadMenus(): void {
+    this.loadMenus();
   }
 
   ngAfterViewInit(): void {
@@ -91,11 +117,30 @@ export class AdminSidebarComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Handle menu item click
   onMenuClick(item: MenuItem): void {
-    if (item.children) {
-      item.expanded = !item.expanded;
-    } else if (item.routerLink) {
-      this.router.navigate([item.routerLink]);
+    if (item.children && item.children.length > 0) {
+      this.toggleExpandedItem(item.id);
+    } else if (item.route) {
+      this.router.navigate([item.route]);
     }
+  }
+
+  // Toggle expanded state for menu items
+  toggleExpandedItem(itemId: string): void {
+    const currentExpanded = this.expandedItems();
+    const newExpanded = new Set(currentExpanded);
+    
+    if (newExpanded.has(itemId)) {
+      newExpanded.delete(itemId);
+    } else {
+      newExpanded.add(itemId);
+    }
+    
+    this.expandedItems.set(newExpanded);
+  }
+
+  // Check if menu item is expanded
+  isItemExpanded(itemId: string): boolean {
+    return this.expandedItems().has(itemId);
   }
 
   // Handle logout
@@ -116,115 +161,15 @@ export class AdminSidebarComponent implements OnInit, AfterViewInit, OnDestroy {
       .slice(0, 2);
   }
 
-  // Get menu items based on user role
-  private getMenuItemsForUser(user: UserDto): MenuItem[] {
-    const baseMenuItems: MenuItem[] = [
-      {
-        label: 'Dashboard',
-        icon: 'pi pi-home',
-        routerLink: '/admin/dashboard'
-      },
-      {
-        label: 'User Management',
-        icon: 'pi pi-users',
-        children: [
-          {
-            label: 'All Users',
-            icon: 'pi pi-list',
-            routerLink: '/admin/users'
-          },
-          {
-            label: 'User Roles',
-            icon: 'pi pi-shield',
-            routerLink: '/admin/roles'
-          }
-        ]
-      },
-      {
-        label: 'Vocabulary',
-        icon: 'pi pi-book',
-        children: [
-          {
-            label: 'Word Management',
-            icon: 'pi pi-pencil',
-            routerLink: '/admin/vocabulary/words'
-          },
-          {
-            label: 'Categories',
-            icon: 'pi pi-tags',
-            routerLink: '/admin/vocabulary/categories'
-          },
-          {
-            label: 'Import/Export',
-            icon: 'pi pi-upload',
-            routerLink: '/admin/vocabulary/import-export'
-          }
-        ]
-      },
-      {
-        label: 'Learning Progress',
-        icon: 'pi pi-chart-line',
-        children: [
-          {
-            label: 'User Progress',
-            icon: 'pi pi-chart-bar',
-            routerLink: '/admin/progress/users'
-          },
-          {
-            label: 'Analytics',
-            icon: 'pi pi-analytics',
-            routerLink: '/admin/progress/analytics'
-          }
-        ]
-      },
-      {
-        label: 'Reports',
-        icon: 'pi pi-file-pdf',
-        children: [
-          {
-            label: 'Usage Reports',
-            icon: 'pi pi-calendar',
-            routerLink: '/admin/reports/usage'
-          },
-          {
-            label: 'Performance Reports',
-            icon: 'pi pi-chart-pie',
-            routerLink: '/admin/reports/performance'
-          }
-        ]
-      }
-    ];
+  // Check if user has permission to access a menu item
+  // Note: The API already filters menus based on user permissions,
+  // so menus returned from the API are already accessible to the current user
+  hasPermission(item: MenuItem): boolean {
+    return this.menuService.hasMenuPermission(item);
+  }
 
-    console.warn('AdminSidebarComponent: This component uses hardcoded menus. Replace with MenuService integration.');
-    
-    // Return basic admin menu including role management
-    return [
-      {
-        label: 'Dashboard',
-        icon: 'pi pi-home',
-        routerLink: '/admin/dashboard'
-      },
-      {
-        label: 'User Management',
-        icon: 'pi pi-users',
-        children: [
-          {
-            label: 'All Users',
-            icon: 'pi pi-list',
-            routerLink: '/admin/users'
-          },
-          {
-            label: 'User Roles',
-            icon: 'pi pi-shield',
-            routerLink: '/admin/roles'
-          }
-        ]
-      },
-      {
-        label: 'Role Management',
-        icon: 'pi pi-key',
-        routerLink: '/admin/roles'
-      }
-    ];
+  // TrackBy function for performance optimization
+  trackByItemId(index: number, item: MenuItem): string {
+    return item.id;
   }
 }
