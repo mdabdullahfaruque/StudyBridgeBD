@@ -9,6 +9,10 @@ graph TB
     subgraph "Documentation Hub"
         INDEX[📋 Index<br/>This File]
         
+        subgraph "⚠️ CRITICAL DOCUMENTATION"
+            UI_GUIDE[🎨 UI Components Guide<br/>MANDATORY READ]
+        end
+        
         subgraph "Core Documentation"
             PROJECT[📖 Project Documentation<br/>Complete Overview]
             ARCH[🏗️ Architecture<br/>Deep Technical Dive]
@@ -24,6 +28,7 @@ graph TB
         end
     end
     
+    INDEX ==> UI_GUIDE
     INDEX --> PROJECT
     INDEX --> ARCH
     INDEX --> API
@@ -38,6 +43,13 @@ graph TB
 ---
 
 ## 🎯 Quick Navigation
+
+### ⚠️ [UI Components Guide](./UI_COMPONENTS_GUIDE.md) **CRITICAL**
+**MANDATORY READING - Must be read before ANY development work**
+- PrimeNG component architecture requirements
+- Prohibited UI development practices
+- Existing wrapper components (Table, Form, Tree)
+- **CRITICAL FOR**: All developers, architects, anyone touching frontend code
 
 ### 📖 [Project Documentation](./PROJECT_DOCUMENTATION.md)
 **Complete project overview with Mermaid diagrams**
@@ -87,11 +99,12 @@ graph TB
 ## 🚀 Getting Started
 
 ### For New Developers
-1. � Check [Implementation Status](./IMPLEMENTATION_STATUS.md) for current progress
-2. �📖 Start with [Project Documentation](./PROJECT_DOCUMENTATION.md) for overview
-3. 👨‍💻 Follow [Development Guide](./DEVELOPMENT_GUIDE.md) for setup
-4. 🌐 Reference [API Documentation](./API_REFERENCE.md) for endpoints
-5. 🏗️ Dive into [Architecture](./ARCHITECTURE.md) for deep understanding
+1. ⚠️ **FIRST**: Read [UI Components Guide](./UI_COMPONENTS_GUIDE.md) - MANDATORY
+2. 🚀 Check [Implementation Status](./IMPLEMENTATION_STATUS.md) for current progress
+3. 📖 Start with [Project Documentation](./PROJECT_DOCUMENTATION.md) for overview
+4. 👨‍💻 Follow [Development Guide](./DEVELOPMENT_GUIDE.md) for setup
+5. 🌐 Reference [API Documentation](./API_REFERENCE.md) for endpoints
+6. 🏗️ Dive into [Architecture](./ARCHITECTURE.md) for deep understanding
 
 ### For Project Managers
 1. 🚀 Review [Implementation Status](./IMPLEMENTATION_STATUS.md) for current state

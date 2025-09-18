@@ -16,6 +16,9 @@ StudyBridge is an IELTS vocabulary learning platform built with .NET 8 (backend)
 
 When working on this project, always reference these comprehensive documentation files:
 
+### ⚠️ MANDATORY READING BEFORE ANY WORK
+- **`/docs/UI_COMPONENTS_GUIDE.md`**: **CRITICAL - MUST READ FIRST** - UI component architecture and prohibited practices
+
 ### Core Documentation
 - **`/docs/IMPLEMENTATION_STATUS.md`**: Current project status and completed features (September 2025)
 - **`/docs/PROJECT_DOCUMENTATION.md`**: Complete project overview with Mermaid diagrams
@@ -119,16 +122,25 @@ public static class FeatureName
 
 ## 🎯 When Generating Code
 
-1. **Always follow established patterns** from existing modules
-2. **Reference documentation** for architectural decisions
-3. **Maintain consistency** with naming conventions
-4. **Include comprehensive tests** for new features
-5. **Follow Clean Architecture** layer dependencies
-6. **Use proper error handling** with custom exceptions
-7. **Implement validation** using FluentValidation
-8. **Add logging** for important operations
-9. **Follow CQRS pattern** for commands and queries
-10. **Update documentation** when adding new features
+### ⚠️ CRITICAL REQUIREMENTS (MUST BE FOLLOWED)
+1. **READ `/docs/UI_COMPONENTS_GUIDE.md` FIRST** - Contains mandatory UI component requirements
+2. **NEVER create new Table, Form, or Tree components** - Use existing PrimeNG wrappers:
+   - Tables: `app-table-wrapper` (comprehensive PrimeNG Table)
+   - Forms: `app-dynamic-form` (full PrimeNG Form capabilities)  
+   - Trees: `app-tree-wrapper` (complete PrimeNG Tree implementation)
+3. **ALWAYS use PrimeNG for all UI components** - No other UI libraries allowed
+
+### Standard Development Rules
+4. **Always follow established patterns** from existing modules
+5. **Reference documentation** for architectural decisions
+6. **Maintain consistency** with naming conventions
+7. **Include comprehensive tests** for new features
+8. **Follow Clean Architecture** layer dependencies
+9. **Use proper error handling** with custom exceptions
+10. **Implement validation** using FluentValidation
+11. **Add logging** for important operations
+12. **Follow CQRS pattern** for commands and queries
+13. **Update documentation** when adding new features
 
 ## 📁 Project Structure Reference
 
