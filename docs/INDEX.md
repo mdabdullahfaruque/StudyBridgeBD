@@ -95,14 +95,24 @@ graph TB
 - Recent enhancements and technical achievements
 - **Best for**: Understanding current project state, tracking progress
 
-### 🔧 [Admin Table Implementation Guide](./ADMIN_TABLE_IMPLEMENTATION.md) **NEW**
-**Standardized pattern for admin data tables**
+### 🔧 [Admin Table Implementation Guide](./ADMIN_TABLE_IMPLEMENTATION.md) **ENHANCED**
+**Standardized pattern for admin data tables with backend API analysis**
 - Complete implementation guide using app-table-wrapper
+- Backend API structure analysis workflow
 - Column configuration and data processing
 - API response handling patterns
 - Troubleshooting common issues
-- Reference implementation (Role Management)
+- Reference implementation (User Management)
 - **Best for**: Developers implementing admin interfaces, maintaining consistency
+
+### 🗺️ [API Mapping Guide](./API_MAPPING_GUIDE.md) **NEW**
+**Systematic approach to analyze backend APIs and create frontend mappings**
+- StudyBridge backend architecture (Clean Architecture + CQRS)
+- Step-by-step API analysis workflow
+- CQRS Query/Response structure mapping
+- Common mapping mistakes and solutions
+- Testing and validation procedures
+- **Best for**: Frontend developers, API integration, avoiding mapping errors
 
 ---
 

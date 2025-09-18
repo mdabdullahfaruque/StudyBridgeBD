@@ -11,9 +11,229 @@ All admin tables use the centralized `app-table-wrapper` component that provides
 - Export capabilities
 - Responsive design
 
+## 🔍 Backend API Analysis
+
+**CRITICAL**: Before implementing any admin table, ALWAYS analyze the backend API structure first.
+
+### StudyBridge Backend Architecture
+
+StudyBridge follows **Clean Architecture + CQRS pattern**:
+
+```
+Backend API Structure:
+├── StudyBridge.Api/Controllers/AdminController.cs
+├── StudyBridge.UserManagement/Features/Admin/GetUsers.cs
+├── StudyBridge.Shared/Common/ApiResponse.cs
+└── StudyBridge.Shared/Common/PaginatedResult.cs
+```
+
+### API Response Pattern Analysis
+
+#### 1. Standard API Response Wrapper
+```csharp
+// StudyBridge.Shared.Common.ApiResponse<T>
+public class ApiResponse<T>
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public T? Data { get; set; }
+    public List<string> Errors { get; set; } = new();
+}
+```
+
+**Frontend Mapping**:
+```typescript
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  errors?: string[];
+}
+```
+
+#### 2. Pagination Structure Analysis
+```csharp
+// StudyBridge.Shared.Common.PaginatedResult<T>
+public class PaginatedResult<T>
+{
+    public IList<T> Items { get; set; } = new List<T>();
+    public int TotalCount { get; set; }
+    public int PageNumber { get; set; }
+    public int PageSize { get; set; }
+    public int TotalPages { get; }
+    public bool HasNextPage { get; }
+    public bool HasPreviousPage { get; }
+}
+```
+
+**Frontend Mapping**:
+```typescript
+export interface PaginatedResult<T> {
+  items: T[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+```
+
+#### 3. CQRS Feature Analysis - GetUsers Example
+
+**Backend Query Structure**:
+```csharp
+// StudyBridge.UserManagement.Features.Admin.GetUsers
+public static class GetUsers
+{
+    public class Query : IQuery<Response>
+    {
+        public int PageNumber { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+        public string? SearchTerm { get; set; }
+        public string? Role { get; set; }
+        public bool? IsActive { get; set; }
+        public string? SortBy { get; set; } = "CreatedAt";
+        public string? SortDirection { get; set; } = "desc";
+    }
+
+    public class Response
+    {
+        public PaginatedResult<UserDto> Users { get; set; } = new();
+        public string Message { get; set; } = "Users retrieved successfully";
+    }
+
+    public class UserDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public bool IsActive { get; set; }
+        public bool EmailConfirmed { get; set; }  // ⚠️ NOT isEmailVerified
+        public DateTime CreatedAt { get; set; }
+        public DateTime? LastLoginAt { get; set; }
+        public List<string> Roles { get; set; } = new();
+        public List<string> Permissions { get; set; } = new();
+        // ... other properties
+    }
+}
+```
+
+**API Controller Endpoint**:
+```csharp
+[HttpGet("users")]
+[RequirePermission("users.view")]
+public async Task<IActionResult> GetUsers([FromQuery] GetUsers.Query query)
+{
+    var response = await _getUsersHandler.HandleAsync(query);
+    return Ok(ApiResponse<GetUsers.Response>.SuccessResult(response, "Users retrieved successfully"));
+}
+```
+
+**Complete API Response Structure**:
+```json
+{
+  "success": true,
+  "message": "Users retrieved successfully", 
+  "data": {
+    "users": {
+      "items": [
+        {
+          "id": "guid",
+          "email": "user@example.com",
+          "displayName": "John Doe",
+          "firstName": "John",
+          "lastName": "Doe", 
+          "isActive": true,
+          "emailConfirmed": true,  // ⚠️ Key mapping issue
+          "createdAt": "2024-01-01T00:00:00Z",
+          "roles": ["User", "Admin"],
+          // ... other fields
+        }
+      ],
+      "totalCount": 100,
+      "pageNumber": 1,
+      "pageSize": 10,
+      "totalPages": 10,
+      "hasNextPage": true,
+      "hasPreviousPage": false
+    },
+    "message": "Users retrieved successfully"
+  },
+  "errors": []
+}
+```
+
+**Frontend Interface Mapping**:
+```typescript
+// Match backend exactly
+export interface AdminUser {
+  id: string;
+  email: string;
+  displayName: string;
+  firstName?: string;
+  lastName?: string;
+  isActive: boolean;
+  emailConfirmed: boolean; // ⚠️ Backend uses emailConfirmed, not isEmailVerified
+  roles: string[];
+  permissions: string[];
+  subscriptions: UserSubscription[];
+  createdAt: string;
+  lastLoginAt?: string;
+}
+
+// Backend response structure
+export interface GetUsersResponse {
+  users: PaginatedResult<AdminUser>;
+  message: string;
+}
+
+// Service method
+getUsers(request: GetUsersRequest): Observable<ApiResponse<GetUsersResponse>> {
+  // ... implementation
+}
+```
+
 ## 🏗️ Implementation Pattern
 
-### 1. Component Structure
+### ⚠️ STEP 1: MANDATORY Backend API Analysis
+
+**Before writing any frontend code, ALWAYS:**
+
+1. **Examine the Backend Controller**:
+   ```bash
+   # Find your API endpoint
+   find . -name "*Controller.cs" | grep -i admin
+   # Result: StudyBridge.Api/Controllers/AdminController.cs
+   ```
+
+2. **Analyze the CQRS Feature**:
+   ```bash
+   # Find the CQRS query/response structure  
+   find . -name "Get*.cs" | grep Features
+   # Result: StudyBridge.UserManagement/Features/Admin/GetUsers.cs
+   ```
+
+3. **Map the Response Structure**:
+   - Check the `Query` class for request parameters
+   - Check the `Response` class for response structure
+   - Check the `UserDto`/`ItemDto` class for individual item properties
+   - **Pay attention to property naming differences** (e.g., `emailConfirmed` vs `isEmailVerified`)
+
+4. **Test the API Endpoint**:
+   ```bash
+   # Start the backend
+   cd StudyBridge/StudyBridge.Api
+   dotnet run
+   
+   # Test the endpoint
+   curl -H "Authorization: Bearer YOUR_TOKEN" \
+        "http://localhost:5000/api/v1/admin/users?pageNumber=1&pageSize=10"
+   ```
+
+### STEP 2: Component Structure
 
 Create admin list components following this structure:
 
@@ -25,7 +245,95 @@ src/app/features/admin/components/{feature}-management/
 └── {feature}-create.component.ts (if needed)
 ```
 
-### 2. Component Implementation
+### STEP 3: API Service Implementation
+
+**Create service interfaces that EXACTLY match backend structure:**
+
+```typescript
+// admin.service.ts
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+// 1. API Response wrapper (matches StudyBridge.Shared.Common.ApiResponse)
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  errors?: string[];
+}
+
+// 2. Pagination structure (matches StudyBridge.Shared.Common.PaginatedResult)
+export interface PaginatedResult<T> {
+  items: T[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+// 3. DTO interface (matches backend UserDto EXACTLY)
+export interface AdminUser {
+  id: string;
+  email: string;
+  displayName: string;
+  firstName?: string;
+  lastName?: string;
+  isActive: boolean;
+  emailConfirmed: boolean; // ⚠️ Match backend property names exactly
+  roles: string[];
+  permissions: string[];
+  subscriptions: UserSubscription[];
+  createdAt: string;
+  lastLoginAt?: string;
+}
+
+// 4. Request interface (matches backend Query class)
+export interface GetUsersRequest {
+  pageNumber?: number;
+  pageSize?: number;
+  searchTerm?: string;
+  role?: string;
+  isActive?: boolean;
+  sortBy?: string;
+  sortDirection?: 'asc' | 'desc';
+}
+
+// 5. Response interface (matches backend Response class)
+export interface GetUsersResponse {
+  users: PaginatedResult<AdminUser>;
+  message: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AdminService {
+  private readonly apiUrl = `${environment.apiUrl}/admin`;
+
+  constructor(private http: HttpClient) {}
+
+  // Match backend endpoint exactly
+  getUsers(request: GetUsersRequest = {}): Observable<ApiResponse<GetUsersResponse>> {
+    let params = new HttpParams();
+    
+    // Map frontend request to backend Query parameters
+    if (request.pageNumber) params = params.set('pageNumber', request.pageNumber.toString());
+    if (request.pageSize) params = params.set('pageSize', request.pageSize.toString());
+    if (request.searchTerm) params = params.set('searchTerm', request.searchTerm);
+    if (request.role) params = params.set('role', request.role);
+    if (request.isActive !== undefined) params = params.set('isActive', request.isActive.toString());
+    if (request.sortBy) params = params.set('sortBy', request.sortBy);
+    if (request.sortDirection) params = params.set('sortDirection', request.sortDirection);
+
+    return this.http.get<ApiResponse<GetUsersResponse>>(`${this.apiUrl}/users`, { params });
+  }
+}
+```
+
+### STEP 4: Component Implementation
 
 #### TypeScript Component Template
 
@@ -38,15 +346,14 @@ import { Subject, takeUntil } from 'rxjs';
 // PrimeNG Table Wrapper - MANDATORY per UI Components Guide
 import { TableWrapperComponent, TableColumn, TableConfig } from '../../../../shared/table-wrapper/table-wrapper.component';
 
-// API Service and Models
-import { YourApiService } from '../../../../shared/services/your-api.service';
-import { YourDto, ApiResponse } from '../../../../shared/models/api.models';
+// API Service and Models - Use EXACT backend structure
+import { AdminService, AdminUser, ApiResponse, GetUsersRequest, GetUsersResponse } from '../../services/admin.service';
 
 // Toast Service for notifications
 import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
-  selector: 'app-{feature}-list',
+  selector: 'app-user-list',
   standalone: true,
   imports: [
     CommonModule,
@@ -470,6 +777,170 @@ private processItemsForDisplay(): void {
    - Enable server-side pagination: `serverSide: true`
    - Implement lazy loading in API service
    - Limit initial data load
+
+## 🚨 Common Troubleshooting Issues
+
+### Issue 1: "[object Object]" displayed in table cells
+
+**Cause**: Returning objects instead of strings for display values.
+
+**Backend Analysis**: Check if your `*Display` methods return objects:
+```typescript
+// ❌ Wrong - returns object
+private getStatusDisplay(isActive: boolean): any {
+  return {
+    value: isActive ? 'Active' : 'Inactive',
+    severity: isActive ? 'success' : 'danger'
+  };
+}
+
+// ✅ Correct - returns string for table-wrapper
+private getStatusDisplay(isActive: boolean): string {
+  return isActive ? 'Active' : 'Inactive';
+}
+```
+
+**Solution**: 
+- Status columns expect simple strings for the table-wrapper component
+- Use the 'status' column type for styled badges
+- Return strings, not objects, from display methods
+
+### Issue 2: API Response Structure Mismatches
+
+**Symptoms**: `Cannot read properties of undefined (reading 'items')`
+
+**Backend Analysis Steps**:
+```bash
+# 1. Check actual API endpoint
+curl -H "Authorization: Bearer TOKEN" "http://localhost:5000/api/v1/admin/users"
+
+# 2. Examine backend response structure
+# StudyBridge API returns:
+{
+  "success": true,
+  "data": {
+    "users": { 
+      "items": [...],
+      "totalCount": 100,
+      // ... pagination metadata
+    },
+    "message": "Users retrieved successfully"
+  }
+}
+```
+
+**Solution**:
+```typescript
+// ❌ Wrong assumption
+this.users = response.data.items; 
+
+// ✅ Correct mapping (based on actual backend structure)
+if (response.success && response.data?.users?.items) {
+  this.users = response.data.users.items;
+}
+```
+
+### Issue 3: Property Name Mismatches
+
+**Symptoms**: Boolean fields showing undefined or wrong values
+
+**Backend Analysis**: Always check the actual DTO property names:
+```csharp
+// Backend UserDto has:
+public bool EmailConfirmed { get; set; }
+
+// ❌ Wrong frontend mapping
+emailVerified: user.isEmailVerified,
+
+// ✅ Correct frontend mapping
+emailVerified: user.emailConfirmed,
+```
+
+**Solution**: 
+- Always match backend property names exactly
+- Use browser dev tools to inspect actual API responses
+- Update interfaces to match backend DTOs precisely
+
+### Issue 4: Missing Authorization Headers
+
+**Symptoms**: 401 Unauthorized errors
+
+**Backend Analysis**: Check controller authorization attributes:
+```csharp
+[HttpGet("users")]
+[RequirePermission("users.view")]  // ⚠️ Needs specific permission
+public async Task<IActionResult> GetUsers([FromQuery] GetUsers.Query query)
+```
+
+**Solution**:
+```typescript
+// Ensure token is included in requests
+const headers = {
+  'Authorization': `Bearer ${this.authService.getToken()}`
+};
+```
+
+### Issue 5: Column Type Mismatches
+
+**Symptoms**: Columns not displaying correctly
+
+**Table-Wrapper Column Types**:
+- `'text'`: Plain text display
+- `'status'`: Styled badges (expects strings like 'Active', 'Verified')
+- `'actions'`: Button column for row operations
+- `'date'`: Formatted date display
+
+**Solution**:
+```typescript
+// ✅ Correct column configuration
+{
+  field: 'statusDisplay',
+  header: 'Status', 
+  type: 'status',  // Will create colored badges
+  // ... other config
+}
+```
+
+### Issue 6: Backend Not Running
+
+**Symptoms**: Network errors, connection refused
+
+**Quick Check**:
+```bash
+# Check if .NET backend is running
+lsof -i :5000,5001
+
+# If not running, start it:
+cd StudyBridge/StudyBridge.Api
+dotnet run
+```
+
+### Debugging Checklist
+
+When implementing a new admin table:
+
+1. **✅ Backend API Analysis**
+   - [ ] Examined controller endpoint
+   - [ ] Analyzed CQRS Query/Response classes
+   - [ ] Tested API endpoint manually
+   - [ ] Documented response structure
+
+2. **✅ Frontend Interface Mapping** 
+   - [ ] Created interfaces matching backend DTOs exactly
+   - [ ] Mapped request parameters correctly
+   - [ ] Handled nested response structure
+
+3. **✅ Component Implementation**
+   - [ ] Used exact property names from backend
+   - [ ] Returned strings from display methods
+   - [ ] Configured column types correctly
+   - [ ] Added proper error handling
+
+4. **✅ Testing & Validation**
+   - [ ] Verified table displays data correctly
+   - [ ] Tested all column types and filters
+   - [ ] Confirmed status badges work properly
+   - [ ] Validated pagination and sorting
 
 ## 📚 Reference Implementation
 

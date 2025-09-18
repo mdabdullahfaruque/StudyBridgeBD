@@ -17,10 +17,10 @@ export interface AdminUser {
   firstName?: string;
   lastName?: string;
   isActive: boolean;
-  isEmailVerified: boolean;
+  emailConfirmed: boolean; // Backend uses 'emailConfirmed', not 'isEmailVerified'
   roles: string[];
   permissions: string[];
-  subscriptions?: UserSubscription[];
+  subscriptions: UserSubscription[];
   createdAt: string;
   lastLoginAt?: string;
 }
@@ -110,6 +110,12 @@ export interface PaginatedResult<T> {
   hasPreviousPage: boolean;
 }
 
+// Backend API Response Structure (matches GetUsers.Response)
+export interface GetUsersResponse {
+  users: PaginatedResult<AdminUser>;
+  message: string;
+}
+
 export interface GetUsersRequest {
   pageNumber?: number;
   pageSize?: number;
@@ -131,7 +137,7 @@ export class AdminService {
   constructor(private http: HttpClient) {}
 
   // User Management
-  getUsers(request: GetUsersRequest = {}): Observable<ApiResponse<PaginatedResult<AdminUser>>> {
+  getUsers(request: GetUsersRequest = {}): Observable<ApiResponse<GetUsersResponse>> {
     let params = new HttpParams();
     
     if (request.pageNumber) params = params.set('pageNumber', request.pageNumber.toString());
@@ -142,7 +148,7 @@ export class AdminService {
     if (request.sortBy) params = params.set('sortBy', request.sortBy);
     if (request.sortDirection) params = params.set('sortDirection', request.sortDirection);
 
-    return this.http.get<ApiResponse<PaginatedResult<AdminUser>>>(`${this.apiUrl}/users`, { params });
+    return this.http.get<ApiResponse<GetUsersResponse>>(`${this.apiUrl}/users`, { params });
   }
 
   getUserById(id: string): Observable<ApiResponse<AdminUser>> {

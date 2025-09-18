@@ -23,7 +23,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { TableWrapperComponent, TableColumn, TableConfig } from '../../../../shared/table-wrapper/table-wrapper.component';
 
 // API Service and Models
-import { AdminService, AdminUser, PaginatedResult, ApiResponse, GetUsersRequest } from '../../services/admin.service';
+import { AdminService, AdminUser, PaginatedResult, ApiResponse, GetUsersRequest, GetUsersResponse } from '../../services/admin.service';
 
 // Toast Service for notifications
 import { ToastService } from '../../../../shared/services/toast.service';
@@ -168,37 +168,13 @@ export class UserListComponent implements OnInit, OnDestroy {
     this.adminService.getUsers(request)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: ApiResponse<PaginatedResult<AdminUser>>) => {
-          console.log('API Response:', response); // Debug log
-          console.log('Response success:', response.success); // Debug success flag
-          console.log('Response data:', response.data); // Debug data
-          
-          if (response.success && response.data) {
-            console.log('Response data items:', response.data.items); // Debug items
-            console.log('Response data users:', (response.data as any).users); // Debug users
-            
-            // Try both possible response structures
-            const responseData = response.data as any;
-            const usersData = responseData.items || responseData.users || [];
-            
-            // Handle if users is an object vs array
-            if (Array.isArray(usersData)) {
-              this.users = usersData;
-            } else if (usersData && typeof usersData === 'object') {
-              // If users is an object, check if it has items or convert to array
-              const userData = usersData as any;
-              this.users = userData.items || Object.values(usersData) || [];
-            } else {
-              this.users = [];
-            }
-            
-            console.log('Processed users array:', this.users); // Debug processed users
+        next: (response: ApiResponse<GetUsersResponse>) => {
+          if (response.success && response.data?.users?.items) {
+            this.users = response.data.users.items;
             this.processUsersForDisplay();
-            console.log('Users after processing for display:', this.users); // Debug display processing
             this.toastService.success('Success', `Loaded ${this.users.length} users`);
           } else {
-            console.error('API Response Error:', response);
-            this.users = []; // Ensure users is always an array
+            this.users = [];
             this.processUsersForDisplay();
             this.handleError('Failed to load users', response.message || 'Unknown error from API');
           }
@@ -245,7 +221,7 @@ export class UserListComponent implements OnInit, OnDestroy {
         ...user,
         rolesDisplay: this.getRolesDisplay(user.roles),
         statusDisplay: this.getStatusDisplay(user.isActive),
-        emailVerifiedDisplay: this.getEmailVerifiedDisplay(user.isEmailVerified),
+        emailVerifiedDisplay: this.getEmailVerifiedDisplay(user.emailConfirmed),
         lastLoginFormatted: user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : 'Never',
         createdAtFormatted: new Date(user.createdAt).toLocaleDateString()
       }));
@@ -272,17 +248,15 @@ export class UserListComponent implements OnInit, OnDestroy {
    * @param isActive - User active status
    */
   private getStatusDisplay(isActive: boolean): string {
-    console.log('getStatusDisplay called with isActive:', isActive, 'type:', typeof isActive);
     return isActive ? 'Active' : 'Inactive';
   }
 
   /**
    * Get email verification status display string
-   * @param isEmailVerified - Email verification status
+   * @param emailConfirmed - Email verification status from backend
    */
-  private getEmailVerifiedDisplay(isEmailVerified: boolean): string {
-    console.log('getEmailVerifiedDisplay called with isEmailVerified:', isEmailVerified, 'type:', typeof isEmailVerified);
-    return isEmailVerified ? 'Verified' : 'Unverified';
+  private getEmailVerifiedDisplay(emailConfirmed: boolean): string {
+    return emailConfirmed ? 'Verified' : 'Unverified';
   }
 
   // Event handlers following the standard admin table pattern
