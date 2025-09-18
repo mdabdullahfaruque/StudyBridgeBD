@@ -153,7 +153,7 @@ export const API_ENDPOINTS = {
       permissions: ['system.view'] 
     },
     GET_USER_MENUS: { 
-      path: '/admin/menus/user-menus', 
+      path: '/menu/user-menus', 
       method: 'GET' as const, 
       requiresAuth: true 
     }

@@ -192,17 +192,16 @@ public class AdminController : ControllerBase
     {
         try
         {
-            // TODO: Get actual user permissions from JWT token
-            // For now, simulate SuperAdmin permissions
-            var userPermissions = new List<string>
+            // Get current user ID from JWT token
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             {
-                "dashboard.view", "users.view", "users.create", "users.edit", "users.delete", "users.manage",
-                "roles.view", "roles.create", "roles.edit", "roles.delete", "roles.manage",
-                "permissions.view", "permissions.create", "permissions.edit", "permissions.delete", "permissions.manage",
-                "content.view", "content.create", "content.edit", "content.delete", "content.manage",
-                "financials.view", "financials.manage", "reports.view", "analytics.view",
-                "system.view", "system.manage", "system.logs"
-            };
+                return Unauthorized(ApiResponse<List<MenuDto>>.FailureResult("Invalid user token"));
+            }
+
+            // Get actual user permissions from database
+            var userPermissionsEntities = await _permissionService.GetUserPermissionsAsync(userId);
+            var userPermissions = userPermissionsEntities.Select(p => p.PermissionKey).ToList();
 
             var allMenus = await _menuRepository.GetAllAsync();
             var adminMenus = allMenus.Where(m => m.MenuType == MenuType.Admin && m.IsActive).ToList();
