@@ -5,6 +5,7 @@ import { AdminLayoutComponent } from '../../shared/layouts/admin-layout/admin-la
 import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
 import { RoleListComponent } from './components/role-management/role-list.component';
 import { UserListComponent } from './components/user-management/user-list.component';
+import { MenuListComponent } from './components/menu-management/menu-list.component';
 
 const routes: Routes = [
   {
@@ -31,6 +32,11 @@ const routes: Routes = [
         path: 'roles',
         component: RoleListComponent,
         title: 'Role Management - StudyBridge'
+      },
+      {
+        path: 'menus',
+        component: MenuListComponent,
+        title: 'Menu Management - StudyBridge'
       },
       {
         path: 'permissions',

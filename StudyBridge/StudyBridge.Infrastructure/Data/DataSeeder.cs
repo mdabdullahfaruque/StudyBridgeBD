@@ -127,9 +127,10 @@ public class DataSeederService
             new { Name = "financials-reports", DisplayName = "Reports", Icon = "pi pi-chart-line", Route = "/admin/financials/reports", ParentName = "financial-management", SortOrder = 30, HasCrud = false, RequiredPermissions = new[] { "reports.view" } },
             
             // System Management sub-menus
-            new { Name = "system-settings", DisplayName = "Settings", Icon = "pi pi-sliders-h", Route = "/admin/system/settings", ParentName = "system-management", SortOrder = 10, HasCrud = false, RequiredPermissions = new[] { "system.view" } },
-            new { Name = "system-logs", DisplayName = "Logs", Icon = "pi pi-file", Route = "/admin/system/logs", ParentName = "system-management", SortOrder = 20, HasCrud = false, RequiredPermissions = new[] { "system.logs" } },
-            new { Name = "system-analytics", DisplayName = "Analytics", Icon = "pi pi-chart-pie", Route = "/admin/system/analytics", ParentName = "system-management", SortOrder = 30, HasCrud = false, RequiredPermissions = new[] { "analytics.view" } }
+            new { Name = "menu-management", DisplayName = "Menu Management", Icon = "pi pi-bars", Route = "/admin/menus", ParentName = "system-management", SortOrder = 10, HasCrud = true, RequiredPermissions = new[] { "menus.view" } },
+            new { Name = "system-settings", DisplayName = "Settings", Icon = "pi pi-sliders-h", Route = "/admin/system/settings", ParentName = "system-management", SortOrder = 20, HasCrud = false, RequiredPermissions = new[] { "system.view" } },
+            new { Name = "system-logs", DisplayName = "Logs", Icon = "pi pi-file", Route = "/admin/system/logs", ParentName = "system-management", SortOrder = 30, HasCrud = false, RequiredPermissions = new[] { "system.logs" } },
+            new { Name = "system-analytics", DisplayName = "Analytics", Icon = "pi pi-chart-pie", Route = "/admin/system/analytics", ParentName = "system-management", SortOrder = 40, HasCrud = false, RequiredPermissions = new[] { "analytics.view" } }
         };
 
         var createdMenus = new Dictionary<string, Menu>();
@@ -266,6 +267,13 @@ public class DataSeederService
             new { MenuName = "role-management", PermissionType = PermissionType.Edit, Key = "roles.edit", DisplayName = "Edit Roles", Description = "Modify role settings" },
             new { MenuName = "role-management", PermissionType = PermissionType.Delete, Key = "roles.delete", DisplayName = "Delete Roles", Description = "Remove roles from system" },
             new { MenuName = "role-management", PermissionType = PermissionType.Manage, Key = "roles.manage", DisplayName = "Manage Roles", Description = "Full role management access" },
+            
+            // Menu Management permissions
+            new { MenuName = "menu-management", PermissionType = PermissionType.View, Key = "menus.view", DisplayName = "View Menus", Description = "View menu listings and details" },
+            new { MenuName = "menu-management", PermissionType = PermissionType.Create, Key = "menus.create", DisplayName = "Create Menus", Description = "Create new menus" },
+            new { MenuName = "menu-management", PermissionType = PermissionType.Edit, Key = "menus.edit", DisplayName = "Edit Menus", Description = "Modify menu settings" },
+            new { MenuName = "menu-management", PermissionType = PermissionType.Delete, Key = "menus.delete", DisplayName = "Delete Menus", Description = "Remove menus from system" },
+            new { MenuName = "menu-management", PermissionType = PermissionType.Manage, Key = "menus.manage", DisplayName = "Manage Menus", Description = "Full menu management access" },
             
             // Permission Management permissions
             new { MenuName = "permission-management", PermissionType = PermissionType.View, Key = "permissions.view", DisplayName = "View Permissions", Description = "View permission listings" },

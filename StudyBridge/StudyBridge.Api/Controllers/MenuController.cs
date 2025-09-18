@@ -12,7 +12,6 @@ namespace StudyBridge.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-[RequirePermission("system.view")]
 public class MenuController : ControllerBase
 {
     private readonly IMenuRepository _menuRepository;
