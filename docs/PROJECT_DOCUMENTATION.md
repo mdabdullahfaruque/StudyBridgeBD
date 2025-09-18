@@ -812,7 +812,14 @@ graph TB
         subgraph "Shared Components"
             BUTTON[ButtonComponent<br/>Reusable UI Button]
             LOADING[LoadingComponent<br/>Loading States]
-            HEADER[HeaderComponent<br/>Navigation Bar]
+            USER_MENU[UserMenuComponent<br/>Topbar User Menu]
+            ADMIN_SIDEBAR[AdminSidebarComponent<br/>Admin Navigation]
+        end
+        
+        subgraph "Layout System"
+            ADMIN_LAYOUT[AdminLayout<br/>Sidebar + Topbar]
+            PUBLIC_LAYOUT[PublicLayout<br/>Full-width + Topbar]
+            RESPONSIVE[Responsive Design<br/>Mobile Optimized]
         end
         
         subgraph "Routing System"
@@ -825,6 +832,7 @@ graph TB
     AUTH_COMP --> AUTH_SVC
     DASHBOARD --> AUTH_SVC
     PROFILE --> AUTH_SVC
+    USER_MENU --> AUTH_SVC
     
     HTTP_INT --> AUTH_SVC
     GUARDS --> AUTH_SVC
@@ -832,6 +840,11 @@ graph TB
     AUTH_COMP --> MODELS
     DASHBOARD --> MODELS
     PROFILE --> MODELS
+    USER_MENU --> MODELS
+    
+    ADMIN_LAYOUT --> USER_MENU
+    PUBLIC_LAYOUT --> USER_MENU
+    ADMIN_LAYOUT --> ADMIN_SIDEBAR
     
     PROTECTED --> GUARDS
     PUBLIC --> REDIRECT

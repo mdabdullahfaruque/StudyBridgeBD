@@ -17,6 +17,8 @@ A comprehensive IELTS vocabulary learning platform for Bangladeshi students buil
 **🎯 Production Ready**: Complete authentication system with modern Angular frontend
 - **258 tests passing** with 92.2% business logic coverage
 - **Angular 20** with Tailwind CSS and responsive design
+- **UserMenuComponent** - Reusable topbar user menu across layouts
+- **Layout Optimization** - Fixed admin sidebar + full-width public layout
 - **Secure configuration** management with GitHub Push Protection compliance
 - **Google OAuth 2.0** + JWT authentication fully implemented
 
