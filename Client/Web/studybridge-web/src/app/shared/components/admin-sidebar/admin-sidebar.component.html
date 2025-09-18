@@ -6,7 +6,8 @@
   <!-- Sidebar Header -->
   <div class="sidebar-header border-b border-gray-200 p-4">
     <!-- Logo and Toggle Button -->
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between w-full">
+      <!-- Left side: Logo and branding -->
       <div class="flex items-center space-x-3" *ngIf="!isCollapsed()">
         <div class="flex-shrink-0">
           <img src="/assets/images/logo.png" 
@@ -24,21 +25,24 @@
         </div>
       </div>
       
-      <!-- Desktop Toggle Button (collapse/expand) -->
-      <button (click)="toggleSidebar()"
-              class="hidden lg:block p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-        <i class="pi pi-bars text-gray-600"></i>
-      </button>
+      <!-- Right side: Action buttons -->
+      <div class="flex items-center ml-auto">
+        <!-- Desktop Toggle Button (collapse/expand) -->
+        <button (click)="toggleSidebar()"
+                class="hidden lg:block p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+          <i class="pi pi-bars text-gray-600"></i>
+        </button>
 
-      <!-- Mobile Close Button -->
-      <button *ngIf="isMobileOpen"
-              (click)="closeMobileSidebar()"
-              class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-        <!-- Close X icon -->
-        <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-        </svg>
-      </button>
+        <!-- Mobile Close Button -->
+        <button *ngIf="isMobileOpen"
+                (click)="closeMobileSidebar()"
+                class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+          <!-- Close X icon -->
+          <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 
