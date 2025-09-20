@@ -206,6 +206,11 @@
               {{ getFieldValue(rowData, col.field) }}
             </span>
 
+            <!-- Custom Template -->
+            <ng-container *ngSwitchCase="'custom'">
+              <ng-content select="[slot='{{ col.field }}']"></ng-content>
+            </ng-container>
+
             <!-- Default Text -->
             <span *ngSwitchDefault>
               {{ getFieldValue(rowData, col.field) }}

@@ -1,6 +1,9 @@
 /* Using PrimeNG built-in styling for now - theme will be applied via AppConfig */
 /* Import can be set up later through Angular.json or main.ts */
 
+/* PrimeIcons - Required for action buttons */
+@import 'primeicons/primeicons.css';
+
 /* Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
 

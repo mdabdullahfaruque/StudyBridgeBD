@@ -14,13 +14,20 @@
  * See docs/ADMIN_TABLE_IMPLEMENTATION.md for the complete pattern guide.
  */
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
-// PrimeNG Table Wrapper - MANDATORY per UI Components Guide
-import { TableWrapperComponent, TableColumn, TableConfig } from '../../../../shared/table-wrapper/table-wrapper.component';
+// Keep the TableColumn and TableConfig interfaces for consistency
+import { TableColumn, TableConfig } from '../../../../shared/table-wrapper/table-wrapper.component';
+
+// PrimeNG Dialog for Modal
+import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
+
+// Role Form Component
+import { RoleFormComponent } from './role-form.component';
 
 // API Service and Models
 import { RolePermissionApiService } from '../../../../shared/services/role-permission-api.service';
@@ -34,7 +41,9 @@ import { ToastService } from '../../../../shared/services/toast.service';
   standalone: true,
   imports: [
     CommonModule,
-    TableWrapperComponent  // Using existing PrimeNG table wrapper as required
+    DialogModule,
+    ButtonModule,
+    RoleFormComponent
   ],
   templateUrl: './role-list.component.html',
   styleUrl: './role-list.component.scss'
@@ -47,6 +56,11 @@ export class RoleListComponent implements OnInit, OnDestroy {
   processedRoles: any[] = [];
   selectedRoles: RoleDto[] = [];
   loading = false;
+
+  // Dialog state
+  showRoleDialog = signal(false);
+  dialogTitle = signal('Create Role');
+  editingRole = signal<RoleDto | null>(null);
 
   // Table column configuration per UI Components Guide
   columns: TableColumn[] = [
@@ -100,6 +114,14 @@ export class RoleListComponent implements OnInit, OnDestroy {
       type: 'number',
       sortable: true,
       width: '150px'
+    },
+    {
+      field: 'actions',
+      header: 'Actions',
+      type: 'custom',
+      sortable: false,
+      filterable: false,
+      width: '120px'
     }
   ];
 
@@ -238,17 +260,37 @@ export class RoleListComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Navigate to create new role
+   * Open dialog to create new role
    */
   createNewRole(): void {
-    this.router.navigate(['/admin/roles/create']);
+    this.editingRole.set(null);
+    this.dialogTitle.set('Create New Role');
+    this.showRoleDialog.set(true);
   }
 
   /**
-   * Navigate to edit role
+   * Open dialog to edit role
    */
   editRole(role: RoleDto): void {
-    this.router.navigate(['/admin/roles/edit', role.id]);
+    this.editingRole.set(role);
+    this.dialogTitle.set('Edit Role');
+    this.showRoleDialog.set(true);
+  }
+
+  /**
+   * Close the role dialog
+   */
+  closeRoleDialog(): void {
+    this.showRoleDialog.set(false);
+    this.editingRole.set(null);
+  }
+
+  /**
+   * Handle role form completion
+   */
+  onRoleFormComplete(): void {
+    this.closeRoleDialog();
+    this.loadRoles(); // Refresh the list
   }
 
   /**
@@ -318,5 +360,9 @@ export class RoleListComponent implements OnInit, OnDestroy {
    */
   getStatusClass(isActive: boolean): string {
     return isActive ? 'status-active' : 'status-inactive';
+  }
+
+  trackByRoleId(index: number, role: any): string {
+    return role.id;
   }
 }

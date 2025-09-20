@@ -3,6 +3,7 @@ import { RoleGuard } from '../../core/guards/auth.guards';
 import { AdminLayoutComponent } from '../../shared/layouts/admin-layout/admin-layout.component';
 import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
 import { RoleListComponent } from './components/role-management/role-list.component';
+import { RoleFormComponent } from './components/role-management/role-form.component';
 import { UserListComponent } from './components/user-management/user-list.component';
 import { MenuListComponent } from './components/menu-management/menu-list.component';
 

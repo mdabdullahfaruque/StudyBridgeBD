@@ -1,0 +1,103 @@
+<!-- Role Form Container -->
+<div class="role-form-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <!-- Back Button -->
+        <button 
+          (click)="onCancelClick()"
+          class="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+          type="button">
+          <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </button>
+        
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">{{ pageTitle() }}</h1>
+          <p class="text-sm text-gray-600 mt-1">
+            {{ isEditMode ? 'Modify role details and permissions' : 'Create a new role and assign permissions' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center space-x-3">
+        <button 
+          (click)="onCancelClick()"
+          type="button"
+          class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="loading-container">
+    <div class="flex items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <span class="ml-3 text-gray-600">Loading role data...</span>
+    </div>
+  </div>
+
+  <!-- Form Content -->
+  <div *ngIf="!isLoading()" class="form-content">
+    <!-- Single Column Layout - Role Details Form Only -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-2">Role Details</h2>
+        <p class="text-sm text-gray-600">Configure the basic information for this role.</p>
+      </div>
+
+      <!-- Dynamic Form Component -->
+      <div id="role-form">
+        <app-dynamic-form
+          [fields]="formFields"
+          [config]="formConfig"
+          [initialData]="formInitialData"
+          [disabled]="isFormDisabled"
+          (formSubmit)="onFormSubmit($event)">
+        </app-dynamic-form>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions mt-8">
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center text-sm text-gray-600">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            {{ isEditMode ? 'Changes will be applied immediately' : 'Role will be created and can be assigned to users' }}
+          </div>
+
+          <div class="flex items-center space-x-3">
+            <button 
+              (click)="onCancelClick()"
+              type="button"
+              [disabled]="isSaving()"
+              class="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+              Cancel
+            </button>
+            
+            <button 
+              type="submit"
+              form="role-form"
+              [disabled]="isSaving()"
+              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+              <svg *ngIf="isSaving()" class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {{ submitButtonText() }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
