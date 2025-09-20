@@ -44,7 +44,6 @@ export interface AdminUser {
 export class AdminLayoutComponent implements OnInit {
   // Signals for reactive state management
   currentUser = signal<AdminUser | null>(null);
-  menuItems = signal<AdminMenuItem[]>([]);
   isSidebarCollapsed = signal(false);
   isMobileSidebarVisible = signal(false);
   isUserMenuVisible = signal(false);
@@ -97,11 +96,8 @@ export class AdminLayoutComponent implements OnInit {
     const adminUser = await this.loadAdminUser(user);
     this.currentUser.set(adminUser);
 
-    // TODO: Load dynamic menu from backend API when menu endpoints are implemented
-    // await this.loadUserMenusFromApi();
-    
-    // For now, use fallback menu to prevent 404 errors
-    this.loadFallbackMenu();
+    // Load dynamic menu from backend API
+    await this.loadUserMenusFromApi();
   }
 
   private async loadAdminUser(user: UserDto): Promise<AdminUser> {
@@ -139,28 +135,16 @@ export class AdminLayoutComponent implements OnInit {
   private async loadUserMenusFromApi() {
     try {
       // Load admin menus from API using MenuService
-      const adminMenus = await this.menuService.loadAdminMenus();
-      
-      if (adminMenus.length > 0) {
-        const convertedMenus = this.convertAppMenuItemsToAdminMenuItems(adminMenus);
-        this.menuItems.set(convertedMenus);
-      } else {
-        // Fallback to static menu if API fails
-        this.loadFallbackMenu();
-      }
+      // The AdminSidebarComponent will handle the actual menu display
+      await this.menuService.loadAdminMenus();
     } catch (error) {
       console.error('Failed to load admin menus from API:', error);
-      // Fallback to static menu
-      this.loadFallbackMenu();
+      // MenuService will handle fallbacks
     }
   }
 
   private loadFallbackMenu() {
-    const user = this.currentUser();
-    if (user) {
-      const menu = this.buildAdminMenu(user.permissions);
-      this.menuItems.set(menu);
-    }
+    // Not needed anymore - MenuService handles fallback menus
   }
 
   private convertBackendMenusToAdminMenuItems(backendMenus: any[]): AdminMenuItem[] {
@@ -266,26 +250,7 @@ export class AdminLayoutComponent implements OnInit {
     this.isUserMenuVisible.set(!this.isUserMenuVisible());
   }
 
-  expandMenuItem(itemId: string) {
-    const items = this.menuItems();
-    const updatedItems = this.toggleMenuItemExpanded(items, itemId);
-    this.menuItems.set(updatedItems);
-  }
-
-  private toggleMenuItemExpanded(items: AdminMenuItem[], targetId: string): AdminMenuItem[] {
-    return items.map(item => {
-      if (item.id === targetId) {
-        return { ...item, isExpanded: !item.isExpanded };
-      }
-      if (item.children) {
-        return {
-          ...item,
-          children: this.toggleMenuItemExpanded(item.children, targetId)
-        };
-      }
-      return item;
-    });
-  }
+  // Menu expansion is now handled by AdminSidebarComponent
 
   navigateToProfile() {
     this.router.navigate(['/admin/profile']);
@@ -303,9 +268,6 @@ export class AdminLayoutComponent implements OnInit {
   }
 
   // Helper methods for templates
-  hasChildren(item: AdminMenuItem): boolean {
-    return !!(item.children && item.children.length > 0);
-  }
 
   getMenuItemClass(item: AdminMenuItem): string {
     let classes = 'menu-item';
@@ -314,15 +276,7 @@ export class AdminLayoutComponent implements OnInit {
     return classes;
   }
 
-  onMenuItemClick(item: AdminMenuItem, event: Event) {
-    if (this.hasChildren(item)) {
-      event.preventDefault();
-      this.expandMenuItem(item.id);
-    } else {
-      // Close mobile sidebar on navigation
-      this.isMobileSidebarVisible.set(false);
-    }
-  }
+  // Menu item clicks are now handled by AdminSidebarComponent
 
   // Handle outside clicks to close user menu
   onClickOutside(event: Event) {

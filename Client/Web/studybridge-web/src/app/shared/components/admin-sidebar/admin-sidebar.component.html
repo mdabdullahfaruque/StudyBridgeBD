@@ -89,30 +89,12 @@
 
     <!-- Menu Items -->
     <ul *ngIf="!isLoadingMenus()" class="menu-list py-4 space-y-1">
-      <ng-container *ngFor="let item of menuItems(); trackBy: trackByItemId">
+      <ng-container *ngFor="let item of menuItems(); let i = index; trackBy: trackByItemId">
         <li class="menu-item">
         
           <!-- Parent Menu Item -->
         <div class="menu-item-content">
-          <!-- Single Link Item -->
-          <a *ngIf="(!item.children || item.children.length === 0) && item.route"
-             [routerLink]="item.route"
-             routerLinkActive="active"
-             [title]="item.displayName"
-             class="menu-link flex items-center px-4 py-3 mx-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 group">
-            
-            <!-- Icon -->
-            <div class="menu-icon flex-shrink-0">
-              <i [class]="item.icon || 'pi pi-circle'" 
-                 class="text-lg group-hover:text-blue-600"></i>
-            </div>
-            
-            <!-- Label -->
-            <span *ngIf="!isCollapsed()" 
-                  class="ml-3 font-medium truncate">{{ item.displayName }}</span>
-          </a>
-
-          <!-- Parent Item with Children -->
+          <!-- Menu Item with Children (Parent) -->
           <button *ngIf="item.children && item.children.length > 0"
                   (click)="onMenuClick(item)"
                   [title]="item.displayName"
@@ -133,12 +115,30 @@
                class="pi pi-chevron-down ml-auto transition-transform duration-200"
                [class.rotate-180]="isItemExpanded(item.id)"></i>
           </button>
+
+          <!-- Single Link Item (No Children) -->
+          <a *ngIf="!item.children || item.children.length === 0"
+             [routerLink]="item.route"
+             routerLinkActive="active"
+             [title]="item.displayName"
+             class="menu-link flex items-center px-4 py-3 mx-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 group">
+            
+            <!-- Icon -->
+            <div class="menu-icon flex-shrink-0">
+              <i [class]="item.icon || 'pi pi-circle'" 
+                 class="text-lg group-hover:text-blue-600"></i>
+            </div>
+            
+            <!-- Label -->
+            <span *ngIf="!isCollapsed()" 
+                  class="ml-3 font-medium truncate">{{ item.displayName }}</span>
+          </a>
         </div>
 
         <!-- Submenu -->
         <ul *ngIf="item.children && item.children.length > 0 && isItemExpanded(item.id) && !isCollapsed()" 
             class="submenu ml-4 mt-2 space-y-1 border-l-2 border-gray-100">
-          <li *ngFor="let child of item.children; trackBy: trackByItemId">
+          <li *ngFor="let child of item.children; let j = index; trackBy: trackByItemId">
             <a *ngIf="child.route"
                [routerLink]="child.route"
                routerLinkActive="active"

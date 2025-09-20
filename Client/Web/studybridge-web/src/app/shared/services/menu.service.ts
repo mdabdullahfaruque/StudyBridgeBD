@@ -43,7 +43,8 @@ export class MenuService {
       const response = await firstValueFrom(this.menuApiService.getUserMenus());
 
       if (response?.data) {
-        const menus = this.buildMenuHierarchy(this.convertMenuDtosToMenuItems(response.data));
+        // API already returns hierarchical structure, so no need to build hierarchy
+        const menus = this.convertMenuDtosToMenuItems(response.data);
         this.adminMenusSubject.next(menus);
         this.adminMenusSignal.set(menus);
         return menus;
