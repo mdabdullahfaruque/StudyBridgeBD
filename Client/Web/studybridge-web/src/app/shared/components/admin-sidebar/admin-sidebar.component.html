@@ -111,9 +111,15 @@
                   class="ml-3 font-medium truncate flex-1 text-left">{{ item.displayName }}</span>
             
             <!-- Expand/Collapse Icon -->
-            <i *ngIf="!isCollapsed()" 
-               class="pi pi-chevron-down ml-auto transition-transform duration-200"
-               [class.rotate-180]="isItemExpanded(item.id)"></i>
+            <svg *ngIf="!isCollapsed()" 
+                 class="ml-auto w-4 h-4 text-gray-400 transition-all duration-200 group-hover:text-gray-600"
+                 [class.rotate-180]="isItemExpanded(item.id)"
+                 [class.text-blue-600]="isItemExpanded(item.id)"
+                 fill="none" 
+                 stroke="currentColor" 
+                 viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
           </button>
 
           <!-- Single Link Item (No Children) -->

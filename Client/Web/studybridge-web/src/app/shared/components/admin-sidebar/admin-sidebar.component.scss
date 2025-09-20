@@ -263,6 +263,21 @@
   transform: rotate(180deg);
 }
 
+/* Chevron Icon Styling */
+.pi-chevron-down {
+  font-size: 14px !important;
+  color: #6b7280 !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.menu-toggle:hover .pi-chevron-down {
+  color: #3b82f6 !important;
+}
+
+.menu-toggle .pi-chevron-down.rotate-180 {
+  color: #3b82f6 !important;
+}
+
 /* User Actions Styling */
 .user-actions a,
 .user-actions button {
