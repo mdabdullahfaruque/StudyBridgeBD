@@ -92,29 +92,30 @@ public class DataSeederService
         // Parent menu definitions with proper routes
         var parentMenus = new[]
         {
-            new { Name = "dashboard", DisplayName = "Dashboard", Icon = "pi pi-home", Route = "/dashboard", SortOrder = 10 },
-            new { Name = "content-management", DisplayName = "Content", Icon = "pi pi-file-edit", Route = "/content", SortOrder = 20 },
-            new { Name = "financial-management", DisplayName = "Financials", Icon = "pi pi-dollar", Route = "/financials", SortOrder = 30 },
-            new { Name = "system-management", DisplayName = "System", Icon = "pi pi-cog", Route = "/system", SortOrder = 40 }
+            new { Name = "dashboard", DisplayName = "Dashboard", Icon = "pi pi-home", Route = "/admin/dashboard", SortOrder = 10 },
+            new { Name = "content-management", DisplayName = "Content", Icon = "pi pi-file-edit", Route = "/admin/content", SortOrder = 20 },
+            new { Name = "financial-management", DisplayName = "Financials", Icon = "pi pi-dollar", Route = "/admin/financials", SortOrder = 30 },
+            new { Name = "system-management", DisplayName = "System", Icon = "pi pi-cog", Route = "/admin/system", SortOrder = 40 }
         };
 
         // Child menu definitions
         var childMenus = new[]
         {
-            // System Management sub-menus (includes user and role management)
-            new { Name = "user-management", DisplayName = "User Management", Icon = "pi pi-users", Route = "/users", ParentName = "system-management", SortOrder = 10 },
-            new { Name = "role-management", DisplayName = "Role Management", Icon = "pi pi-key", Route = "/roles", ParentName = "system-management", SortOrder = 20 },
-            new { Name = "app-settings", DisplayName = "Settings", Icon = "pi pi-sliders-h", Route = "/settings", ParentName = "system-management", SortOrder = 30 },
-            new { Name = "audit-logs", DisplayName = "Audit Logs", Icon = "pi pi-history", Route = "/audit-logs", ParentName = "system-management", SortOrder = 40 },
+            // System Management child menus
+            new { Name = "user-management", DisplayName = "User Management", Icon = "pi pi-users", Route = "/admin/users", ParentName = "system-management", SortOrder = 10 },
+            new { Name = "role-management", DisplayName = "Role Management", Icon = "pi pi-key", Route = "/admin/roles", ParentName = "system-management", SortOrder = 20 },
+            new { Name = "menu-management", DisplayName = "Menu Management", Icon = "pi pi-list", Route = "/admin/menus", ParentName = "system-management", SortOrder = 25 },
+            new { Name = "app-settings", DisplayName = "Settings", Icon = "pi pi-sliders-h", Route = "/admin/settings", ParentName = "system-management", SortOrder = 30 },
+            new { Name = "audit-logs", DisplayName = "Audit Logs", Icon = "pi pi-history", Route = "/admin/audit-logs", ParentName = "system-management", SortOrder = 40 },
             
             // Content Management sub-menus
-            new { Name = "content-vocabulary", DisplayName = "Vocabulary", Icon = "pi pi-book", Route = "/vocabulary", ParentName = "content-management", SortOrder = 10 },
-            new { Name = "content-categories", DisplayName = "Categories", Icon = "pi pi-tags", Route = "/categories", ParentName = "content-management", SortOrder = 20 },
+            new { Name = "content-vocabulary", DisplayName = "Vocabulary", Icon = "pi pi-book", Route = "/admin/vocabulary", ParentName = "content-management", SortOrder = 10 },
+            new { Name = "content-categories", DisplayName = "Categories", Icon = "pi pi-tags", Route = "/admin/categories", ParentName = "content-management", SortOrder = 20 },
             
             // Financial Management sub-menus
-            new { Name = "financials-overview", DisplayName = "Overview", Icon = "pi pi-chart-bar", Route = "/financials/overview", ParentName = "financial-management", SortOrder = 10 },
-            new { Name = "financials-subscriptions", DisplayName = "Subscriptions", Icon = "pi pi-credit-card", Route = "/subscriptions", ParentName = "financial-management", SortOrder = 20 },
-            new { Name = "financials-reports", DisplayName = "Reports", Icon = "pi pi-chart-line", Route = "/reports", ParentName = "financial-management", SortOrder = 30 },
+            new { Name = "financials-overview", DisplayName = "Overview", Icon = "pi pi-chart-bar", Route = "/admin/financials/overview", ParentName = "financial-management", SortOrder = 10 },
+            new { Name = "financials-subscriptions", DisplayName = "Subscriptions", Icon = "pi pi-credit-card", Route = "/admin/subscriptions", ParentName = "financial-management", SortOrder = 20 },
+            new { Name = "financials-reports", DisplayName = "Reports", Icon = "pi pi-chart-line", Route = "/admin/reports", ParentName = "financial-management", SortOrder = 30 },
         };
 
         var createdMenus = new Dictionary<string, Menu>();
@@ -238,7 +239,7 @@ public class DataSeederService
             ["Admin"] = new[]
             {
                 "dashboard", "content-management", "system-management",
-                "user-management", "role-management", "app-settings", "audit-logs",
+                "user-management", "role-management", "menu-management", "app-settings", "audit-logs",
                 "content-vocabulary", "content-categories"
             },
             ["Finance"] = new[]
