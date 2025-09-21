@@ -8,6 +8,9 @@ using System.Security.Claims;
 
 namespace StudyBridge.Infrastructure.Authorization;
 
+// TODO: RequirePermissionAttribute has been replaced with RequireMenuAttribute
+// Commented out as IPermissionService is part of the old permission system
+/*
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class RequirePermissionAttribute : Attribute, IAsyncAuthorizationFilter
 {
@@ -46,7 +49,11 @@ public class RequirePermissionAttribute : Attribute, IAsyncAuthorizationFilter
         }
     }
 }
+*/
 
+// TODO: RequireRoleAttribute has been replaced with RequireMenuAttribute
+// Commented out as SystemRole enum no longer exists
+/*
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class RequireRoleAttribute : Attribute, IAsyncAuthorizationFilter
 {
@@ -85,6 +92,49 @@ public class RequireRoleAttribute : Attribute, IAsyncAuthorizationFilter
         {
             context.Result = new ForbidResult();
         }
+    }
+}
+*/
+
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+public class RequireMenuAttribute : Attribute, IAsyncAuthorizationFilter
+{
+    private readonly string _menuKey;
+
+    public RequireMenuAttribute(string menuKey)
+    {
+        _menuKey = menuKey;
+    }
+
+    public Task OnAuthorizationAsync(AuthorizationFilterContext context)
+    {
+        var user = context.HttpContext.User;
+        
+        if (!user.Identity?.IsAuthenticated ?? true)
+        {
+            context.Result = new UnauthorizedResult();
+            return Task.CompletedTask;
+        }
+
+        var userIdString = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+        {
+            context.Result = new UnauthorizedResult();
+            return Task.CompletedTask;
+        }
+
+        // TODO: Implement menu-based authorization service
+        // For now, allow all authenticated users
+        // var menuService = context.HttpContext.RequestServices
+        //     .GetRequiredService<IMenuService>();
+        // var hasMenuAccess = await menuService.HasMenuAccessAsync(userId, _menuKey);
+        
+        // if (!hasMenuAccess)
+        // {
+        //     context.Result = new ForbidResult();
+        // }
+        
+        return Task.CompletedTask;
     }
 }
 

@@ -270,7 +270,7 @@ graph TB
 | 200 | Success | Successful login, profile update |
 | 400 | Bad Request | Validation errors, malformed JSON |
 | 401 | Unauthorized | Invalid token, expired token |
-| 403 | Forbidden | Insufficient permissions |
+| 403 | Forbidden | Insufficient menu access |
 | 404 | Not Found | User not found, resource not found |
 | 409 | Conflict | Email already exists |
 | 422 | Unprocessable Entity | Business logic validation failed |
@@ -375,43 +375,45 @@ graph LR
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
 ```
 
-### Role-Based Access Control
+### Role-Based Menu Access Control
 
-| Role | Permissions | Endpoints |
+| Role | Menu Access | Endpoints |
 |------|-------------|-----------|
 | **Administrator** | Full system access | All endpoints |
-| **Teacher** | Content management, progress viewing | Content CRUD, student progress |
-| **Student** | Learning activities, personal progress | Profile, vocabulary, progress |
-| **Guest** | Limited vocabulary access | Public vocabulary endpoints |
+| **Teacher** | Content management menus | Content CRUD, student progress |
+| **Student** | Learning activity menus | Profile, vocabulary, progress |
+| **Guest** | Limited vocabulary menus | Public vocabulary endpoints |
 
-### Permission Structure
+### Menu Structure
 
 ```mermaid
 graph TB
-    subgraph "Permission Model"
-        PERM[Permission]
-        RESOURCE[Resource: string]
-        ACTION[Action: string]
-        DESCRIPTION[Description: string]
+    subgraph "Menu Model"
+        MENU[Menu]
+        NAME[Name: string]
+        ROUTE[Route: string]
+        ICON[Icon: string]
+        PARENT[ParentMenuId: guid?]
     end
     
-    subgraph "Example Permissions"
-        USER_READ["users:read"]
-        USER_WRITE["users:write"]
-        VOCAB_READ["vocabulary:read"]
-        VOCAB_WRITE["vocabulary:write"]
-        PROGRESS_READ["progress:read"]
+    subgraph "Example Menus"
+        USER_VIEW["users.view"]
+        USER_CREATE["users.create"]
+        VOCAB_MANAGE["vocabulary.manage"]
+        IELTS_MANAGE["ielts.manage"]
+        DASHBOARD["dashboard.view"]
     end
     
-    PERM --> RESOURCE
-    PERM --> ACTION
-    PERM --> DESCRIPTION
+    MENU --> NAME
+    MENU --> ROUTE
+    MENU --> ICON
+    MENU --> PARENT
     
-    RESOURCE --> USER_READ
-    RESOURCE --> USER_WRITE
-    RESOURCE --> VOCAB_READ
-    RESOURCE --> VOCAB_WRITE
-    RESOURCE --> PROGRESS_READ
+    NAME --> USER_VIEW
+    NAME --> USER_CREATE
+    NAME --> VOCAB_MANAGE
+    NAME --> IELTS_MANAGE
+    NAME --> DASHBOARD
 ```
 
 ---

@@ -188,7 +188,7 @@ erDiagram
         guid Id PK
         string Name UK
         string Description
-        SystemRole SystemRole
+        string RoleType
         bool IsActive
         datetime CreatedAt
         datetime UpdatedAt
@@ -203,21 +203,27 @@ erDiagram
         bool IsActive
     }
     
-    Permission {
+    Menu {
         guid Id PK
         string Name UK
+        string DisplayName
         string Description
-        string Resource
-        string Action
+        string Icon
+        string Route
+        int SortOrder
+        guid ParentMenuId FK
         bool IsActive
+        datetime CreatedAt
+        datetime UpdatedAt
     }
     
-    RolePermission {
+    RoleMenu {
         guid Id PK
         guid RoleId FK
-        guid PermissionId FK
+        guid MenuId FK
         datetime GrantedAt
         guid GrantedBy FK
+        bool IsActive
     }
     
     UserSubscription {
@@ -235,8 +241,9 @@ erDiagram
     AppUser ||--o| UserProfile : "has"
     AppUser ||--o{ UserRole : "has many"
     Role ||--o{ UserRole : "assigned to many"
-    Role ||--o{ RolePermission : "has many"
-    Permission ||--o{ RolePermission : "granted to many"
+    Role ||--o{ RoleMenu : "has many"
+    Menu ||--o{ RoleMenu : "accessible by many"
+    Menu ||--o{ Menu : "has children"
     AppUser ||--o{ UserSubscription : "has many"
 ```
 
@@ -255,11 +262,13 @@ graph TB
         USER --> SUBS
     end
     
-    subgraph "Permission Aggregate"
+    subgraph "Menu Access Aggregate"
         ROLE[Role Root]
-        PERMS[RolePermissions]
+        MENUS[RoleMenus]
+        MENU[Menu Items]
         
-        ROLE --> PERMS
+        ROLE --> MENUS
+        MENUS --> MENU
     end
     
     subgraph "Future: Vocabulary Aggregate"
@@ -521,20 +530,20 @@ sequenceDiagram
     participant C as Client
     participant MW as Auth Middleware
     participant JWT as JWT Service
-    participant PERM as Permission Service
+    participant MENU as Menu Service
     participant API as API Endpoint
     
     C->>MW: Request with JWT token
     MW->>JWT: Validate token
     JWT->>MW: Token claims
-    MW->>PERM: Check permissions
-    PERM->>PERM: Evaluate user roles
-    PERM->>MW: Permission result
+    MW->>MENU: Check menu access
+    MENU->>MENU: Evaluate user roles & menus
+    MENU->>MW: Access result
     
-    alt Permission Granted
+    alt Access Granted
         MW->>API: Forward request
         API->>C: Process & respond
-    else Permission Denied
+    else Access Denied
         MW->>C: 403 Forbidden
     end
 ```
@@ -628,21 +637,27 @@ erDiagram
         boolean is_active
     }
     
-    Permissions {
+    Menus {
         uuid id PK
         string name UK
+        string display_name
         string description
-        string resource
-        string action
+        string icon
+        string route
+        int sort_order
+        uuid parent_menu_id FK
         boolean is_active
+        timestamp created_at
+        timestamp updated_at
     }
     
-    RolePermissions {
+    RoleMenus {
         uuid id PK
         uuid role_id FK
-        uuid permission_id FK
+        uuid menu_id FK
         timestamp granted_at
         uuid granted_by FK
+        boolean is_active
     }
     
     UserSubscriptions {
@@ -660,8 +675,9 @@ erDiagram
     Users ||--o| UserProfiles : "has"
     Users ||--o{ UserRoles : "has many"
     Roles ||--o{ UserRoles : "assigned to"
-    Roles ||--o{ RolePermissions : "has"
-    Permissions ||--o{ RolePermissions : "granted to"
+    Roles ||--o{ RoleMenus : "has"
+    Menus ||--o{ RoleMenus : "accessible by"
+    Menus ||--o{ Menus : "parent of"
     Users ||--o{ UserSubscriptions : "has"
 ```
 

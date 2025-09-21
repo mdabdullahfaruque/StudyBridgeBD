@@ -8,7 +8,7 @@ namespace StudyBridge.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-[RequirePermission("users.view")]
+[RequireMenu("users.view")]
 public class UserController : ControllerBase
 {
     private readonly IQueryHandler<GetUsers.Query, GetUsers.Response> _getUsersHandler;
@@ -63,7 +63,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    [RequirePermission("users.create")]
+    [RequireMenu("users.create")]
     public async Task<IActionResult> CreateUser([FromBody] CreateUser.Command command)
     {
         try
@@ -82,8 +82,8 @@ public class UserController : ControllerBase
 
     // TODO: Add Update, Delete methods with proper permission checks
     // [HttpPut("{id}")]
-    // [RequirePermission("users.edit")]
+    // [RequireMenu("users.edit")]
     
     // [HttpDelete("{id}")]
-    // [RequirePermission("users.delete")]
+    // [RequireMenu("users.delete")]
 }

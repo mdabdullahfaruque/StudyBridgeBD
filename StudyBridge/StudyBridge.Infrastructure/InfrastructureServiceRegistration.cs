@@ -25,14 +25,17 @@ public static class InfrastructureServiceRegistration
         // Register repositories
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
-        services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
+        // TODO: RolePermission system has been simplified to RoleMenu
+        // services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
         services.AddScoped<IUserSubscriptionRepository, UserSubscriptionRepository>();
         services.AddScoped<IUserProfileRepository, UserProfileRepository>();
         services.AddScoped<IMenuRepository, MenuRepository>();
-        services.AddScoped<IPermissionRepository, PermissionRepository>();
+        // TODO: Permission system has been simplified to Menu system
+        // services.AddScoped<IPermissionRepository, PermissionRepository>();
 
         // Register services
-        services.AddScoped<IPermissionService, PermissionService>();
+        // TODO: Permission service has been replaced with menu-based authorization
+        // services.AddScoped<IPermissionService, PermissionService>();
         services.AddScoped<ISubscriptionService, SubscriptionService>();
         services.AddScoped<IPasswordHashingService, PasswordHashingService>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();

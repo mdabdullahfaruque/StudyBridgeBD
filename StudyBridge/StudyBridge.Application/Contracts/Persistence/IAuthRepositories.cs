@@ -5,7 +5,6 @@ namespace StudyBridge.Application.Contracts.Persistence;
 public interface IRoleRepository
 {
     Task<Role?> GetByIdAsync(Guid id);
-    Task<Role?> GetBySystemRoleAsync(SystemRole systemRole);
     Task<IEnumerable<Role>> GetAllAsync();
     Task<Role> AddAsync(Role role);
     Task UpdateAsync(Role role);
@@ -21,12 +20,12 @@ public interface IUserRoleRepository
     Task DeleteAsync(Guid id);
 }
 
-public interface IRolePermissionRepository
+public interface IRoleMenuRepository
 {
-    Task<IEnumerable<RolePermission>> GetRolePermissionsAsync(Guid roleId);
-    Task<IEnumerable<Permission>> GetPermissionsByUserIdAsync(Guid userId);
-    Task<RolePermission> AddAsync(RolePermission rolePermission);
-    Task UpdateAsync(RolePermission rolePermission);
+    Task<IEnumerable<RoleMenu>> GetRoleMenusAsync(Guid roleId);
+    Task<IEnumerable<Menu>> GetMenusByUserIdAsync(Guid userId);
+    Task<RoleMenu> AddAsync(RoleMenu roleMenu);
+    Task UpdateAsync(RoleMenu roleMenu);
     Task DeleteAsync(Guid id);
     Task DeleteByRoleIdAsync(Guid roleId);
 }
@@ -41,18 +40,6 @@ public interface IMenuRepository
     Task<IEnumerable<Menu>> GetUserMenusAsync(Guid userId);
     Task<Menu> AddAsync(Menu menu);
     Task UpdateAsync(Menu menu);
-    Task DeleteAsync(Guid id);
-}
-
-public interface IPermissionRepository
-{
-    Task<Permission?> GetByIdAsync(Guid id);
-    Task<Permission?> GetByKeyAsync(string permissionKey);
-    Task<IEnumerable<Permission>> GetAllAsync();
-    Task<IEnumerable<Permission>> GetByMenuIdAsync(Guid menuId);
-    Task<IEnumerable<Permission>> GetUserPermissionsAsync(Guid userId);
-    Task<Permission> AddAsync(Permission permission);
-    Task UpdateAsync(Permission permission);
     Task DeleteAsync(Guid id);
 }
 

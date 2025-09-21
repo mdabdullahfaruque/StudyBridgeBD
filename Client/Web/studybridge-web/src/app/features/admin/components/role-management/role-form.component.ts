@@ -325,14 +325,15 @@ export class RoleFormComponent implements OnInit, OnDestroy {
       return;
     }
     
-    this.rolePermissionApiService.getRoleById(Number(this.roleId))
+    this.rolePermissionApiService.getRoleById(this.roleId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (roleResponse) => {
           if (roleResponse.success && roleResponse.data) {
-            this.role.set(roleResponse.data);
-            this.populateFormWithRoleData(roleResponse.data);
-            this.selectRolePermissions(roleResponse.data.permissions || []);
+            const role = roleResponse.data.role;
+            this.role.set(role);
+            this.populateFormWithRoleData(role);
+            this.selectRolePermissions(role.permissions || []);
           } else {
             this.handleError('Failed to load role', roleResponse.message);
           }
@@ -451,36 +452,36 @@ export class RoleFormComponent implements OnInit, OnDestroy {
       .filter(node => node.data?.type === 'permission')
       .map(node => node.data.permission.id);
 
-    const roleData: Omit<RoleDto, 'id'> = {
+    const roleRequest = {
       name: formData.name,
-      description: formData.description,
-      isActive: formData.isActive,
-      systemRole: formData.systemRole,
-      permissions: selectedPermissionIds.map(id => 
-        this.permissions().find(p => p.id === id)!
-      )
+      description: formData.description || '',
+      isActive: formData.isActive ?? true,
+      systemRole: formData.systemRole ?? 0,
+      permissionIds: selectedPermissionIds
     };
 
+    console.log('Submitting role with data:', roleRequest);
     this.isSaving.set(true);
 
     const operation = this.isEditMode && this.roleId
-      ? this.rolePermissionApiService.updateRole(Number(this.roleId), roleData)
-      : this.rolePermissionApiService.createRole(roleData);
+      ? this.rolePermissionApiService.updateRole(this.roleId, roleRequest)
+      : this.rolePermissionApiService.createRole(roleRequest);
 
     operation
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          if (response.success) {
+          if (response.success && response.data) {
             const action = this.isEditMode ? 'updated' : 'created';
-            this.toastService.success('Success', `Role "${roleData.name}" has been ${action} successfully`);
+            this.toastService.success('Success', response.data.message || `Role "${roleRequest.name}" has been ${action} successfully`);
             this.onComplete.emit();
           } else {
-            this.handleError(`Failed to ${this.isEditMode ? 'update' : 'create'} role`, response.message);
+            this.handleError(`Failed to ${this.isEditMode ? 'update' : 'create'} role`, response.message || 'Unknown error');
           }
         },
         error: (error) => {
-          this.handleError(`Error ${this.isEditMode ? 'updating' : 'creating'} role`, error.message);
+          console.error('Error submitting role:', error);
+          this.handleError(`Error ${this.isEditMode ? 'updating' : 'creating'} role`, error.message || 'Network error');
         },
         complete: () => {
           this.isSaving.set(false);

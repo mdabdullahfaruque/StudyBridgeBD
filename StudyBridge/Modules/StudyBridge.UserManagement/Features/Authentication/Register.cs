@@ -64,20 +64,17 @@ public static class Register
         private readonly IApplicationDbContext _context;
         private readonly IPasswordHasher<AppUser> _passwordHasher;
         private readonly IJwtTokenService _tokenService;
-        private readonly IPermissionService _permissionService;
         private readonly ILogger<Handler> _logger;
 
         public Handler(
             IApplicationDbContext context,
             IPasswordHasher<AppUser> passwordHasher,
             IJwtTokenService tokenService,
-            IPermissionService permissionService,
             ILogger<Handler> logger)
         {
             _context = context;
             _passwordHasher = passwordHasher;
             _tokenService = tokenService;
-            _permissionService = permissionService;
             _logger = logger;
         }
 
@@ -114,16 +111,32 @@ public static class Register
             _context.Users.Add(user);
             await _context.SaveChangesAsync(cancellationToken);
 
-            // Assign default User role
-            await _permissionService.AssignRoleToUserAsync(
-                user.Id, 
-                SystemRole.User, 
-                "System");
+            // Assign default User role (find a role named "User" or create logic as needed)
+            var userRole = await _context.Roles
+                .FirstOrDefaultAsync(r => r.Name == "User" && r.IsActive, cancellationToken);
+            
+            if (userRole != null)
+            {
+                var assignment = new UserRole
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = user.Id,
+                    RoleId = userRole.Id,
+                    IsActive = true,
+                    AssignedAt = DateTime.UtcNow,
+                    AssignedBy = "System"
+                };
+                _context.UserRoles.Add(assignment);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
 
             // Generate JWT token
-            var roles = await _permissionService.GetUserRolesAsync(user.Id);
-            var roleStrings = roles.Select(r => r.ToString()).ToList();
-            var token = _tokenService.GenerateToken(user.Id, user.Email, roleStrings);
+            var userRoles = await _context.UserRoles
+                .Include(ur => ur.Role)
+                .Where(ur => ur.UserId == user.Id && ur.IsActive && ur.Role.IsActive)
+                .Select(ur => ur.Role.Name)
+                .ToListAsync(cancellationToken);
+            var token = _tokenService.GenerateToken(user.Id, user.Email, userRoles);
             var expiresAt = DateTime.UtcNow.AddHours(24); // Assuming 24-hour token validity
 
             _logger.LogInformation("User registered successfully: {Email}", command.Email);
@@ -136,7 +149,7 @@ public static class Register
                 Email = user.Email,
                 DisplayName = user.DisplayName,
                 UserId = user.Id.ToString(),
-                Roles = roleStrings,
+                Roles = userRoles,
                 RequiresEmailConfirmation = !user.EmailConfirmed,
                 IsPublicUser = user.IsPublicUser
             };

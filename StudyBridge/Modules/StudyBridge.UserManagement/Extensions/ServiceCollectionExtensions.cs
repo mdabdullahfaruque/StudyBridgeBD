@@ -45,7 +45,16 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICommandHandler<CreateUser.Command, CreateUser.Response>, CreateUser.Handler>();
         services.AddScoped<CreateUser.Validator>();
         services.AddScoped<IQueryHandler<GetRoles.Query, GetRoles.Response>, GetRoles.Handler>();
-        services.AddScoped<IQueryHandler<GetPermissions.Query, GetPermissions.Response>, GetPermissions.Handler>();
+        
+        // Register Role Management Features - Query and Command Handlers
+        services.AddScoped<IQueryHandler<GetRoleById.Query, GetRoleById.Response>, GetRoleById.Handler>();
+        services.AddScoped<GetRoleById.Validator>();
+        services.AddScoped<ICommandHandler<CreateRole.Command, CreateRole.Response>, CreateRole.Handler>();
+        services.AddScoped<CreateRole.Validator>();
+        services.AddScoped<ICommandHandler<UpdateRole.Command, UpdateRole.Response>, UpdateRole.Handler>();
+        services.AddScoped<UpdateRole.Validator>();
+        services.AddScoped<ICommandHandler<DeleteRole.Command, DeleteRole.Response>, DeleteRole.Handler>();
+        services.AddScoped<DeleteRole.Validator>();
 
         // Register Application Services
         services.AddScoped<IAuthenticationService, AuthenticationService>();

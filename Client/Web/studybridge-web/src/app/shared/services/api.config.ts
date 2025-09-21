@@ -107,31 +107,31 @@ export const API_ENDPOINTS = {
     
     // Role Management
     GET_ROLES: { 
-      path: '/admin/roles', 
+      path: '/role', 
       method: 'GET' as const, 
       requiresAuth: true, 
       permissions: ['roles.view'] 
     },
     CREATE_ROLE: { 
-      path: '/admin/roles', 
+      path: '/role', 
       method: 'POST' as const, 
       requiresAuth: true, 
       permissions: ['roles.create'] 
     },
     GET_ROLE: { 
-      path: '/admin/roles/:id', 
+      path: '/role/:id', 
       method: 'GET' as const, 
       requiresAuth: true, 
       permissions: ['roles.view'] 
     },
     UPDATE_ROLE: { 
-      path: '/admin/roles/:id', 
+      path: '/role/:id', 
       method: 'PUT' as const, 
       requiresAuth: true, 
       permissions: ['roles.edit'] 
     },
     DELETE_ROLE: { 
-      path: '/admin/roles/:id', 
+      path: '/role/:id', 
       method: 'DELETE' as const, 
       requiresAuth: true, 
       permissions: ['roles.delete'] 
@@ -139,7 +139,7 @@ export const API_ENDPOINTS = {
     
     // Permission Management
     GET_PERMISSIONS: { 
-      path: '/admin/permissions', 
+      path: '/permission', 
       method: 'GET' as const, 
       requiresAuth: true, 
       permissions: ['permissions.view'] 

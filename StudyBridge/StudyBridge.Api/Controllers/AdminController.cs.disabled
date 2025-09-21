@@ -16,16 +16,13 @@ namespace StudyBridge.Api.Controllers;
 [Route("api/v1/[controller]")]
 public class AdminController : ControllerBase
 {
-    private readonly IPermissionService _permissionService;
     private readonly ISubscriptionService _subscriptionService;
     private readonly IMenuRepository _menuRepository;
-    private readonly IPermissionRepository _permissionRepository;
     private readonly IRoleRepository _roleRepository;
     private readonly IQueryHandler<GetUsers.Query, GetUsers.Response> _getUsersHandler;
     private readonly IQueryHandler<GetUserById.Query, GetUserById.Response> _getUserByIdHandler;
     private readonly ICommandHandler<CreateUser.Command, CreateUser.Response> _createUserHandler;
     private readonly IQueryHandler<GetRoles.Query, GetRoles.Response> _getRolesHandler;
-    private readonly IQueryHandler<GetPermissions.Query, GetPermissions.Response> _getPermissionsHandler;
     private readonly ILogger<AdminController> _logger;
 
     public AdminController(
@@ -55,7 +52,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("users")]
-    [RequirePermission("users.view")]
+    [RequireMenu("users.view")]
     public async Task<IActionResult> GetUsers([FromQuery] GetUsers.Query query)
     {
         _logger.LogInformation("Admin viewing users list - Page: {PageNumber}, Size: {PageSize}", query.PageNumber, query.PageSize);
@@ -65,7 +62,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("users/{userId}")]
-    [RequirePermission("users.view")]
+    [RequireMenu("users.view")]
     public async Task<IActionResult> GetUserById(Guid userId)
     {
         _logger.LogInformation("Admin viewing user details: {UserId}", userId);
@@ -76,7 +73,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpPost("users")]
-    [RequirePermission("users.create")]
+    [RequireMenu("users.create")]
     public async Task<IActionResult> CreateUser([FromBody] CreateUser.Command command)
     {
         _logger.LogInformation("Admin creating new user: {Email}", command.Email);
@@ -86,7 +83,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("roles")]
-    [RequirePermission("roles.view")]
+    [RequireMenu("roles.view")]
     public async Task<IActionResult> GetRoles()
     {
         _logger.LogInformation("Admin viewing roles list");
@@ -97,7 +94,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("permissions")]
-    [RequirePermission("permissions.view")]
+    [RequireMenu("permissions.view")]
     public async Task<IActionResult> GetPermissions()
     {
         _logger.LogInformation("Admin viewing permissions tree");
@@ -116,7 +113,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpPost("assign-role")]
-    // [RequirePermission(SystemPermission.ManageUserRoles)] // TODO: Update after RBAC implementation
+    // [RequireMenu(SystemPermission.ManageUserRoles)] // TODO: Update after RBAC implementation
     public async Task<IActionResult> AssignRole([FromBody] AssignRoleRequest request)
     {
         var currentUserIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -139,7 +136,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpPost("create-subscription")]
-    // [RequirePermission(SystemPermission.ManageSubscriptions)] // TODO: Update after RBAC implementation
+    // [RequireMenu(SystemPermission.ManageSubscriptions)] // TODO: Update after RBAC implementation
     public async Task<IActionResult> CreateSubscription([FromBody] CreateSubscriptionRequest request)
     {
         var success = await _subscriptionService.CreateSubscriptionAsync(
@@ -159,7 +156,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("system-logs")]
-    // [RequirePermission(SystemPermission.ViewSystemLogs)] // TODO: Update after RBAC implementation
+    // [RequireMenu(SystemPermission.ViewSystemLogs)] // TODO: Update after RBAC implementation
     public async Task<IActionResult> GetSystemLogs()
     {
         _logger.LogInformation("Admin accessing system logs");
@@ -168,7 +165,7 @@ public class AdminController : ControllerBase
 
     // Menu Management Endpoints
     [HttpGet("menus")]
-    [RequirePermission("system.view")]
+    [RequireMenu("system.view")]
     public async Task<IActionResult> GetAllMenus()
     {
         try
@@ -293,7 +290,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("public-menus")]
-    [RequirePermission("public.dashboard")]
+    [RequireMenu("public.dashboard")]
     public async Task<IActionResult> GetPublicMenus()
     {
         try
@@ -345,7 +342,7 @@ public class AdminController : ControllerBase
 
     // Menu CRUD Operations
     [HttpGet("menus/{id}")]
-    [RequirePermission("system.view")]
+    [RequireMenu("system.view")]
     public async Task<IActionResult> GetMenuById(Guid id)
     {
         try
@@ -367,7 +364,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpPost("menus")]
-    [RequirePermission("system.manage")]
+    [RequireMenu("system.manage")]
     public async Task<IActionResult> CreateMenu([FromBody] CreateMenuRequest request)
     {
         try
@@ -400,7 +397,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpPut("menus/{id}")]
-    [RequirePermission("system.manage")]
+    [RequireMenu("system.manage")]
     public async Task<IActionResult> UpdateMenu(Guid id, [FromBody] UpdateMenuRequest request)
     {
         try
@@ -436,7 +433,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpDelete("menus/{id}")]
-    [RequirePermission("system.manage")]
+    [RequireMenu("system.manage")]
     public async Task<IActionResult> DeleteMenu(Guid id)
     {
         try

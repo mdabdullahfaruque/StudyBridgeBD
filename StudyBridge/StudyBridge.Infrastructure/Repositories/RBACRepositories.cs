@@ -19,7 +19,6 @@ public class MenuRepository : IMenuRepository
         return await _context.Menus
             .Include(m => m.ParentMenu)
             .Include(m => m.SubMenus)
-            .Include(m => m.Permissions)
             .FirstOrDefaultAsync(m => m.Id == id);
     }
 
@@ -28,7 +27,6 @@ public class MenuRepository : IMenuRepository
         return await _context.Menus
             .Include(m => m.ParentMenu)
             .Include(m => m.SubMenus)
-            .Include(m => m.Permissions)
             .FirstOrDefaultAsync(m => m.Name == name);
     }
 
@@ -37,7 +35,6 @@ public class MenuRepository : IMenuRepository
         return await _context.Menus
             .Include(m => m.ParentMenu)
             .Include(m => m.SubMenus)
-            .Include(m => m.Permissions)
             .Where(m => m.IsActive)
             .OrderBy(m => m.SortOrder)
             .ToListAsync();
@@ -47,7 +44,6 @@ public class MenuRepository : IMenuRepository
     {
         return await _context.Menus
             .Include(m => m.SubMenus)
-            .Include(m => m.Permissions)
             .Where(m => m.ParentMenuId == parentId && m.IsActive)
             .OrderBy(m => m.SortOrder)
             .ToListAsync();
@@ -59,7 +55,6 @@ public class MenuRepository : IMenuRepository
         return await _context.Menus
             .Include(m => m.SubMenus.Where(sm => sm.IsActive))
                 .ThenInclude(sm => sm.SubMenus.Where(ssm => ssm.IsActive))
-            .Include(m => m.Permissions.Where(p => p.IsActive))
             .Where(m => m.ParentMenuId == null && m.IsActive)
             .OrderBy(m => m.SortOrder)
             .ToListAsync();
@@ -67,21 +62,19 @@ public class MenuRepository : IMenuRepository
 
     public async Task<IEnumerable<Menu>> GetUserMenusAsync(Guid userId)
     {
-        // Get menus that the user has permission to access
-        var userPermissions = await _context.RolePermissions
-            .Include(rp => rp.Permission)
-                .ThenInclude(p => p.Menu)
-            .Include(rp => rp.Role)
+        // Get menus that the user has access to via role-menu mappings
+        var userMenus = await _context.RoleMenus
+            .Include(rm => rm.Menu)
+            .Include(rm => rm.Role)
                 .ThenInclude(r => r.UserRoles.Where(ur => ur.UserId == userId && ur.IsActive))
-            .Where(rp => rp.IsGranted && 
-                        rp.Role.UserRoles.Any(ur => ur.UserId == userId && ur.IsActive) &&
-                        rp.Permission.IsActive &&
-                        rp.Permission.Menu.IsActive)
-            .Select(rp => rp.Permission.Menu)
+            .Where(rm => rm.IsActive && 
+                        rm.Role.UserRoles.Any(ur => ur.UserId == userId && ur.IsActive) &&
+                        rm.Menu.IsActive)
+            .Select(rm => rm.Menu)
             .Distinct()
             .ToListAsync();
 
-        return userPermissions;
+        return userMenus;
     }
 
     public async Task<Menu> AddAsync(Menu menu)
@@ -114,6 +107,9 @@ public class MenuRepository : IMenuRepository
     }
 }
 
+// TODO: Permission system has been replaced with RoleMenu system
+// This repository is no longer needed but preserved for reference
+/*
 public class PermissionRepository : IPermissionRepository
 {
     private readonly AppDbContext _context;
@@ -197,3 +193,4 @@ public class PermissionRepository : IPermissionRepository
         }
     }
 }
+*/

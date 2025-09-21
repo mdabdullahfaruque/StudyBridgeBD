@@ -15,19 +15,13 @@ namespace StudyBridge.Api.Controllers;
 public class MenuController : ControllerBase
 {
     private readonly IMenuRepository _menuRepository;
-    private readonly IPermissionRepository _permissionRepository;
-    private readonly IPermissionService _permissionService;
     private readonly ILogger<MenuController> _logger;
 
     public MenuController(
         IMenuRepository menuRepository,
-        IPermissionRepository permissionRepository,
-        IPermissionService permissionService,
         ILogger<MenuController> logger)
     {
         _menuRepository = menuRepository;
-        _permissionRepository = permissionRepository;
-        _permissionService = permissionService;
         _logger = logger;
     }
 
@@ -44,7 +38,7 @@ public class MenuController : ControllerBase
             }
 
             // Get actual user permissions from database
-            var userPermissionsEntities = await _permissionService.GetUserPermissionsAsync(userId);
+            var userPermissionsEntities = await 
             var userPermissions = userPermissionsEntities.Select(p => p.PermissionKey).ToList();
 
             var allMenus = await _menuRepository.GetAllAsync();
@@ -54,7 +48,7 @@ public class MenuController : ControllerBase
             var menuPermissions = new Dictionary<Guid, List<string>>();
             foreach (var menu in adminMenus)
             {
-                var permissions = await _permissionRepository.GetByMenuIdAsync(menu.Id);
+                var permissions = await 
                 menuPermissions[menu.Id] = permissions.Where(p => p.IsActive)
                                                     .Select(p => p.PermissionKey)
                                                     .ToList();
@@ -83,7 +77,7 @@ public class MenuController : ControllerBase
     }
 
     [HttpGet]
-    [RequirePermission("system.view")]
+    [RequireMenu("system.view")]
     public async Task<IActionResult> GetAllMenus()
     {
         try
@@ -100,7 +94,7 @@ public class MenuController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [RequirePermission("system.view")]
+    [RequireMenu("system.view")]
     public async Task<IActionResult> GetMenuById(Guid id)
     {
         try
@@ -122,7 +116,7 @@ public class MenuController : ControllerBase
     }
 
     [HttpPost]
-    [RequirePermission("system.manage")]
+    [RequireMenu("system.manage")]
     public async Task<IActionResult> CreateMenu([FromBody] CreateMenuRequest request)
     {
         try
@@ -139,7 +133,7 @@ public class MenuController : ControllerBase
                 ParentMenuId = request.ParentMenuId,
                 SortOrder = request.SortOrder,
                 IsActive = request.IsActive,
-                HasCrudPermissions = request.HasCrudPermissions,
+                // HasCrudPermissions removed
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -158,7 +152,7 @@ public class MenuController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [RequirePermission("system.manage")]
+    [RequireMenu("system.manage")]
     public async Task<IActionResult> UpdateMenu(Guid id, [FromBody] UpdateMenuRequest request)
     {
         try
@@ -193,7 +187,7 @@ public class MenuController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [RequirePermission("system.manage")]
+    [RequireMenu("system.manage")]
     public async Task<IActionResult> DeleteMenu(Guid id)
     {
         try

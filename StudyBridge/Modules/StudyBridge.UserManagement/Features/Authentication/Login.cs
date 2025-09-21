@@ -47,13 +47,11 @@ public static class Login
         IApplicationDbContext context,
         IPasswordHasher<AppUser> passwordHasher,
         IJwtTokenService jwtTokenService,
-        IPermissionService permissionService,
         ILogger<Login.Handler> logger) : ICommandHandler<Command, Response>
     {
         private readonly IApplicationDbContext _context = context;
         private readonly IPasswordHasher<AppUser> _passwordHasher = passwordHasher;
         private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
-        private readonly IPermissionService _permissionService = permissionService;
         private readonly ILogger<Handler> _logger = logger;
 
         public async Task<Response> HandleAsync(Command command, CancellationToken cancellationToken)
@@ -82,11 +80,14 @@ public static class Login
             await _context.SaveChangesAsync(cancellationToken);
 
             // Get user roles
-            var roles = await _permissionService.GetUserRolesAsync(user.Id);
-            var roleStrings = roles.Select(r => r.ToString()).ToList();
+            var userRoles = await _context.UserRoles
+                .Include(ur => ur.Role)
+                .Where(ur => ur.UserId == user.Id && ur.IsActive && ur.Role.IsActive)
+                .Select(ur => ur.Role.Name)
+                .ToListAsync(cancellationToken);
 
             // Generate JWT token
-            var token = _jwtTokenService.GenerateToken(user.Id, user.Email, roleStrings);
+            var token = _jwtTokenService.GenerateToken(user.Id, user.Email, userRoles);
             var expiresAt = DateTime.UtcNow.AddHours(24); // Assuming 24-hour token validity
 
             _logger.LogInformation("User logged in successfully: {Email}", command.Email);
@@ -99,7 +100,7 @@ public static class Login
                 Email = user.Email,
                 DisplayName = user.DisplayName,
                 UserId = user.Id.ToString(),
-                Roles = roleStrings,
+                Roles = userRoles,
                 IsPublicUser = user.IsPublicUser
             };
         }

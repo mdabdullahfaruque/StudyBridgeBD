@@ -58,18 +58,15 @@ public static class GoogleLogin
     {
         private readonly IApplicationDbContext _context;
         private readonly IJwtTokenService _jwtTokenService;
-        private readonly IPermissionService _permissionService;
         private readonly ILogger<Handler> _logger;
 
         public Handler(
             IApplicationDbContext context,
             IJwtTokenService jwtTokenService,
-            IPermissionService permissionService,
             ILogger<Handler> logger)
         {
             _context = context;
             _jwtTokenService = jwtTokenService;
-            _permissionService = permissionService;
             _logger = logger;
         }
 
@@ -108,11 +105,24 @@ public static class GoogleLogin
                     _context.Users.Add(user);
                     await _context.SaveChangesAsync(cancellationToken);
 
-                    // Assign default User role
-                    await _permissionService.AssignRoleToUserAsync(
-                        user.Id, 
-                        SystemRole.User, 
-                        "Google OAuth");
+                    // Assign default User role (find a role named "User" or create logic as needed)
+                    var userRole = await _context.Roles
+                        .FirstOrDefaultAsync(r => r.Name == "User" && r.IsActive, cancellationToken);
+                    
+                    if (userRole != null)
+                    {
+                        var assignment = new UserRole
+                        {
+                            Id = Guid.NewGuid(),
+                            UserId = user.Id,
+                            RoleId = userRole.Id,
+                            IsActive = true,
+                            AssignedAt = DateTime.UtcNow,
+                            AssignedBy = "Google OAuth"
+                        };
+                        _context.UserRoles.Add(assignment);
+                        await _context.SaveChangesAsync(cancellationToken);
+                    }
 
                     isNewUser = true;
                     _logger.LogInformation("New Google user created: {Email} with GoogleSub: {GoogleSub}", command.Email, command.GoogleSub);
@@ -146,11 +156,14 @@ public static class GoogleLogin
                 }
 
                 // Get user roles
-                var roles = await _permissionService.GetUserRolesAsync(user.Id);
-                var roleStrings = roles.Select(r => r.ToString()).ToList();
+                var userRoles = await _context.UserRoles
+                    .Include(ur => ur.Role)
+                    .Where(ur => ur.UserId == user.Id && ur.IsActive && ur.Role.IsActive)
+                    .Select(ur => ur.Role.Name)
+                    .ToListAsync(cancellationToken);
 
                 // Generate JWT token
-                var token = _jwtTokenService.GenerateToken(user.Id, user.Email, roleStrings);
+                var token = _jwtTokenService.GenerateToken(user.Id, user.Email, userRoles);
                 var expiresAt = DateTime.UtcNow.AddHours(24);
 
                 _logger.LogInformation("Google login successful for user: {Email}", command.Email);
@@ -163,7 +176,7 @@ public static class GoogleLogin
                     Email = user.Email,
                     DisplayName = user.DisplayName,
                     UserId = user.Id.ToString(),
-                    Roles = roleStrings,
+                    Roles = userRoles,
                     IsNewUser = isNewUser,
                     IsPublicUser = user.IsPublicUser
                 };

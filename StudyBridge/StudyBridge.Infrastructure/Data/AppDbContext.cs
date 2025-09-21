@@ -11,11 +11,10 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<AppUser> Users { get; set; } = null!;
     public DbSet<Role> Roles { get; set; } = null!;
     public DbSet<UserRole> UserRoles { get; set; } = null!;
-    public DbSet<RolePermission> RolePermissions { get; set; } = null!;
+    public DbSet<RoleMenu> RoleMenus { get; set; } = null!;
     public DbSet<UserSubscription> UserSubscriptions { get; set; } = null!;
     public DbSet<UserProfile> UserProfiles { get; set; } = null!;
     public DbSet<Menu> Menus { get; set; } = null!;
-    public DbSet<Permission> Permissions { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -42,10 +41,8 @@ public class AppDbContext : DbContext, IApplicationDbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Description).HasMaxLength(500);
-            entity.Property(e => e.SystemRole).IsRequired();
             
-            entity.HasIndex(e => e.SystemRole).IsUnique();
-            entity.HasIndex(e => e.Name);
+            entity.HasIndex(e => e.Name).IsUnique();
         });
 
         // User Roles
@@ -67,24 +64,24 @@ public class AppDbContext : DbContext, IApplicationDbContext
             entity.HasIndex(e => new { e.UserId, e.RoleId }).IsUnique();
         });
 
-        // Role Permissions
-        modelBuilder.Entity<RolePermission>(entity =>
+        // Role Menus
+        modelBuilder.Entity<RoleMenu>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.GrantedAt).IsRequired();
             entity.Property(e => e.GrantedBy).HasMaxLength(450);
             
             entity.HasOne(e => e.Role)
-                .WithMany(r => r.RolePermissions)
+                .WithMany(r => r.RoleMenus)
                 .HasForeignKey(e => e.RoleId)
                 .OnDelete(DeleteBehavior.Cascade);
             
-            entity.HasOne(e => e.Permission)
-                .WithMany(p => p.RolePermissions)
-                .HasForeignKey(e => e.PermissionId)
+            entity.HasOne(e => e.Menu)
+                .WithMany(m => m.RoleMenus)
+                .HasForeignKey(e => e.MenuId)
                 .OnDelete(DeleteBehavior.Cascade);
             
-            entity.HasIndex(e => new { e.RoleId, e.PermissionId }).IsUnique();
+            entity.HasIndex(e => new { e.RoleId, e.MenuId }).IsUnique();
         });
 
         // User Subscriptions
@@ -149,22 +146,6 @@ public class AppDbContext : DbContext, IApplicationDbContext
             entity.HasIndex(e => new { e.ParentMenuId, e.SortOrder });
         });
 
-        // Permissions
-        modelBuilder.Entity<Permission>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.DisplayName).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Description).HasMaxLength(500);
-            entity.Property(e => e.PermissionKey).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.PermissionType).IsRequired();
-            
-            entity.HasOne(e => e.Menu)
-                .WithMany(m => m.Permissions)
-                .HasForeignKey(e => e.MenuId)
-                .OnDelete(DeleteBehavior.Cascade);
-            
-            entity.HasIndex(e => e.PermissionKey).IsUnique();
-            entity.HasIndex(e => e.MenuId);
-        });
+
     }
 }

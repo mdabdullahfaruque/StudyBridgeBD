@@ -504,7 +504,7 @@ public static class CreateWord
 public class VocabularyController : BaseController
 {
     [HttpPost]
-    [RequirePermission("vocabulary:write")]
+    [RequireMenu("vocabulary.create")]
     public async Task<ActionResult<ApiResponse<CreateWord.Response>>> CreateWord(
         [FromBody] CreateWord.Command command,
         CancellationToken cancellationToken)

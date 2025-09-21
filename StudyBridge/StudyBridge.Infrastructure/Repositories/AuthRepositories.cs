@@ -17,21 +17,21 @@ public class RoleRepository : IRoleRepository
     public async Task<Role?> GetByIdAsync(Guid id)
     {
         return await _context.Roles
-            .Include(r => r.RolePermissions)
+            .Include(r => r.RoleMenus)
             .FirstOrDefaultAsync(r => r.Id == id);
     }
 
-    public async Task<Role?> GetBySystemRoleAsync(SystemRole systemRole)
+    public async Task<Role?> GetByNameAsync(string name)
     {
         return await _context.Roles
-            .Include(r => r.RolePermissions)
-            .FirstOrDefaultAsync(r => r.SystemRole == systemRole);
+            .Include(r => r.RoleMenus)
+            .FirstOrDefaultAsync(r => r.Name == name);
     }
 
     public async Task<IEnumerable<Role>> GetAllAsync()
     {
         return await _context.Roles
-            .Include(r => r.RolePermissions)
+            .Include(r => r.RoleMenus)
             .Where(r => r.IsActive)
             .ToListAsync();
     }
@@ -112,7 +112,8 @@ public class UserRoleRepository : IUserRoleRepository
     }
 }
 
-public class RolePermissionRepository : IRolePermissionRepository
+// TODO: Update to use RoleMenu system instead of RolePermission
+/*public class RolePermissionRepository : IRolePermissionRepository
 {
     private readonly AppDbContext _context;
 
@@ -174,7 +175,7 @@ public class RolePermissionRepository : IRolePermissionRepository
         _context.RolePermissions.RemoveRange(rolePermissions);
         await _context.SaveChangesAsync();
     }
-}
+}*/
 
 public class UserSubscriptionRepository : IUserSubscriptionRepository
 {

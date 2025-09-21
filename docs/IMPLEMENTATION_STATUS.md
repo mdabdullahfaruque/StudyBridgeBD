@@ -308,6 +308,12 @@ graph LR
 
 ## 🆕 Recent Enhancements (September 2025)
 
+### September 19, 2025
+- **🛡️ RBAC Simplification**: Streamlined authorization system from Permission-based to Menu-based access control
+- **🔧 Database Schema**: Replaced Permission/RolePermission tables with Menu/RoleMenu for simplified access management
+- **⚡ Performance**: Reduced authorization complexity while maintaining security
+- **🧹 Code Cleanup**: Removed unused Permission services and updated all authorization attributes
+
 ### September 18, 2025
 - **🎯 UserMenuComponent**: Implemented reusable topbar user menu component
 - **🎨 Layout Optimization**: Fixed admin/public layout width and positioning issues

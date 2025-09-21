@@ -298,7 +298,7 @@ export class RoleListComponent implements OnInit, OnDestroy {
    */
   deleteRole(role: RoleDto): void {
     if (confirm(`Are you sure you want to delete the role "${role.name}"?`)) {
-      this.rolePermissionApiService.deleteRole(Number(role.id))
+      this.rolePermissionApiService.deleteRole(role.id)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (response) => {

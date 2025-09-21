@@ -14,10 +14,9 @@ public class Menu : BaseEntity
     public Guid? ParentMenuId { get; set; }
     public int SortOrder { get; set; } = 0;
     public bool IsActive { get; set; } = true;
-    public bool HasCrudPermissions { get; set; } = false; // Option to have CRUD permissions
 
     // Navigation properties
     public Menu? ParentMenu { get; set; }
     public ICollection<Menu> SubMenus { get; set; } = new List<Menu>();
-    public ICollection<Permission> Permissions { get; set; } = new List<Permission>();
+    public ICollection<RoleMenu> RoleMenus { get; set; } = new List<RoleMenu>();
 }

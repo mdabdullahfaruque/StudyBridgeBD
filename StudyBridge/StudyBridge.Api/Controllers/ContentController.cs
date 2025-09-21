@@ -42,7 +42,7 @@ public class ContentController : ControllerBase
     }
 
     [HttpPost("vocabulary")]
-    // [RequirePermission(SystemPermission.ManageVocabularyModule)] // TODO: Update after RBAC implementation
+    [RequireMenu("vocabulary.manage")]
     public IActionResult CreateVocabularyContent([FromBody] CreateContentRequest request)
     {
         _logger.LogInformation("Creating vocabulary content: {Title}", request.Title);
@@ -50,7 +50,7 @@ public class ContentController : ControllerBase
     }
 
     [HttpPost("ielts")]
-    // [RequirePermission(SystemPermission.ManageIeltsModule)] // TODO: Update after RBAC implementation
+    [RequireMenu("ielts.manage")]
     public IActionResult CreateIeltsContent([FromBody] CreateContentRequest request)
     {
         _logger.LogInformation("Creating IELTS content: {Title}", request.Title);

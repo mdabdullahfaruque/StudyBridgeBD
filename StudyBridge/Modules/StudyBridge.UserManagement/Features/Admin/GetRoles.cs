@@ -33,19 +33,17 @@ public static class GetRoles
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public bool IsActive { get; set; }
-        public bool SystemRole { get; set; }
         public DateTime CreatedAt { get; set; }
-        public List<PermissionDto> Permissions { get; set; } = new();
+        public List<MenuDto> Menus { get; set; } = new();
         public int UserCount { get; set; }
     }
 
-    public class PermissionDto
+    public class MenuDto
     {
         public string Id { get; set; } = string.Empty;
-        public string PermissionKey { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public string PermissionType { get; set; } = string.Empty;
         public bool IsGranted { get; set; }
     }
 
@@ -67,8 +65,8 @@ public static class GetRoles
                 _logger.LogInformation("Getting roles, includeInactive: {IncludeInactive}", request.IncludeInactive);
 
                 var query = _context.Roles
-                    .Include(r => r.RolePermissions.Where(rp => rp.IsGranted))
-                        .ThenInclude(rp => rp.Permission)
+                    .Include(r => r.RoleMenus.Where(rm => rm.IsActive))
+                        .ThenInclude(rm => rm.Menu)
                     .AsQueryable();
 
                 if (!request.IncludeInactive)
@@ -77,27 +75,24 @@ public static class GetRoles
                 }
 
                 var roles = await query
-                    .OrderBy(r => r.SystemRole == 0 ? 0 : 1) // System roles first
-                    .ThenBy(r => r.Name)
+                    .OrderBy(r => r.Name)
                     .Select(r => new RoleDto
                     {
                         Id = r.Id.ToString(),
                         Name = r.Name,
                         Description = r.Description ?? string.Empty,
                         IsActive = r.IsActive,
-                        SystemRole = r.SystemRole != 0,
                         CreatedAt = r.CreatedAt,
                         UserCount = r.UserRoles.Count(ur => ur.User.IsActive),
-                        Permissions = r.RolePermissions
-                            .Where(rp => rp.IsGranted && rp.Permission.IsActive)
-                            .Select(rp => new PermissionDto
+                        Menus = r.RoleMenus
+                            .Where(rm => rm.IsActive && rm.Menu.IsActive)
+                            .Select(rm => new MenuDto
                             {
-                                Id = rp.Permission.Id.ToString(),
-                                PermissionKey = rp.Permission.PermissionKey,
-                                DisplayName = rp.Permission.DisplayName,
-                                Description = rp.Permission.Description ?? string.Empty,
-                                PermissionType = rp.Permission.PermissionType.ToString(),
-                                IsGranted = rp.IsGranted
+                                Id = rm.Menu.Id.ToString(),
+                                Name = rm.Menu.Name,
+                                DisplayName = rm.Menu.DisplayName,
+                                Description = rm.Menu.Description ?? string.Empty,
+                                IsGranted = rm.IsActive
                             }).ToList()
                     })
                     .ToListAsync(cancellationToken);

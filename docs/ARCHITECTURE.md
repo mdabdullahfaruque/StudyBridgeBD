@@ -519,23 +519,23 @@ graph LR
 
 ## 🛡️ Role-Based Access Control (RBAC)
 
-StudyBridge implements a comprehensive RBAC system that dynamically controls access to features, menus, and data based on user roles and permissions.
+StudyBridge implements a simplified menu-based RBAC system that dynamically controls access to features and data based on user roles and their associated menus.
 
-### RBAC Architecture
+### Simplified RBAC Architecture
 
 ```mermaid
 graph TB
-    subgraph "RBAC System Architecture"
+    subgraph "Simplified RBAC System"
         subgraph "User Context"
             USER[User Account]
             USER_ROLES[User Roles]
-            USER_PERMISSIONS[Effective Permissions]
+            USER_MENUS[Accessible Menus]
         end
         
-        subgraph "Permission System"
+        subgraph "Menu System"
             ROLES[System Roles]
-            PERMISSIONS[System Permissions]
-            ROLE_PERMISSIONS[Role-Permission Mapping]
+            MENUS[System Menus]
+            ROLE_MENUS[Role-Menu Mapping]
         end
         
         subgraph "Access Control"
@@ -548,19 +548,19 @@ graph TB
         subgraph "Dynamic Enforcement"
             FRONTEND_AUTH[Frontend Authorization]
             BACKEND_AUTH[Backend Authorization]
-            REAL_TIME_CHECKS[Real-time Permission Checks]
+            REAL_TIME_CHECKS[Real-time Menu Checks]
         end
     end
     
     USER --> USER_ROLES
-    USER_ROLES --> ROLE_PERMISSIONS
-    ROLE_PERMISSIONS --> PERMISSIONS
-    PERMISSIONS --> USER_PERMISSIONS
+    USER_ROLES --> ROLE_MENUS
+    ROLE_MENUS --> MENUS
+    MENUS --> USER_MENUS
     
-    USER_PERMISSIONS --> MENU_ACCESS
-    USER_PERMISSIONS --> ROUTE_GUARDS
-    USER_PERMISSIONS --> COMPONENT_ACCESS
-    USER_PERMISSIONS --> API_ACCESS
+    USER_MENUS --> MENU_ACCESS
+    USER_MENUS --> ROUTE_GUARDS
+    USER_MENUS --> COMPONENT_ACCESS
+    USER_MENUS --> API_ACCESS
     
     MENU_ACCESS --> FRONTEND_AUTH
     ROUTE_GUARDS --> FRONTEND_AUTH
@@ -571,65 +571,61 @@ graph TB
     BACKEND_AUTH --> REAL_TIME_CHECKS
 ```
 
-### Dynamic Permission Evaluation
+### Dynamic Menu Access Evaluation
 
 ```mermaid
 sequenceDiagram
     participant COMP as Component
     participant AUTH_SVC as AuthService
-    participant PERM_SVC as PermissionService
     participant MENU_SVC as MenuService
     participant API as Backend API
     
     COMP->>AUTH_SVC: Check User Access
-    AUTH_SVC->>PERM_SVC: Get User Permissions
-    PERM_SVC->>API: Fetch Current Permissions
-    API->>PERM_SVC: Return Permission List
-    PERM_SVC->>MENU_SVC: Filter Available Menus
-    MENU_SVC->>API: Get Accessible Menus
-    API->>MENU_SVC: Return Filtered Menus
+    AUTH_SVC->>MENU_SVC: Get User Menus
+    MENU_SVC->>API: Fetch Accessible Menus
+    API->>MENU_SVC: Return Menu List
     MENU_SVC->>COMP: Provide Authorized Content
     
-    Note over COMP: UI updates dynamically based on permissions
-    Note over API: All permissions verified server-side
+    Note over COMP: UI updates dynamically based on menu access
+    Note over API: All menu access verified server-side
 ```
 
 ### Role-Based Menu Filtering
 
 ```mermaid
 flowchart TD
-    subgraph "Menu Access Control Flow"
+    subgraph "Simplified Menu Access Control Flow"
         USER_LOGIN[User Authentication]
         LOAD_ROLES[Load User Roles]
-        FETCH_PERMISSIONS[Fetch Role Permissions]
+        FETCH_ROLE_MENUS[Fetch Role Menus]
         GET_MENUS[Get Available Menus]
-        FILTER_MENUS[Filter by Permissions]
+        FILTER_MENUS[Filter by Role Menus]
         RENDER_UI[Render Authorized UI]
         
-        PERMISSION_CHECK{Has Required Permission?}
+        MENU_ACCESS_CHECK{Has Menu Access?}
         MENU_ITEM[Menu Item]
         INCLUDE_MENU[Include in Navigation]
         EXCLUDE_MENU[Hide from Navigation]
     end
     
     USER_LOGIN --> LOAD_ROLES
-    LOAD_ROLES --> FETCH_PERMISSIONS
-    FETCH_PERMISSIONS --> GET_MENUS
+    LOAD_ROLES --> FETCH_ROLE_MENUS
+    FETCH_ROLE_MENUS --> GET_MENUS
     GET_MENUS --> FILTER_MENUS
-    FILTER_MENUS --> PERMISSION_CHECK
-    PERMISSION_CHECK -->|Yes| INCLUDE_MENU
-    PERMISSION_CHECK -->|No| EXCLUDE_MENU
+    FILTER_MENUS --> MENU_ACCESS_CHECK
+    MENU_ACCESS_CHECK -->|Yes| INCLUDE_MENU
+    MENU_ACCESS_CHECK -->|No| EXCLUDE_MENU
     INCLUDE_MENU --> RENDER_UI
     
     style INCLUDE_MENU fill:#c8e6c9
     style EXCLUDE_MENU fill:#ffcdd2
 ```
 
-### System Roles and Permissions
+### System Roles and Menu Access
 
 ```mermaid
 graph TB
-    subgraph "StudyBridge Role Hierarchy"
+    subgraph "StudyBridge Simplified Role System"
         subgraph "Administrative Roles"
             SUPER_ADMIN[SuperAdmin<br/>- Full system access<br/>- User management<br/>- System configuration]
             ADMIN[Admin<br/>- User management<br/>- Content management<br/>- Analytics access]
@@ -640,24 +636,24 @@ graph TB
             USER[User<br/>- Learning dashboard<br/>- Vocabulary practice<br/>- Progress viewing<br/>- Profile management]
         end
         
-        subgraph "Permission Categories"
-            SYSTEM_PERMS[System Permissions<br/>- system.manage<br/>- system.view<br/>- system.configure]
-            USER_PERMS[User Permissions<br/>- users.view<br/>- users.create<br/>- users.edit<br/>- users.delete]
-            CONTENT_PERMS[Content Permissions<br/>- content.view<br/>- content.create<br/>- content.edit<br/>- content.delete]
-            PUBLIC_PERMS[Public Permissions<br/>- public.dashboard<br/>- public.vocabulary<br/>- public.learning]
+        subgraph "Menu Categories"
+            SYSTEM_MENUS[System Menus<br/>- system.manage<br/>- system.view<br/>- system.configure]
+            USER_MENUS[User Menus<br/>- users.view<br/>- users.create<br/>- users.edit<br/>- users.delete]
+            CONTENT_MENUS[Content Menus<br/>- vocabulary.manage<br/>- ielts.manage<br/>- content.view]
+            PUBLIC_MENUS[Public Menus<br/>- dashboard.view<br/>- vocabulary.practice<br/>- learning.access]
         end
     end
     
-    SUPER_ADMIN --> SYSTEM_PERMS
-    SUPER_ADMIN --> USER_PERMS
-    SUPER_ADMIN --> CONTENT_PERMS
+    SUPER_ADMIN --> SYSTEM_MENUS
+    SUPER_ADMIN --> USER_MENUS
+    SUPER_ADMIN --> CONTENT_MENUS
     
-    ADMIN --> USER_PERMS
-    ADMIN --> CONTENT_PERMS
+    ADMIN --> USER_MENUS
+    ADMIN --> CONTENT_MENUS
     
-    CONTENT_MANAGER --> CONTENT_PERMS
+    CONTENT_MANAGER --> CONTENT_MENUS
     
-    USER --> PUBLIC_PERMS
+    USER --> PUBLIC_MENUS
 ```
 
 ---
