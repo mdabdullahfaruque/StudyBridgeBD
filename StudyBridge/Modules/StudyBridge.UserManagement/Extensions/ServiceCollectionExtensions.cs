@@ -44,9 +44,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<GetUserById.Validator>();
         services.AddScoped<ICommandHandler<CreateUser.Command, CreateUser.Response>, CreateUser.Handler>();
         services.AddScoped<CreateUser.Validator>();
-        services.AddScoped<IQueryHandler<GetRoles.Query, GetRoles.Response>, GetRoles.Handler>();
-        
+        services.AddScoped<ICommandHandler<UpdateUser.Command, UpdateUser.Response>, UpdateUser.Handler>();
+        services.AddScoped<UpdateUser.Validator>();
+        services.AddScoped<ICommandHandler<DeleteUser.Command, DeleteUser.Response>, DeleteUser.Handler>();
+        services.AddScoped<DeleteUser.Validator>();
+
         // Register Role Management Features - Query and Command Handlers
+        services.AddScoped<IQueryHandler<GetRoles.Query, GetRoles.Response>, GetRoles.Handler>();
         services.AddScoped<IQueryHandler<GetRoleById.Query, GetRoleById.Response>, GetRoleById.Handler>();
         services.AddScoped<GetRoleById.Validator>();
         services.AddScoped<ICommandHandler<CreateRole.Command, CreateRole.Response>, CreateRole.Handler>();
@@ -55,6 +59,17 @@ public static class ServiceCollectionExtensions
         services.AddScoped<UpdateRole.Validator>();
         services.AddScoped<ICommandHandler<DeleteRole.Command, DeleteRole.Response>, DeleteRole.Handler>();
         services.AddScoped<DeleteRole.Validator>();
+
+        // Register Menu Management Features - Query and Command Handlers
+        services.AddScoped<IQueryHandler<GetMenus.Query, GetMenus.Response>, GetMenus.Handler>();
+        services.AddScoped<IQueryHandler<GetMenuById.Query, GetMenuById.Response>, GetMenuById.Handler>();
+        services.AddScoped<GetMenuById.Validator>();
+        services.AddScoped<ICommandHandler<CreateMenu.Command, CreateMenu.Response>, CreateMenu.Handler>();
+        services.AddScoped<CreateMenu.Validator>();
+        services.AddScoped<ICommandHandler<UpdateMenu.Command, UpdateMenu.Response>, UpdateMenu.Handler>();
+        services.AddScoped<UpdateMenu.Validator>();
+        services.AddScoped<ICommandHandler<DeleteMenu.Command, DeleteMenu.Response>, DeleteMenu.Handler>();
+        services.AddScoped<DeleteMenu.Validator>();
 
         // Register Application Services
         services.AddScoped<IAuthenticationService, AuthenticationService>();

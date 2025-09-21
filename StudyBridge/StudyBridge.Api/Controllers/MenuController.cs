@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using StudyBridge.Api.DTOs;
-using StudyBridge.Application.Contracts.Persistence;
-using StudyBridge.Domain.Entities;
-using StudyBridge.Domain.Enums;
 using StudyBridge.Infrastructure.Authorization;
 using StudyBridge.Shared.Common;
+using StudyBridge.Shared.CQRS;
+using StudyBridge.UserManagement.Features.Admin;
 using System.Security.Claims;
 
 namespace StudyBridge.Api.Controllers;
@@ -13,17 +11,26 @@ namespace StudyBridge.Api.Controllers;
 [Route("api/v1/[controller]")]
 public class MenuController : ControllerBase
 {
-    private readonly IMenuRepository _menuRepository;
-    private readonly IRoleRepository _roleRepository;
+    private readonly IQueryHandler<GetMenus.Query, GetMenus.Response> _getMenusHandler;
+    private readonly IQueryHandler<GetMenuById.Query, GetMenuById.Response> _getMenuByIdHandler;
+    private readonly ICommandHandler<CreateMenu.Command, CreateMenu.Response> _createMenuHandler;
+    private readonly ICommandHandler<UpdateMenu.Command, UpdateMenu.Response> _updateMenuHandler;
+    private readonly ICommandHandler<DeleteMenu.Command, DeleteMenu.Response> _deleteMenuHandler;
     private readonly ILogger<MenuController> _logger;
 
     public MenuController(
-        IMenuRepository menuRepository,
-        IRoleRepository roleRepository,
+        IQueryHandler<GetMenus.Query, GetMenus.Response> getMenusHandler,
+        IQueryHandler<GetMenuById.Query, GetMenuById.Response> getMenuByIdHandler,
+        ICommandHandler<CreateMenu.Command, CreateMenu.Response> createMenuHandler,
+        ICommandHandler<UpdateMenu.Command, UpdateMenu.Response> updateMenuHandler,
+        ICommandHandler<DeleteMenu.Command, DeleteMenu.Response> deleteMenuHandler,
         ILogger<MenuController> logger)
     {
-        _menuRepository = menuRepository;
-        _roleRepository = roleRepository;
+        _getMenusHandler = getMenusHandler;
+        _getMenuByIdHandler = getMenuByIdHandler;
+        _createMenuHandler = createMenuHandler;
+        _updateMenuHandler = updateMenuHandler;
+        _deleteMenuHandler = deleteMenuHandler;
         _logger = logger;
     }
 
@@ -32,290 +39,128 @@ public class MenuController : ControllerBase
     {
         try
         {
-            // Get current user ID from JWT token
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-            {
-                return Unauthorized(ApiResponse<List<MenuDto>>.FailureResult("Invalid user token"));
-            }
-
-            _logger.LogInformation("Getting menus for user: {UserId}", userId);
-
-            // Get user's roles to determine menu access
             var roleClaims = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
             if (!roleClaims.Any())
             {
-                _logger.LogWarning("No roles found for user: {UserId}", userId);
-                return Ok(ApiResponse<List<MenuDto>>.SuccessResult(new List<MenuDto>(), "No menus available"));
+                return Ok(ApiResponse<GetMenus.Response>.SuccessResult(
+                    new GetMenus.Response { Menus = new List<GetMenus.MenuDto>() }, 
+                    "No menus available"));
             }
 
-            _logger.LogInformation("User has {RoleCount} roles: {Roles}", roleClaims.Count, string.Join(", ", roleClaims));
-
-            // Convert role names to role IDs
-            var userRoleIds = new List<Guid>();
-            foreach (var roleName in roleClaims)
+            var query = new GetMenus.Query
             {
-                var role = await _roleRepository.GetByNameAsync(roleName);
-                if (role != null)
-                {
-                    userRoleIds.Add(role.Id);
-                }
-            }
+                ForUser = true,
+                UserRoles = roleClaims,
+                IncludeInactive = false
+            };
 
-            if (!userRoleIds.Any())
-            {
-                _logger.LogWarning("No valid role IDs found for user: {UserId}", userId);
-                return Ok(ApiResponse<List<MenuDto>>.SuccessResult(new List<MenuDto>(), "No menus available"));
-            }
-
-            _logger.LogInformation("User has {RoleCount} valid role IDs: {RoleIds}", userRoleIds.Count, string.Join(", ", userRoleIds));
-
-            // Get menus accessible by user's roles
-
-            // Get menus accessible by user's roles
-            var allAccessibleMenus = new List<Menu>();
-            foreach (var roleId in userRoleIds)
-            {
-                var roleMenus = await _menuRepository.GetMenusByRoleIdAsync(roleId);
-                allAccessibleMenus.AddRange(roleMenus);
-            }
-            
-            // Remove duplicates and ensure only active menus
-            var accessibleMenus = allAccessibleMenus
-                .Where(m => m.IsActive)
-                .GroupBy(m => m.Id)
-                .Select(g => g.First())
-                .ToList();
-            
-            _logger.LogInformation("Found {MenuCount} accessible menus", accessibleMenus.Count);
-
-            // Build hierarchy and convert to DTOs
-            var menuHierarchy = BuildMenuHierarchy(accessibleMenus);
-            var menuDtos = menuHierarchy.Select(m => MapToMenuDtoWithChildren(m, accessibleMenus))
-                                       .ToList();
-
-            _logger.LogInformation("Returning {HierarchyCount} top-level menus", menuDtos.Count);
-            return Ok(ApiResponse<List<MenuDto>>.SuccessResult(menuDtos, "User menus retrieved successfully"));
+            var response = await _getMenusHandler.HandleAsync(query);
+            return Ok(ApiResponse<GetMenus.Response>.SuccessResult(response, "User menus retrieved successfully"));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving user menus");
-            return StatusCode(500, ApiResponse<List<MenuDto>>.FailureResult("Failed to retrieve user menus"));
-        }
-    }
-
-    [HttpGet("debug")]
-    public async Task<IActionResult> DebugMenus()
-    {
-        try
-        {
-            _logger.LogInformation("Debug menu endpoint called");
-
-            // Get all active menus
-            var allMenus = await _menuRepository.GetAllAsync();
-            var activeMenus = allMenus.Where(m => m.IsActive).ToList();
-
-            var debugInfo = new
-            {
-                TotalMenus = activeMenus.Count,
-                Menus = activeMenus.Select(m => new
-                {
-                    Id = m.Id,
-                    Name = m.Name,
-                    DisplayName = m.DisplayName,
-                    Route = m.Route,
-                    MenuType = m.MenuType.ToString(),
-                    ParentId = m.ParentMenuId,
-                    SortOrder = m.SortOrder,
-                    IsActive = m.IsActive
-                }).ToList()
-            };
-
-            return Ok(ApiResponse<object>.SuccessResult(debugInfo, "Debug info retrieved"));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error in debug endpoint");
-            return StatusCode(500, ApiResponse<object>.FailureResult("Debug failed"));
+            return StatusCode(500, ApiResponse<GetMenus.Response>.FailureResult("Failed to retrieve user menus"));
         }
     }
 
     [HttpGet]
-    [RequireMenu("system.view")]
-    public async Task<IActionResult> GetAllMenus()
+    [RequireMenu("menus.view")]
+    public async Task<IActionResult> GetMenus([FromQuery] string? menuType = null, [FromQuery] bool includeInactive = false)
     {
         try
         {
-            var menus = await _menuRepository.GetAllAsync();
-            var menuDtos = menus.Select(MapToMenuDto).ToList();
-            return Ok(ApiResponse<List<MenuDto>>.SuccessResult(menuDtos, "Menus retrieved successfully"));
+            var query = new GetMenus.Query { IncludeInactive = includeInactive };
+            if (!string.IsNullOrEmpty(menuType) && Enum.TryParse<Domain.Enums.MenuType>(menuType, true, out var parsedMenuType))
+            {
+                query.MenuType = parsedMenuType;
+            }
+
+            var response = await _getMenusHandler.HandleAsync(query);
+            return Ok(ApiResponse<GetMenus.Response>.SuccessResult(response, "Menus retrieved successfully"));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving all menus");
-            return StatusCode(500, ApiResponse<List<MenuDto>>.FailureResult("Failed to retrieve menus"));
+            _logger.LogError(ex, "Error retrieving menus");
+            return StatusCode(500, ApiResponse<GetMenus.Response>.FailureResult("Failed to retrieve menus"));
         }
     }
 
     [HttpGet("{id}")]
-    [RequireMenu("system.view")]
-    public async Task<IActionResult> GetMenuById(Guid id)
+    [RequireMenu("menus.view")]
+    public async Task<IActionResult> GetMenuById(string id, [FromQuery] bool includeChildren = true, [FromQuery] bool includeRoles = false)
     {
         try
         {
-            var menu = await _menuRepository.GetByIdAsync(id);
-            if (menu == null)
-            {
-                return NotFound(ApiResponse<MenuDto>.FailureResult("Menu not found"));
-            }
-
-            var menuDto = MapToMenuDto(menu);
-            return Ok(ApiResponse<MenuDto>.SuccessResult(menuDto, "Menu retrieved successfully"));
+            var query = new GetMenuById.Query { Id = id, IncludeChildren = includeChildren, IncludeRoles = includeRoles };
+            var response = await _getMenuByIdHandler.HandleAsync(query);
+            return Ok(ApiResponse<GetMenuById.Response>.SuccessResult(response, "Menu retrieved successfully"));
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid menu ID format: {MenuId}", id);
+            return BadRequest(ApiResponse<GetMenuById.Response>.FailureResult("Invalid menu ID format"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Menu not found: {MenuId}", id);
+            return NotFound(ApiResponse<GetMenuById.Response>.FailureResult("Menu not found"));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving menu with ID {MenuId}", id);
-            return StatusCode(500, ApiResponse<MenuDto>.FailureResult("Failed to retrieve menu"));
+            _logger.LogError(ex, "Error retrieving menu: {MenuId}", id);
+            return StatusCode(500, ApiResponse<GetMenuById.Response>.FailureResult("Failed to retrieve menu"));
         }
     }
 
     [HttpPost]
-    [RequireMenu("system.manage")]
-    public async Task<IActionResult> CreateMenu([FromBody] CreateMenuRequest request)
+    [RequireMenu("menus.create")]
+    public async Task<IActionResult> CreateMenu([FromBody] CreateMenu.Command command)
     {
         try
         {
-            var menu = new Menu
-            {
-                Id = Guid.NewGuid(),
-                Name = request.Name,
-                DisplayName = request.DisplayName,
-                Description = request.Description,
-                Icon = request.Icon,
-                Route = request.Route,
-                MenuType = (MenuType)request.MenuType,
-                ParentMenuId = request.ParentMenuId,
-                SortOrder = request.SortOrder,
-                IsActive = request.IsActive,
-                // HasCrudPermissions removed
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            var createdMenu = await _menuRepository.AddAsync(menu);
-            var menuDto = MapToMenuDto(createdMenu);
-
-            return CreatedAtAction(nameof(GetMenuById), new { id = createdMenu.Id }, 
-                ApiResponse<MenuDto>.SuccessResult(menuDto, "Menu created successfully"));
+            var response = await _createMenuHandler.HandleAsync(command);
+            return CreatedAtAction(nameof(GetMenuById), new { id = response.Menu.Id }, 
+                ApiResponse<CreateMenu.Response>.SuccessResult(response, "Menu created successfully"));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating menu");
-            return StatusCode(500, ApiResponse<MenuDto>.FailureResult("Failed to create menu"));
+            _logger.LogError(ex, "Error creating menu: {MenuName}", command.Name);
+            return StatusCode(500, ApiResponse<CreateMenu.Response>.FailureResult("Failed to create menu"));
         }
     }
 
     [HttpPut("{id}")]
-    [RequireMenu("system.manage")]
-    public async Task<IActionResult> UpdateMenu(Guid id, [FromBody] UpdateMenuRequest request)
+    [RequireMenu("menus.edit")]
+    public async Task<IActionResult> UpdateMenu(string id, [FromBody] UpdateMenu.Command command)
     {
         try
         {
-            var existingMenu = await _menuRepository.GetByIdAsync(id);
-            if (existingMenu == null)
-            {
-                return NotFound(ApiResponse<MenuDto>.FailureResult("Menu not found"));
-            }
-
-            existingMenu.Name = request.Name;
-            existingMenu.DisplayName = request.DisplayName;
-            existingMenu.Description = request.Description;
-            existingMenu.Icon = request.Icon;
-            existingMenu.Route = request.Route;
-            existingMenu.ParentMenuId = request.ParentMenuId;
-            existingMenu.SortOrder = request.SortOrder;
-            existingMenu.IsActive = request.IsActive;
-            existingMenu.UpdatedAt = DateTime.UtcNow;
-
-            await _menuRepository.UpdateAsync(existingMenu);
-            var menuDto = MapToMenuDto(existingMenu);
-
-            return Ok(ApiResponse<MenuDto>.SuccessResult(menuDto, "Menu updated successfully"));
+            command.MenuId = id;
+            var response = await _updateMenuHandler.HandleAsync(command);
+            return Ok(ApiResponse<UpdateMenu.Response>.SuccessResult(response, "Menu updated successfully"));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating menu with ID {MenuId}", id);
-            return StatusCode(500, ApiResponse<MenuDto>.FailureResult("Failed to update menu"));
+            _logger.LogError(ex, "Error updating menu: {MenuId}", id);
+            return StatusCode(500, ApiResponse<UpdateMenu.Response>.FailureResult("Failed to update menu"));
         }
     }
 
     [HttpDelete("{id}")]
-    [RequireMenu("system.manage")]
-    public async Task<IActionResult> DeleteMenu(Guid id)
+    [RequireMenu("menus.delete")]
+    public async Task<IActionResult> DeleteMenu(string id, [FromQuery] bool forceDelete = false)
     {
         try
         {
-            var menu = await _menuRepository.GetByIdAsync(id);
-            if (menu == null)
-            {
-                return NotFound(ApiResponse<object>.FailureResult("Menu not found"));
-            }
-
-            await _menuRepository.DeleteAsync(id);
-            return Ok(ApiResponse<string>.SuccessResult("Menu deleted successfully", "Menu deleted successfully"));
+            var command = new DeleteMenu.Command { MenuId = id, ForceDelete = forceDelete };
+            var response = await _deleteMenuHandler.HandleAsync(command);
+            return Ok(ApiResponse<DeleteMenu.Response>.SuccessResult(response, response.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting menu with ID {MenuId}", id);
-            return StatusCode(500, ApiResponse<object>.FailureResult("Failed to delete menu"));
+            _logger.LogError(ex, "Error deleting menu: {MenuId}", id);
+            return StatusCode(500, ApiResponse<DeleteMenu.Response>.FailureResult("Failed to delete menu"));
         }
-    }
-
-    // Helper methods
-    private static MenuDto MapToMenuDto(Menu menu)
-    {
-        return new MenuDto
-        {
-            Id = menu.Id.ToString(),
-            Name = menu.Name,
-            DisplayName = menu.DisplayName,
-            Description = menu.Description,
-            Icon = menu.Icon,
-            Route = menu.Route,
-            ParentId = menu.ParentMenuId?.ToString(),
-            SortOrder = menu.SortOrder,
-            IsActive = menu.IsActive,
-            MenuType = (int)menu.MenuType,
-            RequiredPermissions = new List<string>() // Will be populated by calling code
-        };
-    }
-
-    private static MenuDto MapToMenuDtoWithChildren(Menu menu, List<Menu> allMenus)
-    {
-        return new MenuDto
-        {
-            Id = menu.Id.ToString(),
-            Name = menu.Name,
-            DisplayName = menu.DisplayName,
-            Description = menu.Description,
-            Icon = menu.Icon,
-            Route = menu.Route,
-            ParentId = menu.ParentMenuId?.ToString(),
-            SortOrder = menu.SortOrder,
-            IsActive = menu.IsActive,
-            MenuType = (int)menu.MenuType,
-            RequiredPermissions = new List<string>(), // Simplified - no longer needed
-            Children = allMenus.Where(m => m.ParentMenuId == menu.Id)
-                              .OrderBy(m => m.SortOrder)
-                              .Select(m => MapToMenuDtoWithChildren(m, allMenus))
-                              .ToList()
-        };
-    }
-
-    private static List<Menu> BuildMenuHierarchy(List<Menu> flatMenus)
-    {
-        return flatMenus.Where(m => m.ParentMenuId == null)
-                       .OrderBy(m => m.SortOrder)
-                       .ToList();
     }
 }

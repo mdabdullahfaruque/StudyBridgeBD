@@ -140,7 +140,6 @@ export interface RoleDto {
   name: string;
   description?: string;
   isActive: boolean;
-  systemRole: number;
   permissions: PermissionDto[];
 }
 

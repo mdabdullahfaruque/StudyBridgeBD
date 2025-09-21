@@ -14,17 +14,23 @@ public class UserController : ControllerBase
     private readonly IQueryHandler<GetUsers.Query, GetUsers.Response> _getUsersHandler;
     private readonly IQueryHandler<GetUserById.Query, GetUserById.Response> _getUserByIdHandler;
     private readonly ICommandHandler<CreateUser.Command, CreateUser.Response> _createUserHandler;
+    private readonly ICommandHandler<UpdateUser.Command, UpdateUser.Response> _updateUserHandler;
+    private readonly ICommandHandler<DeleteUser.Command, DeleteUser.Response> _deleteUserHandler;
     private readonly ILogger<UserController> _logger;
 
     public UserController(
         IQueryHandler<GetUsers.Query, GetUsers.Response> getUsersHandler,
         IQueryHandler<GetUserById.Query, GetUserById.Response> getUserByIdHandler,
         ICommandHandler<CreateUser.Command, CreateUser.Response> createUserHandler,
+        ICommandHandler<UpdateUser.Command, UpdateUser.Response> updateUserHandler,
+        ICommandHandler<DeleteUser.Command, DeleteUser.Response> deleteUserHandler,
         ILogger<UserController> logger)
     {
         _getUsersHandler = getUsersHandler;
         _getUserByIdHandler = getUserByIdHandler;
         _createUserHandler = createUserHandler;
+        _updateUserHandler = updateUserHandler;
+        _deleteUserHandler = deleteUserHandler;
         _logger = logger;
     }
 
@@ -80,10 +86,68 @@ public class UserController : ControllerBase
         }
     }
 
-    // TODO: Add Update, Delete methods with proper permission checks
-    // [HttpPut("{id}")]
-    // [RequireMenu("users.edit")]
-    
-    // [HttpDelete("{id}")]
-    // [RequireMenu("users.delete")]
+    [HttpPut("{id}")]
+    [RequireMenu("users.edit")]
+    public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUser.Command command)
+    {
+        try
+        {
+            // Ensure the ID from the route matches the command
+            command.Id = id;
+            
+            var response = await _updateUserHandler.HandleAsync(command);
+
+            return Ok(ApiResponse<UpdateUser.Response>.SuccessResult(
+                response, "User updated successfully"));
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid user data provided for user: {UserId}", id);
+            return BadRequest(ApiResponse<UpdateUser.Response>.FailureResult("Invalid user data provided"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "User update failed: {UserId}", id);
+            return NotFound(ApiResponse<UpdateUser.Response>.FailureResult(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating user: {UserId}", id);
+            return StatusCode(500, ApiResponse<UpdateUser.Response>.FailureResult("Failed to update user"));
+        }
+    }
+
+    [HttpDelete("{id}")]
+    [RequireMenu("users.delete")]
+    public async Task<IActionResult> DeleteUser(string id, [FromQuery] bool forceDelete = false)
+    {
+        try
+        {
+            var command = new DeleteUser.Command 
+            { 
+                Id = id, 
+                ForceDelete = forceDelete 
+            };
+            
+            var response = await _deleteUserHandler.HandleAsync(command);
+
+            return Ok(ApiResponse<DeleteUser.Response>.SuccessResult(
+                response, response.Message));
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid user ID format: {UserId}", id);
+            return BadRequest(ApiResponse<DeleteUser.Response>.FailureResult("Invalid user ID format"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "User deletion failed: {UserId}", id);
+            return Conflict(ApiResponse<DeleteUser.Response>.FailureResult(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting user: {UserId}", id);
+            return StatusCode(500, ApiResponse<DeleteUser.Response>.FailureResult("Failed to delete user"));
+        }
+    }
 }

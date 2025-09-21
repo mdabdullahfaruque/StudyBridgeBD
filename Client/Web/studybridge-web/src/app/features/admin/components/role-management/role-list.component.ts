@@ -6,7 +6,6 @@
  * 
  * Key Implementation Notes:
  * - Backend returns nested API response: response.data.roles (not direct array)
- * - SystemRole field comes as boolean (true=system, false=custom) not number
  * - Uses 'status' column type for styled badges in table display
  * - Processes raw data into display-friendly format before table binding
  * 
@@ -82,19 +81,7 @@ export class RoleListComponent implements OnInit, OnDestroy {
       filterType: 'text',
       width: '300px'
     },
-    {
-      field: 'systemRoleDisplay',
-      header: 'System Role',
-      type: 'status',
-      sortable: true,
-      filterable: true,
-      filterType: 'dropdown',
-      filterOptions: [
-        { label: 'System Role', value: 'System Role' },
-        { label: 'Custom Role', value: 'Custom Role' }
-      ],
-      width: '150px'
-    },
+
     {
       field: 'statusDisplay',
       header: 'Status',
@@ -214,7 +201,6 @@ export class RoleListComponent implements OnInit, OnDestroy {
 
     this.processedRoles = this.roles.map(role => ({
       ...role,
-      systemRoleDisplay: this.getSystemRoleDisplay(role.systemRole),
       statusDisplay: this.getStatusDisplay(role.isActive),
       permissionsCount: this.getPermissionsCount(role)
     }));
@@ -325,28 +311,7 @@ export class RoleListComponent implements OnInit, OnDestroy {
     return Array.isArray(permissions) ? permissions.length : 0;
   }
 
-  /**
-   * Get formatted system role display
-   */
-  getSystemRoleDisplay(systemRole: any): string {
-    // Handle boolean from backend (where true = system role, false = custom role)
-    if (typeof systemRole === 'boolean') {
-      return systemRole ? 'System Role' : 'Custom Role';
-    }
-    
-    // Handle legacy number format
-    const systemRoleMap: { [key: number]: string } = {
-      0: 'User',
-      1: 'Admin', 
-      2: 'SuperAdmin',
-      3: 'Moderator',
-      4: 'ContentManager',
-      5: 'Finance',
-      6: 'Accounts'
-    };
-    
-    return systemRoleMap[systemRole] || `Role ${systemRole}`;
-  }
+
 
   /**
    * Get status display with proper styling

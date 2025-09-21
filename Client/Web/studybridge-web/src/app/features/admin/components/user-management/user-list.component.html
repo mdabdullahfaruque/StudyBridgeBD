@@ -111,4 +111,58 @@
       Create First User
     </button>
   </div>
+
+  <!-- User Dialog -->
+  <p-dialog 
+    [(visible)]="showUserDialog"
+    [modal]="true"
+    [closable]="true"
+    [resizable]="false"
+    [draggable]="false"
+    [style]="{ width: '800px', maxWidth: '95vw' }"
+    styleClass="user-form-dialog"
+    [header]="dialogTitle()">
+    
+    <div class="p-6">
+      <!-- Temporary message until user form component is created -->
+      <div class="text-center py-8">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+          <i class="pi pi-user-plus text-2xl text-blue-600"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">User Form Component</h3>
+        <p class="text-gray-600 mb-6">
+          This is where the user form component will be integrated.<br>
+          Similar to the role form, it should use app-dynamic-form as required by the UI Components Guide.
+        </p>
+        <div class="text-sm text-gray-500 bg-yellow-50 p-4 rounded-lg">
+          <strong>TODO:</strong> Create user-form.component.ts following the role-form.component.ts pattern<br>
+          - Use app-dynamic-form for consistent form handling<br>
+          - Include fields: email, firstName, lastName, roles selection, isActive<br>
+          - Support both create and edit modes
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end gap-2">
+        <button 
+          pButton 
+          type="button" 
+          label="Cancel" 
+          icon="pi pi-times"
+          class="p-button-text p-button-secondary"
+          (click)="closeUserDialog()">
+        </button>
+        <button 
+          pButton 
+          type="button" 
+          label="Save User" 
+          icon="pi pi-check"
+          class="p-button-primary"
+          disabled
+          title="Will be enabled when user form is implemented">
+        </button>
+      </div>
+    </ng-template>
+  </p-dialog>
 </div>

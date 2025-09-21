@@ -107,25 +107,7 @@ export class RoleFormComponent implements OnInit, OnDestroy {
       toggleLabel: 'Role is active and can be assigned to users',
       defaultValue: true,
       helpText: 'Toggle to enable/disable this role. Inactive roles cannot be assigned to users.',
-      colSpan: 6
-    },
-    {
-      key: 'systemRole',
-      type: 'select',
-      label: 'System Role Type',
-      required: true,
-      options: [
-        { label: 'User Role (Custom)', value: 0 },
-        { label: 'Admin Role (System)', value: 1 },
-        { label: 'Super Admin (System)', value: 2 },
-        { label: 'Moderator (System)', value: 3 },
-        { label: 'Content Manager (System)', value: 4 },
-        { label: 'Finance (System)', value: 5 },
-        { label: 'Accounts (System)', value: 6 }
-      ],
-      defaultValue: 0,
-      helpText: 'Select the type of role. System roles have predefined permissions.',
-      colSpan: 6
+      colSpan: 12
     }
   ];
 

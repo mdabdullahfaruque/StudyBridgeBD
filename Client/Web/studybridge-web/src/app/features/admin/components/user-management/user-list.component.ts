@@ -14,13 +14,20 @@
  * See docs/ADMIN_TABLE_IMPLEMENTATION.md for the complete pattern guide.
  */
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
+// PrimeNG Dialog for Modal
+import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
+
 // PrimeNG Table Wrapper - MANDATORY per UI Components Guide
 import { TableWrapperComponent, TableColumn, TableConfig } from '../../../../shared/table-wrapper/table-wrapper.component';
+
+// User Form Component (we'll create this temporarily as a simple form)
+// For now, we'll show a message about creating the form component
 
 // API Service and Models
 import { AdminService, AdminUser, PaginatedResult, ApiResponse, GetUsersRequest, GetUsersResponse } from '../../services/admin.service';
@@ -33,6 +40,8 @@ import { ToastService } from '../../../../shared/services/toast.service';
   standalone: true,
   imports: [
     CommonModule,
+    DialogModule,
+    ButtonModule,
     TableWrapperComponent
   ],
   templateUrl: './user-list.component.html',
@@ -46,6 +55,11 @@ export class UserListComponent implements OnInit, OnDestroy {
   processedUsers: any[] = [];
   selectedUsers: AdminUser[] = [];
   loading = false;
+
+  // Dialog state
+  showUserDialog = signal(false);
+  dialogTitle = signal('Create User');
+  editingUser = signal<AdminUser | null>(null);
 
   // Table column configuration per UI Components Guide
   columns: TableColumn[] = [
@@ -289,10 +303,37 @@ export class UserListComponent implements OnInit, OnDestroy {
   // User management actions
 
   /**
-   * Navigate to create new user page
+   * Open dialog to create new user
    */
   createNewUser(): void {
-    this.router.navigate(['/admin/users/create']);
+    this.editingUser.set(null);
+    this.dialogTitle.set('Create New User');
+    this.showUserDialog.set(true);
+  }
+
+  /**
+   * Open dialog to edit user
+   */
+  editUser(user: AdminUser): void {
+    this.editingUser.set(user);
+    this.dialogTitle.set('Edit User');
+    this.showUserDialog.set(true);
+  }
+
+  /**
+   * Close the user dialog
+   */
+  closeUserDialog(): void {
+    this.showUserDialog.set(false);
+    this.editingUser.set(null);
+  }
+
+  /**
+   * Handle user form completion
+   */
+  onUserFormComplete(): void {
+    this.closeUserDialog();
+    this.loadUsers(); // Refresh the list
   }
 
   /**
@@ -302,13 +343,7 @@ export class UserListComponent implements OnInit, OnDestroy {
     this.loadUsers();
   }
 
-  /**
-   * Edit user details
-   */
-  editUser(user: AdminUser): void {
-    console.log('Editing user:', user);
-    this.router.navigate(['/admin/users/edit', user.id]);
-  }
+
 
   /**
    * Toggle user active status
