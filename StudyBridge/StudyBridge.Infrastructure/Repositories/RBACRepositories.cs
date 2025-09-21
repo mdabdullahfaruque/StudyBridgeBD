@@ -77,6 +77,25 @@ public class MenuRepository : IMenuRepository
         return userMenus;
     }
 
+    public async Task<IEnumerable<Menu>> GetMenusByRoleIdAsync(Guid roleId)
+    {
+        // Get menus that are assigned to a specific role
+        var roleMenus = await _context.RoleMenus
+            .Include(rm => rm.Menu)
+                .ThenInclude(m => m.ParentMenu)
+            .Include(rm => rm.Menu)
+                .ThenInclude(m => m.SubMenus.Where(sm => sm.IsActive))
+            .Where(rm => rm.RoleId == roleId && 
+                        rm.IsActive && 
+                        rm.Menu.IsActive)
+            .Select(rm => rm.Menu)
+            .Distinct()
+            .OrderBy(m => m.SortOrder)
+            .ToListAsync();
+
+        return roleMenus;
+    }
+
     public async Task<Menu> AddAsync(Menu menu)
     {
         menu.CreatedAt = DateTime.UtcNow;

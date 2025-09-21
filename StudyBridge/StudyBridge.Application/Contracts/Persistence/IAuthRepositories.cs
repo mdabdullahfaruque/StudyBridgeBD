@@ -5,6 +5,7 @@ namespace StudyBridge.Application.Contracts.Persistence;
 public interface IRoleRepository
 {
     Task<Role?> GetByIdAsync(Guid id);
+    Task<Role?> GetByNameAsync(string name);
     Task<IEnumerable<Role>> GetAllAsync();
     Task<Role> AddAsync(Role role);
     Task UpdateAsync(Role role);
@@ -38,6 +39,7 @@ public interface IMenuRepository
     Task<IEnumerable<Menu>> GetByParentIdAsync(Guid? parentId);
     Task<IEnumerable<Menu>> GetMenuTreeAsync();
     Task<IEnumerable<Menu>> GetUserMenusAsync(Guid userId);
+    Task<IEnumerable<Menu>> GetMenusByRoleIdAsync(Guid roleId);
     Task<Menu> AddAsync(Menu menu);
     Task UpdateAsync(Menu menu);
     Task DeleteAsync(Guid id);
