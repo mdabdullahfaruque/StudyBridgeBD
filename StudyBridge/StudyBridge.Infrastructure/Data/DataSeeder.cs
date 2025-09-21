@@ -17,13 +17,12 @@ public class DataSeederService
 
         try
         {
-            logger.LogInformation("Starting comprehensive data seeding...");
+            logger.LogInformation("Starting simplified menu-based data seeding...");
             
             await SeedSystemRolesAsync(serviceProvider);
             await SeedMenusAsync(serviceProvider);
             await SeedPublicMenusAsync(serviceProvider);
-            await SeedPermissionsAsync(serviceProvider);
-            await SeedRolePermissionsAsync(serviceProvider);
+            await SeedRoleMenusAsync(serviceProvider);
             await SeedDefaultAdminUserAsync(serviceProvider);
             
             logger.LogInformation("Data seeding completed successfully");
@@ -51,23 +50,24 @@ public class DataSeederService
 
         var systemRoles = new[]
         {
-            new { SystemRole = SystemRole.SuperAdmin, Name = "SuperAdmin", Description = "Full system access with all permissions" },
-            new { SystemRole = SystemRole.Admin, Name = "Admin", Description = "Administrative access with most permissions" },
-            new { SystemRole = SystemRole.Finance, Name = "Finance", Description = "Financial data access and management" },
-            new { SystemRole = SystemRole.Accounts, Name = "Accounts", Description = "Account management and billing" },
-            new { SystemRole = SystemRole.ContentManager, Name = "ContentManager", Description = "Content creation and management" },
-            new { SystemRole = SystemRole.User, Name = "User", Description = "Standard user with basic permissions" }
+            new { Name = "SuperAdmin", Description = "Full system access with all menus" },
+            new { Name = "Admin", Description = "Administrative access with most menus" },
+            new { Name = "Finance", Description = "Financial data access and management" },
+            new { Name = "Accounts", Description = "Account management and billing" },
+            new { Name = "ContentManager", Description = "Content creation and management" },
+            new { Name = "User", Description = "Standard user with basic menu access" }
         };
+
+        var existingRoles = await roleRepository.GetAllAsync();
+        var existingRoleNames = existingRoles.Select(r => r.Name).ToHashSet();
 
         foreach (var roleData in systemRoles)
         {
-            var existingRole = await roleRepository.GetBySystemRoleAsync(roleData.SystemRole);
-            if (existingRole == null)
+            if (!existingRoleNames.Contains(roleData.Name))
             {
                 var role = new Role
                 {
                     Id = Guid.NewGuid(),
-                    SystemRole = roleData.SystemRole,
                     Name = roleData.Name,
                     Description = roleData.Description,
                     IsActive = true,
@@ -89,48 +89,32 @@ public class DataSeederService
 
         logger.LogInformation("Seeding admin menus...");
 
-        // Parent menu definitions with proper routes and required permissions
+        // Parent menu definitions with proper routes
         var parentMenus = new[]
         {
-            new { Name = "dashboard", DisplayName = "Dashboard", Icon = "pi pi-home", Route = "/admin/dashboard", SortOrder = 10, HasCrud = false, RequiredPermissions = new[] { "dashboard.view" } },
-            new { Name = "user-management", DisplayName = "User Management", Icon = "pi pi-users", Route = "/admin/users", SortOrder = 20, HasCrud = true, RequiredPermissions = new[] { "users.view" } },
-            new { Name = "role-management", DisplayName = "Role Management", Icon = "pi pi-key", Route = "/admin/roles", SortOrder = 30, HasCrud = true, RequiredPermissions = new[] { "roles.view" } },
-            new { Name = "permission-management", DisplayName = "Permissions", Icon = "pi pi-shield", Route = "/admin/permissions", SortOrder = 40, HasCrud = true, RequiredPermissions = new[] { "permissions.view" } },
-            new { Name = "content-management", DisplayName = "Content", Icon = "pi pi-file-edit", Route = "/admin/content", SortOrder = 50, HasCrud = true, RequiredPermissions = new[] { "content.view" } },
-            new { Name = "financial-management", DisplayName = "Financials", Icon = "pi pi-dollar", Route = "/admin/financials", SortOrder = 60, HasCrud = true, RequiredPermissions = new[] { "financials.view" } },
-            new { Name = "system-management", DisplayName = "System", Icon = "pi pi-cog", Route = "/admin/system", SortOrder = 70, HasCrud = false, RequiredPermissions = new[] { "system.view" } }
+            new { Name = "dashboard", DisplayName = "Dashboard", Icon = "pi pi-home", Route = "/admin/dashboard", SortOrder = 10 },
+            new { Name = "content-management", DisplayName = "Content", Icon = "pi pi-file-edit", Route = "/admin/content", SortOrder = 20 },
+            new { Name = "financial-management", DisplayName = "Financials", Icon = "pi pi-dollar", Route = "/admin/financials", SortOrder = 30 },
+            new { Name = "system-management", DisplayName = "System", Icon = "pi pi-cog", Route = "/admin/system", SortOrder = 40 }
         };
 
         // Child menu definitions
         var childMenus = new[]
         {
-            // User Management sub-menus
-            new { Name = "users-list", DisplayName = "All Users", Icon = "pi pi-list", Route = "/admin/users", ParentName = "user-management", SortOrder = 10, HasCrud = false, RequiredPermissions = new[] { "users.view" } },
-            new { Name = "users-create", DisplayName = "Add User", Icon = "pi pi-plus", Route = "/admin/users/create", ParentName = "user-management", SortOrder = 20, HasCrud = false, RequiredPermissions = new[] { "users.create" } },
-            new { Name = "users-roles", DisplayName = "User Roles", Icon = "pi pi-key", Route = "/admin/users/roles", ParentName = "user-management", SortOrder = 30, HasCrud = false, RequiredPermissions = new[] { "users.view" } },
-            
-            // Role Management sub-menus
-            new { Name = "roles-list", DisplayName = "All Roles", Icon = "pi pi-list", Route = "/admin/roles", ParentName = "role-management", SortOrder = 10, HasCrud = false, RequiredPermissions = new[] { "roles.view" } },
-            new { Name = "roles-create", DisplayName = "Create Role", Icon = "pi pi-plus", Route = "/admin/roles/create", ParentName = "role-management", SortOrder = 20, HasCrud = false, RequiredPermissions = new[] { "roles.create" } },
-            
-            // Permission Management sub-menus  
-            new { Name = "permissions-list", DisplayName = "All Permissions", Icon = "pi pi-list", Route = "/admin/permissions", ParentName = "permission-management", SortOrder = 10, HasCrud = false, RequiredPermissions = new[] { "permissions.view" } },
-            new { Name = "permissions-create", DisplayName = "Create Permission", Icon = "pi pi-plus", Route = "/admin/permissions/create", ParentName = "permission-management", SortOrder = 20, HasCrud = false, RequiredPermissions = new[] { "permissions.create" } },
+            // System Management sub-menus (includes user and role management)
+            new { Name = "user-management", DisplayName = "User Management", Icon = "pi pi-users", Route = "/admin/system/users", ParentName = "system-management", SortOrder = 10 },
+            new { Name = "role-management", DisplayName = "Role Management", Icon = "pi pi-key", Route = "/admin/system/roles", ParentName = "system-management", SortOrder = 20 },
+            new { Name = "app-settings", DisplayName = "Settings", Icon = "pi pi-sliders-h", Route = "/admin/system/settings", ParentName = "system-management", SortOrder = 30 },
+            new { Name = "audit-logs", DisplayName = "Audit Logs", Icon = "pi pi-history", Route = "/admin/system/audit", ParentName = "system-management", SortOrder = 40 },
             
             // Content Management sub-menus
-            new { Name = "content-vocabulary", DisplayName = "Vocabulary", Icon = "pi pi-book", Route = "/admin/content/vocabulary", ParentName = "content-management", SortOrder = 10, HasCrud = false, RequiredPermissions = new[] { "content.view" } },
-            new { Name = "content-categories", DisplayName = "Categories", Icon = "pi pi-tags", Route = "/admin/content/categories", ParentName = "content-management", SortOrder = 20, HasCrud = false, RequiredPermissions = new[] { "content.view" } },
+            new { Name = "content-vocabulary", DisplayName = "Vocabulary", Icon = "pi pi-book", Route = "/admin/content/vocabulary", ParentName = "content-management", SortOrder = 10 },
+            new { Name = "content-categories", DisplayName = "Categories", Icon = "pi pi-tags", Route = "/admin/content/categories", ParentName = "content-management", SortOrder = 20 },
             
             // Financial Management sub-menus
-            new { Name = "financials-overview", DisplayName = "Overview", Icon = "pi pi-chart-bar", Route = "/admin/financials", ParentName = "financial-management", SortOrder = 10, HasCrud = false, RequiredPermissions = new[] { "financials.view" } },
-            new { Name = "financials-subscriptions", DisplayName = "Subscriptions", Icon = "pi pi-credit-card", Route = "/admin/financials/subscriptions", ParentName = "financial-management", SortOrder = 20, HasCrud = false, RequiredPermissions = new[] { "financials.view" } },
-            new { Name = "financials-reports", DisplayName = "Reports", Icon = "pi pi-chart-line", Route = "/admin/financials/reports", ParentName = "financial-management", SortOrder = 30, HasCrud = false, RequiredPermissions = new[] { "reports.view" } },
-            
-            // System Management sub-menus
-            new { Name = "menu-management", DisplayName = "Menu Management", Icon = "pi pi-bars", Route = "/admin/menus", ParentName = "system-management", SortOrder = 10, HasCrud = true, RequiredPermissions = new[] { "menus.view" } },
-            new { Name = "system-settings", DisplayName = "Settings", Icon = "pi pi-sliders-h", Route = "/admin/system/settings", ParentName = "system-management", SortOrder = 20, HasCrud = false, RequiredPermissions = new[] { "system.view" } },
-            new { Name = "system-logs", DisplayName = "Logs", Icon = "pi pi-file", Route = "/admin/system/logs", ParentName = "system-management", SortOrder = 30, HasCrud = false, RequiredPermissions = new[] { "system.logs" } },
-            new { Name = "system-analytics", DisplayName = "Analytics", Icon = "pi pi-chart-pie", Route = "/admin/system/analytics", ParentName = "system-management", SortOrder = 40, HasCrud = false, RequiredPermissions = new[] { "analytics.view" } }
+            new { Name = "financials-overview", DisplayName = "Overview", Icon = "pi pi-chart-bar", Route = "/admin/financials", ParentName = "financial-management", SortOrder = 10 },
+            new { Name = "financials-subscriptions", DisplayName = "Subscriptions", Icon = "pi pi-credit-card", Route = "/admin/financials/subscriptions", ParentName = "financial-management", SortOrder = 20 },
+            new { Name = "financials-reports", DisplayName = "Reports", Icon = "pi pi-chart-line", Route = "/admin/financials/reports", ParentName = "financial-management", SortOrder = 30 },
         };
 
         var createdMenus = new Dictionary<string, Menu>();
@@ -146,12 +130,11 @@ public class DataSeederService
                     Id = Guid.NewGuid(),
                     Name = menuData.Name,
                     DisplayName = menuData.DisplayName,
+                    Description = $"Access to {menuData.DisplayName} section",
                     Icon = menuData.Icon,
                     Route = string.IsNullOrEmpty(menuData.Route) ? null : menuData.Route,
-                    MenuType = MenuType.Admin,
                     SortOrder = menuData.SortOrder,
                     IsActive = true,
-                    HasCrudPermissions = menuData.HasCrud,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
@@ -178,13 +161,12 @@ public class DataSeederService
                     Id = Guid.NewGuid(),
                     Name = menuData.Name,
                     DisplayName = menuData.DisplayName,
+                    Description = $"Access to {menuData.DisplayName} functionality",
                     Icon = menuData.Icon,
                     Route = menuData.Route,
-                    MenuType = MenuType.Admin,
                     ParentMenuId = parentMenu.Id,
                     SortOrder = menuData.SortOrder,
                     IsActive = true,
-                    HasCrudPermissions = menuData.HasCrud,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
@@ -221,12 +203,11 @@ public class DataSeederService
                     Id = Guid.NewGuid(),
                     Name = menuData.Name,
                     DisplayName = menuData.DisplayName,
+                    Description = $"Access to {menuData.DisplayName} for regular users",
                     Icon = menuData.Icon,
                     Route = menuData.Route,
-                    MenuType = MenuType.Public,
                     SortOrder = menuData.SortOrder,
                     IsActive = true,
-                    HasCrudPermissions = false,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
@@ -237,175 +218,84 @@ public class DataSeederService
         }
     }
 
-    private static async Task SeedPermissionsAsync(IServiceProvider serviceProvider)
-    {
-        using var scope = serviceProvider.CreateScope();
-        var permissionRepository = scope.ServiceProvider.GetRequiredService<IPermissionRepository>();
-        var menuRepository = scope.ServiceProvider.GetRequiredService<IMenuRepository>();
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<DataSeederService>>();
-
-        logger.LogInformation("Seeding permissions...");
-
-        var allMenus = await menuRepository.GetAllAsync();
-        var menuLookup = allMenus.ToDictionary(m => m.Name, m => m);
-
-        var permissions = new[]
-        {
-            // Dashboard permissions
-            new { MenuName = "dashboard", PermissionType = PermissionType.View, Key = "dashboard.view", DisplayName = "View Dashboard", Description = "Access to main dashboard" },
-            
-            // User Management permissions
-            new { MenuName = "user-management", PermissionType = PermissionType.View, Key = "users.view", DisplayName = "View Users", Description = "View user listings and details" },
-            new { MenuName = "user-management", PermissionType = PermissionType.Create, Key = "users.create", DisplayName = "Create Users", Description = "Create new users" },
-            new { MenuName = "user-management", PermissionType = PermissionType.Edit, Key = "users.edit", DisplayName = "Edit Users", Description = "Modify user information" },
-            new { MenuName = "user-management", PermissionType = PermissionType.Delete, Key = "users.delete", DisplayName = "Delete Users", Description = "Remove users from system" },
-            new { MenuName = "user-management", PermissionType = PermissionType.Manage, Key = "users.manage", DisplayName = "Manage Users", Description = "Full user management access" },
-            
-            // Role Management permissions
-            new { MenuName = "role-management", PermissionType = PermissionType.View, Key = "roles.view", DisplayName = "View Roles", Description = "View role listings and details" },
-            new { MenuName = "role-management", PermissionType = PermissionType.Create, Key = "roles.create", DisplayName = "Create Roles", Description = "Create new roles" },
-            new { MenuName = "role-management", PermissionType = PermissionType.Edit, Key = "roles.edit", DisplayName = "Edit Roles", Description = "Modify role settings" },
-            new { MenuName = "role-management", PermissionType = PermissionType.Delete, Key = "roles.delete", DisplayName = "Delete Roles", Description = "Remove roles from system" },
-            new { MenuName = "role-management", PermissionType = PermissionType.Manage, Key = "roles.manage", DisplayName = "Manage Roles", Description = "Full role management access" },
-            
-            // Menu Management permissions
-            new { MenuName = "menu-management", PermissionType = PermissionType.View, Key = "menus.view", DisplayName = "View Menus", Description = "View menu listings and details" },
-            new { MenuName = "menu-management", PermissionType = PermissionType.Create, Key = "menus.create", DisplayName = "Create Menus", Description = "Create new menus" },
-            new { MenuName = "menu-management", PermissionType = PermissionType.Edit, Key = "menus.edit", DisplayName = "Edit Menus", Description = "Modify menu settings" },
-            new { MenuName = "menu-management", PermissionType = PermissionType.Delete, Key = "menus.delete", DisplayName = "Delete Menus", Description = "Remove menus from system" },
-            new { MenuName = "menu-management", PermissionType = PermissionType.Manage, Key = "menus.manage", DisplayName = "Manage Menus", Description = "Full menu management access" },
-            
-            // Permission Management permissions
-            new { MenuName = "permission-management", PermissionType = PermissionType.View, Key = "permissions.view", DisplayName = "View Permissions", Description = "View permission listings" },
-            new { MenuName = "permission-management", PermissionType = PermissionType.Create, Key = "permissions.create", DisplayName = "Create Permissions", Description = "Create new permissions" },
-            new { MenuName = "permission-management", PermissionType = PermissionType.Edit, Key = "permissions.edit", DisplayName = "Edit Permissions", Description = "Modify permissions" },
-            new { MenuName = "permission-management", PermissionType = PermissionType.Delete, Key = "permissions.delete", DisplayName = "Delete Permissions", Description = "Remove permissions" },
-            new { MenuName = "permission-management", PermissionType = PermissionType.Manage, Key = "permissions.manage", DisplayName = "Manage Permissions", Description = "Full permission management" },
-            
-            // Content Management permissions
-            new { MenuName = "content-management", PermissionType = PermissionType.View, Key = "content.view", DisplayName = "View Content", Description = "View content items" },
-            new { MenuName = "content-management", PermissionType = PermissionType.Create, Key = "content.create", DisplayName = "Create Content", Description = "Create new content" },
-            new { MenuName = "content-management", PermissionType = PermissionType.Edit, Key = "content.edit", DisplayName = "Edit Content", Description = "Modify content items" },
-            new { MenuName = "content-management", PermissionType = PermissionType.Delete, Key = "content.delete", DisplayName = "Delete Content", Description = "Remove content items" },
-            new { MenuName = "content-management", PermissionType = PermissionType.Manage, Key = "content.manage", DisplayName = "Manage Content", Description = "Full content management" },
-            
-            // Financial Management permissions
-            new { MenuName = "financial-management", PermissionType = PermissionType.View, Key = "financials.view", DisplayName = "View Financials", Description = "View financial data" },
-            new { MenuName = "financial-management", PermissionType = PermissionType.Manage, Key = "financials.manage", DisplayName = "Manage Financials", Description = "Full financial management" },
-            
-            // System Management permissions
-            new { MenuName = "system-management", PermissionType = PermissionType.View, Key = "system.view", DisplayName = "View System", Description = "View system information" },
-            new { MenuName = "system-management", PermissionType = PermissionType.Manage, Key = "system.manage", DisplayName = "Manage System", Description = "System administration" },
-            new { MenuName = "system-management", PermissionType = PermissionType.Execute, Key = "system.logs", DisplayName = "View Logs", Description = "Access system logs" },
-            
-            // Analytics and Reports
-            new { MenuName = "system-management", PermissionType = PermissionType.View, Key = "analytics.view", DisplayName = "View Analytics", Description = "Access to analytics and reports" },
-            new { MenuName = "financial-management", PermissionType = PermissionType.View, Key = "reports.view", DisplayName = "View Reports", Description = "Access to financial reports" },
-            
-            // Public Menu permissions for regular users
-            new { MenuName = "public-dashboard", PermissionType = PermissionType.View, Key = "public.dashboard", DisplayName = "View Public Dashboard", Description = "Access to user dashboard" },
-            new { MenuName = "public-vocabulary", PermissionType = PermissionType.View, Key = "public.vocabulary", DisplayName = "View Vocabulary", Description = "Access to vocabulary learning" },
-            new { MenuName = "public-learning", PermissionType = PermissionType.View, Key = "public.learning", DisplayName = "Access Learning", Description = "Access to learning modules" }
-        };
-
-        foreach (var permData in permissions)
-        {
-            if (menuLookup.TryGetValue(permData.MenuName, out var menu))
-            {
-                var existingPermission = await permissionRepository.GetByKeyAsync(permData.Key);
-                if (existingPermission == null)
-                {
-                    var permission = new Permission
-                    {
-                        Id = Guid.NewGuid(),
-                        MenuId = menu.Id,
-                        PermissionType = permData.PermissionType,
-                        PermissionKey = permData.Key,
-                        DisplayName = permData.DisplayName,
-                        Description = permData.Description,
-                        IsActive = true,
-                        IsSystemPermission = true,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    };
-
-                    await permissionRepository.AddAsync(permission);
-                    logger.LogInformation("Created permission: {PermissionKey}", permData.Key);
-                }
-            }
-        }
-    }
-
-    private static async Task SeedRolePermissionsAsync(IServiceProvider serviceProvider)
+    private static async Task SeedRoleMenusAsync(IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
         var roleRepository = scope.ServiceProvider.GetRequiredService<IRoleRepository>();
-        var permissionRepository = scope.ServiceProvider.GetRequiredService<IPermissionRepository>();
-        var rolePermissionRepository = scope.ServiceProvider.GetRequiredService<IRolePermissionRepository>();
+        var menuRepository = scope.ServiceProvider.GetRequiredService<IMenuRepository>();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<DataSeederService>>();
 
-        logger.LogInformation("Seeding role permissions...");
+        logger.LogInformation("Seeding role menu assignments...");
 
         var allRoles = await roleRepository.GetAllAsync();
-        var allPermissions = await permissionRepository.GetAllAsync();
-        var permissionLookup = allPermissions.ToDictionary(p => p.PermissionKey, p => p);
+        var allMenus = await menuRepository.GetAllAsync();
+        var menuLookup = allMenus.ToDictionary(m => m.Name, m => m);
 
-        var rolePermissionMappings = new Dictionary<SystemRole, string[]>
+        var roleMenuMappings = new Dictionary<string, string[]>
         {
-            [SystemRole.SuperAdmin] = allPermissions.Select(p => p.PermissionKey).ToArray(),
-            [SystemRole.Admin] = new[]
+            ["SuperAdmin"] = allMenus.Select(m => m.Name).ToArray(), // All menus
+            ["Admin"] = new[]
             {
-                "dashboard.view", "users.view", "users.create", "users.edit", "users.delete",
-                "roles.view", "roles.create", "roles.edit", "permissions.view",
-                "content.view", "content.create", "content.edit", "content.delete",
-                "system.view", "reports.view"
+                "dashboard", "content-management", "system-management",
+                "user-management", "role-management", "app-settings", "audit-logs",
+                "content-vocabulary", "content-categories"
             },
-            [SystemRole.Finance] = new[]
+            ["Finance"] = new[]
             {
-                "dashboard.view", "users.view", "financials.view", "financials.manage", "reports.view"
+                "dashboard", "financial-management", "system-management", "user-management",
+                "financials-overview", "financials-subscriptions", "financials-reports"
             },
-            [SystemRole.Accounts] = new[]
+            ["Accounts"] = new[]
             {
-                "dashboard.view", "users.view", "financials.view"
+                "dashboard", "financial-management", "system-management", "user-management",
+                "financials-overview"
             },
-            [SystemRole.ContentManager] = new[]
+            ["ContentManager"] = new[]
             {
-                "dashboard.view", "users.view", "content.view", "content.create", "content.edit", "content.delete"
+                "dashboard", "content-management",
+                "content-vocabulary", "content-categories"
             },
-            [SystemRole.User] = new[]
+            ["User"] = new[]
             {
-                "dashboard.view", "public.dashboard", "public.vocabulary", "public.learning"
+                "public-dashboard", "public-vocabulary", "public-learning"
             }
         };
 
         foreach (var role in allRoles)
         {
-            if (rolePermissionMappings.TryGetValue(role.SystemRole, out var permissionKeys))
+            if (roleMenuMappings.TryGetValue(role.Name, out var menuNames))
             {
-                var existingRolePermissions = await rolePermissionRepository.GetRolePermissionsAsync(role.Id);
-                var existingPermissionIds = existingRolePermissions.Select(rp => rp.PermissionId).ToHashSet();
+                // Check existing role-menu assignments
+                var existingRoleMenus = await context.RoleMenus
+                    .Where(rm => rm.RoleId == role.Id)
+                    .Select(rm => rm.MenuId)
+                    .ToListAsync();
 
-                foreach (var permissionKey in permissionKeys)
+                foreach (var menuName in menuNames)
                 {
-                    if (permissionLookup.TryGetValue(permissionKey, out var permission) 
-                        && !existingPermissionIds.Contains(permission.Id))
+                    if (menuLookup.TryGetValue(menuName, out var menu) 
+                        && !existingRoleMenus.Contains(menu.Id))
                     {
-                        var rolePermission = new RolePermission
+                        var roleMenu = new RoleMenu
                         {
                             Id = Guid.NewGuid(),
                             RoleId = role.Id,
-                            PermissionId = permission.Id,
-                            CreatedAt = DateTime.UtcNow,
-                            UpdatedAt = DateTime.UtcNow
+                            MenuId = menu.Id,
+                            GrantedAt = DateTime.UtcNow,
+                            GrantedBy = null, // System seeded
+                            IsActive = true
                         };
 
-                        await rolePermissionRepository.AddAsync(rolePermission);
-                        logger.LogInformation("Assigned permission {PermissionKey} to role {RoleName}", 
-                            permissionKey, role.Name);
+                        context.RoleMenus.Add(roleMenu);
+                        logger.LogInformation("Assigned menu {MenuName} to role {RoleName}", 
+                            menuName, role.Name);
                     }
                 }
             }
         }
+
+        await context.SaveChangesAsync();
     }
 
     private static async Task SeedDefaultAdminUserAsync(IServiceProvider serviceProvider)
@@ -448,7 +338,8 @@ public class DataSeederService
             await context.SaveChangesAsync();
 
             // Assign SuperAdmin role
-            var superAdminRole = await roleRepository.GetBySystemRoleAsync(SystemRole.SuperAdmin);
+            var allRoles = await roleRepository.GetAllAsync();
+            var superAdminRole = allRoles.FirstOrDefault(r => r.Name == "SuperAdmin");
             if (superAdminRole != null)
             {
                 var userRole = new UserRole
@@ -456,8 +347,9 @@ public class DataSeederService
                     Id = Guid.NewGuid(),
                     UserId = adminUser.Id,
                     RoleId = superAdminRole.Id,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
+                    AssignedAt = DateTime.UtcNow,
+                    AssignedBy = null, // System
+                    IsActive = true
                 };
 
                 await userRoleRepository.AddAsync(userRole);
@@ -499,7 +391,8 @@ public class DataSeederService
             await context.SaveChangesAsync();
 
             // Assign User role
-            var userRole = await roleRepository.GetBySystemRoleAsync(SystemRole.User);
+            var allRoles2 = await roleRepository.GetAllAsync();
+            var userRole = allRoles2.FirstOrDefault(r => r.Name == "User");
             if (userRole != null)
             {
                 var testUserRole = new UserRole
@@ -507,8 +400,9 @@ public class DataSeederService
                     Id = Guid.NewGuid(),
                     UserId = testUser.Id,
                     RoleId = userRole.Id,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
+                    AssignedAt = DateTime.UtcNow,
+                    AssignedBy = null, // System
+                    IsActive = true
                 };
 
                 await userRoleRepository.AddAsync(testUserRole);
