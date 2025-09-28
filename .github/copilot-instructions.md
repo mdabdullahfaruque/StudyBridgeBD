@@ -1,159 +1,187 @@
-# GitHub Copilot Instructions for StudyBridge Project
+# StudyBridge - AI Coding Agent Instructions
 
-## 📋 Project Context
+## 🎯 Essential Knowledge for Immediate Productivity
 
-StudyBridge is an IELTS vocabulary learning platform built with .NET 8 (backend) and Angular 20+ (frontend), following Clean Architecture and CQRS patterns.
+StudyBridge is a production-ready IELTS vocabulary platform with **258 tests (92.2% coverage)** and modern architecture.
 
 ## 🏗️ Architecture Overview
 
-- **Backend**: .NET 8 Web API with modular monolithic architecture
-- **Frontend**: Angular with zoneless change detection
-- **Database**: PostgreSQL with Entity Framework Core
-- **Authentication**: JWT + Google OAuth
-- **Pattern**: Clean Architecture + CQRS + Domain-Driven Design
+**Backend**: .NET 8 with custom CQRS + Clean Architecture  
+**Frontend**: Angular 20 standalone components + PrimeNG  
+**Database**: PostgreSQL with Entity Framework Core  
+**Authentication**: Google OAuth + JWT tokens  
 
-## 📚 Documentation References
+## ⚡ CQRS Pattern (Critical)
 
-When working on this project, always reference these comprehensive documentation files:
+Every backend feature follows this exact structure in `StudyBridge/Modules/{Module}/Features/{Feature}.cs`:
 
-### ⚠️ MANDATORY READING BEFORE ANY WORK
-- **`/docs/UI_COMPONENTS_GUIDE.md`**: **CRITICAL - MUST READ FIRST** - UI component architecture and prohibited practices
-
-### Core Documentation
-- **`/docs/IMPLEMENTATION_STATUS.md`**: Current project status and completed features (September 2025)
-- **`/docs/PROJECT_DOCUMENTATION.md`**: Complete project overview with Mermaid diagrams
-- **`/docs/ARCHITECTURE.md`**: Technical architecture deep dive
-- **`/docs/API_REFERENCE.md`**: Complete API endpoint documentation  
-- **`/docs/DEVELOPMENT_GUIDE.md`**: Development workflows and standards
-- **`/docs/INDEX.md`**: Documentation navigation hub
-- **`/CONFIGURATION_SECURITY.md`**: Secure configuration management guide
-
-## 🎯 Key Patterns to Follow
-
-### CQRS Feature Pattern
 ```csharp
-// Follow this pattern for all features
-public static class FeatureName
+public static class Login // Example from actual codebase
 {
-    public class Command : ICommand<Response> { }
-    public class Validator : AbstractValidator<Command> { }
-    public class Response { }
-    public class Handler : ICommandHandler<Command, Response> { }
+    public class Command : ICommand<Response>
+    {
+        public string Email { get; init; } = string.Empty;
+        public string Password { get; init; } = string.Empty;
+    }
+
+    public class Validator : AbstractValidator<Command>
+    {
+        public Validator() 
+        {
+            RuleFor(x => x.Email).NotEmpty().EmailAddress();
+            RuleFor(x => x.Password).NotEmpty().MinimumLength(1);
+        }
+    }
+
+    public class Response
+    {
+        public string Token { get; init; } = string.Empty;
+        public string UserId { get; init; } = string.Empty;
+        // ... other properties
+    }
+
+    public class Handler : ICommandHandler<Command, Response>
+    {
+        private readonly IApplicationDbContext _context;
+        private readonly ILogger<Handler> _logger;
+
+        public Handler(IApplicationDbContext context, ILogger<Handler> logger)
+        {
+            _context = context;
+            _logger = logger;
+        }
+
+        public async Task<Response> HandleAsync(Command command, CancellationToken cancellationToken)
+        {
+            // Implementation with logging
+            _logger.LogInformation("Processing {Feature} for {User}", nameof(Login), command.Email);
+            // Business logic here
+            return new Response { /* ... */ };
+        }
+    }
 }
 ```
 
-### Module Structure
-- **StudyBridge.UserManagement**: Complete (authentication, profiles)
-- **StudyBridge.VocabularyManagement**: Planned (2100+ IELTS words)
-- **StudyBridge.LearningManagement**: Planned (SRS algorithm)
-- **StudyBridge.ProgressManagement**: Planned (analytics, streaks)
-
-### Domain Entities
-- **AppUser**: User accounts with OAuth/local auth
-- **UserProfile**: Extended user information
-- **Role/Permission**: RBAC system
-- **UserSubscription**: Subscription management
-
-### Technology Stack
-- **.NET 8**: Latest LTS framework
-- **Entity Framework Core**: ORM with PostgreSQL
-- **FluentValidation**: Input validation
-- **Serilog**: Structured logging
-- **xUnit + Moq**: Testing (258 tests, 92.2% business logic coverage)
-- **Angular 20**: Modern frontend with standalone components
-- **TypeScript 5.9**: Strict mode with comprehensive type safety
-- **Tailwind CSS 3.4**: Utility-first styling with responsive design
-- **RxJS 7.8**: Reactive programming for state management
-- **Custom CQRS**: No MediatR dependency
-
-## 🔧 Development Guidelines
-
-### Naming Conventions
-- **Classes/Interfaces**: PascalCase (UserService, IUserService)
-- **Methods/Properties**: PascalCase (GetUserById)
-- **Private fields**: camelCase with underscore (_userRepository)
-- **Variables/Parameters**: camelCase (userId, emailAddress)
-
-### Code Standards
-- Always use dependency injection
-- Follow Clean Architecture layer dependencies
-- Implement comprehensive unit tests
-- Use FluentValidation for input validation
-- Apply async/await patterns consistently
-- Use structured logging with Serilog
-
-### API Patterns
-- Use ApiResponse<T> wrapper for all endpoints
-- Implement proper HTTP status codes
-- Follow RESTful conventions
-- Use JWT Bearer authentication
-- Apply role-based authorization
-
-### Testing Standards
-- Follow AAA pattern (Arrange, Act, Assert)
-- Use test data builders for complex objects
-- Mock external dependencies
-- Aim for 90%+ coverage on business logic
-- Write descriptive test names: `Method_Scenario_ExpectedResult`
-
-## 🚀 Current Status (September 2025)
-
-### Completed ✅
-- User Management module (92.2% test coverage)
-- Authentication system (Google OAuth + JWT)
-- Clean Architecture foundation
-- CQRS infrastructure with custom implementation
-- Comprehensive testing suite (258 tests passing)
-- Database schema and migrations
-- **Angular 20 frontend with Tailwind CSS**
-- **Responsive dashboard and authentication UI**
-- **Secure configuration management**
-- **Modern component architecture with standalone components**
-
-### In Progress 🚧
-- Enhanced documentation and developer guides
-- CI/CD pipeline setup
-
-### Planned 📋
-- Vocabulary Management module (2,100+ IELTS words)
-- Learning Engine with SRS algorithm
-- Progress tracking and analytics
-- Mobile application (React Native)
-
-## 🎯 When Generating Code
-
-### ⚠️ CRITICAL REQUIREMENTS (MUST BE FOLLOWED)
-1. **READ `/docs/UI_COMPONENTS_GUIDE.md` FIRST** - Contains mandatory UI component requirements
-2. **NEVER create new Table, Form, or Tree components** - Use existing PrimeNG wrappers:
-   - Tables: `app-table-wrapper` (comprehensive PrimeNG Table)
-   - Forms: `app-dynamic-form` (full PrimeNG Form capabilities)  
-   - Trees: `app-tree-wrapper` (complete PrimeNG Tree implementation)
-3. **ALWAYS use PrimeNG for all UI components** - No other UI libraries allowed
-
-### Standard Development Rules
-4. **Always follow established patterns** from existing modules
-5. **Reference documentation** for architectural decisions
-6. **Maintain consistency** with naming conventions
-7. **Include comprehensive tests** for new features
-8. **Follow Clean Architecture** layer dependencies
-9. **Use proper error handling** with custom exceptions
-10. **Implement validation** using FluentValidation
-11. **Add logging** for important operations
-12. **Follow CQRS pattern** for commands and queries
-13. **Update documentation** when adding new features
-
-## 📁 Project Structure Reference
-
-```
-StudyBridge/
-├── StudyBridge.Api/              # Presentation layer
-├── StudyBridge.Domain/           # Domain entities
-├── StudyBridge.Application/      # Application services
-├── StudyBridge.Infrastructure/   # Infrastructure layer
-├── StudyBridge.Shared/          # Shared components
-├── Modules/                     # Feature modules
-│   └── StudyBridge.UserManagement/
-└── StudyBridge.Tests.Unit/      # Comprehensive tests
+**Controllers** dispatch to handlers via custom `IDispatcher`:
+```csharp
+[ApiController]
+[Route("api/v1/[controller]")]
+public class AuthController : BaseController
+{
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] Login.Command command)
+    {
+        var result = await _authenticationService.LoginAsync(command);
+        return HandleServiceResult(result); // Returns ApiResponse<T>
+    }
+}
 ```
 
-This project follows production-ready patterns and maintains high code quality standards. Always ensure new code aligns with these established conventions and architectural principles.
+## 🎨 Angular Frontend Patterns
+
+**Standalone Components** with signals (from actual codebase):
+```typescript
+@Component({
+  selector: 'app-login',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './login.html'
+})
+export class LoginComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  
+  // Modern Angular signals
+  isLoading = signal(false);
+  user = signal<UserDto | null>(null);
+  
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.authService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => this.user.set(user));
+  }
+}
+```
+
+**API Services** pattern matching backend exactly:
+```typescript
+@Injectable({ providedIn: 'root' })
+export class AuthApiService {
+  login(request: LoginRequest): Observable<ApiResponse<LoginResponse>> {
+    return this.http.post<ApiResponse<LoginResponse>>('/api/v1/auth/login', request);
+  }
+}
+```
+
+## � Critical Development Rules
+
+### Backend
+- **CQRS Only**: Every feature = Command/Query + Validator + Handler + Response
+- **Custom CQRS**: Uses `IDispatcher` (no MediatR dependency)  
+- **API Wrapper**: All endpoints return `ApiResponse<T>`
+- **Testing**: AAA pattern with MockQueryable.EF for EF mocking
+
+### Frontend  
+- **Standalone Components**: No NgModules for components
+- **PrimeNG Only**: All UI components must use PrimeNG
+- **Signal State**: Use Angular signals for reactive state
+- **API Sync**: TypeScript interfaces MUST match backend DTOs exactly
+
+## 🧪 Testing Standards
+
+**Backend Tests** (258 existing tests as reference):
+```csharp
+public class LoginTests
+{
+    [Fact]
+    public async Task HandleAsync_WithValidCredentials_ShouldReturnToken()
+    {
+        // Arrange
+        var command = new Login.Command { Email = "test@test.com", Password = "password" };
+        
+        // Act
+        var result = await _handler.HandleAsync(command, CancellationToken.None);
+        
+        // Assert
+        Assert.NotEmpty(result.Token);
+        _mockContext.Verify(c => c.SaveChangesAsync(CancellationToken.None), Times.Once);
+    }
+}
+```
+
+## 🔧 Development Workflow
+
+```bash
+# Backend
+cd StudyBridge/StudyBridge.Api
+dotnet run  # Runs on http://localhost:5000
+
+# Frontend  
+cd Client/Web/studybridge-web
+ng serve   # Runs on http://localhost:4200
+
+# Tests
+dotnet test # 258 tests should pass
+ng test     # Angular tests
+```
+
+## 📂 Key File Locations
+
+**Backend CQRS Features**: `StudyBridge/Modules/StudyBridge.UserManagement/Features/`  
+**Angular Services**: `Client/Web/studybridge-web/src/app/shared/services/`  
+**API Controllers**: `StudyBridge/StudyBridge.Api/Controllers/`  
+**Test Suite**: `StudyBridge/StudyBridge.Tests.Unit/`
+
+## 🎯 Critical Integration Points
+
+- **Authentication**: JWT tokens via `AuthService` and `AuthInterceptor`
+- **Menu System**: Dynamic navigation via `MenuService` from backend API
+- **Error Handling**: Global error interceptor + `NotificationService` toasts  
+- **Database**: EF Core with explicit entity configurations
+- **API**: Custom `BaseController` with `HandleServiceResult` pattern
+
+**Read `/docs/` folder for deep architectural details** - this is the essential knowledge for immediate productivity.
