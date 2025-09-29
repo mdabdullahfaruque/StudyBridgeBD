@@ -18,7 +18,6 @@ public class LoginHandlerTests
     private readonly Mock<IApplicationDbContext> _mockContext;
     private readonly Mock<IPasswordHasher<AppUser>> _mockPasswordHasher;
     private readonly Mock<IJwtTokenService> _mockJwtTokenService;
-    private readonly Mock<IPermissionService> _mockPermissionService;
     private readonly Mock<ILogger<Login.Handler>> _mockLogger;
     private readonly Login.Handler _sut;
 
@@ -27,14 +26,12 @@ public class LoginHandlerTests
         _mockContext = new Mock<IApplicationDbContext>();
         _mockPasswordHasher = new Mock<IPasswordHasher<AppUser>>();
         _mockJwtTokenService = new Mock<IJwtTokenService>();
-        _mockPermissionService = new Mock<IPermissionService>();
         _mockLogger = new Mock<ILogger<Login.Handler>>();
 
         _sut = new Login.Handler(
             _mockContext.Object,
             _mockPasswordHasher.Object,
             _mockJwtTokenService.Object,
-            _mockPermissionService.Object,
             _mockLogger.Object);
     }
 
@@ -49,11 +46,20 @@ public class LoginHandlerTests
         var users = new List<AppUser> { user }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
 
+        // Setup UserRoles
+        var userRole = new UserRole
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            RoleId = Guid.NewGuid(),
+            IsActive = true,
+            Role = new Role { Id = Guid.NewGuid(), Name = "User", IsActive = true }
+        };
+        var userRoles = new List<UserRole> { userRole }.AsQueryable().BuildMockDbSet();
+        _mockContext.Setup(x => x.UserRoles).Returns(userRoles.Object);
+
         _mockPasswordHasher.Setup(x => x.VerifyHashedPassword(user, user.PasswordHash!, command.Password))
             .Returns(PasswordVerificationResult.Success);
-
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(user.Id))
-            .ReturnsAsync(new List<SystemRole> { SystemRole.User });
 
         _mockJwtTokenService.Setup(x => x.GenerateToken(user.Id, user.Email, It.IsAny<List<string>>()))
             .Returns("jwt_token_123");
@@ -168,8 +174,17 @@ public class LoginHandlerTests
         _mockPasswordHasher.Setup(x => x.VerifyHashedPassword(user, user.PasswordHash!, command.Password))
             .Returns(PasswordVerificationResult.Success);
 
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(user.Id))
-            .ReturnsAsync(new List<SystemRole> { SystemRole.User });
+        // Setup UserRoles
+        var userRole = new UserRole
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            RoleId = Guid.NewGuid(),
+            IsActive = true,
+            Role = new Role { Id = Guid.NewGuid(), Name = "User", IsActive = true }
+        };
+        var userRoles = new List<UserRole> { userRole }.AsQueryable().BuildMockDbSet();
+        _mockContext.Setup(x => x.UserRoles).Returns(userRoles.Object);
 
         _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<List<string>>()))
             .Returns("token");
@@ -199,11 +214,18 @@ public class LoginHandlerTests
         var users = new List<AppUser> { user }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
 
+        // Setup UserRoles with multiple roles
+        var adminRole = new Role { Id = Guid.NewGuid(), Name = "Admin", IsActive = true };
+        var userRole = new Role { Id = Guid.NewGuid(), Name = "User", IsActive = true };
+        var userRoles = new List<UserRole>
+        {
+            new() { Id = Guid.NewGuid(), UserId = user.Id, RoleId = adminRole.Id, IsActive = true, Role = adminRole },
+            new() { Id = Guid.NewGuid(), UserId = user.Id, RoleId = userRole.Id, IsActive = true, Role = userRole }
+        }.AsQueryable().BuildMockDbSet();
+        _mockContext.Setup(x => x.UserRoles).Returns(userRoles.Object);
+
         _mockPasswordHasher.Setup(x => x.VerifyHashedPassword(user, user.PasswordHash!, command.Password))
             .Returns(PasswordVerificationResult.Success);
-
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(user.Id))
-            .ReturnsAsync(new List<SystemRole> { SystemRole.User, SystemRole.Admin });
 
         _mockJwtTokenService.Setup(x => x.GenerateToken(user.Id, user.Email, It.IsAny<List<string>>()))
             .Returns("token");
@@ -234,8 +256,17 @@ public class LoginHandlerTests
         _mockPasswordHasher.Setup(x => x.VerifyHashedPassword(user, user.PasswordHash!, command.Password))
             .Returns(PasswordVerificationResult.Success);
 
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(user.Id))
-            .ReturnsAsync(new List<SystemRole> { SystemRole.User });
+        // Setup UserRoles
+        var userRole = new UserRole
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            RoleId = Guid.NewGuid(),
+            IsActive = true,
+            Role = new Role { Id = Guid.NewGuid(), Name = "User", IsActive = true }
+        };
+        var userRoles = new List<UserRole> { userRole }.AsQueryable().BuildMockDbSet();
+        _mockContext.Setup(x => x.UserRoles).Returns(userRoles.Object);
 
         _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<List<string>>()))
             .Returns("token");

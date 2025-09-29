@@ -52,15 +52,14 @@
       </div>
 
       <!-- Dynamic Form Component -->
-      <div id="role-form">
-        <app-dynamic-form
-          [fields]="formFields"
-          [config]="formConfig"
-          [initialData]="formInitialData"
-          [disabled]="isFormDisabled"
-          (formSubmit)="onFormSubmit($event)">
-        </app-dynamic-form>
-      </div>
+      <app-dynamic-form
+        id="role-form"
+        [fields]="formFields"
+        [config]="formConfig"
+        [initialData]="formInitialData"
+        [disabled]="isFormDisabled"
+        (formSubmit)="onFormSubmit($event)">
+      </app-dynamic-form>
     </div>
 
     <!-- Form Actions -->

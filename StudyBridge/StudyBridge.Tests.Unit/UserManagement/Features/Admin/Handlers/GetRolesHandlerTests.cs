@@ -81,11 +81,10 @@ public class GetRolesHandlerTests
         adminRole.Name.Should().Be("Admin");
         adminRole.Description.Should().Be("Administrator role");
         adminRole.IsActive.Should().BeTrue();
-        adminRole.SystemRole.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handle_Should_Order_Roles_With_System_Roles_First()
+    public async Task Handle_Should_Return_Roles_Ordered_By_Name()
     {
         // Arrange
         var query = new GetRoles.Query();
@@ -99,19 +98,10 @@ public class GetRolesHandlerTests
 
         // Assert
         result.Should().NotBeNull();
-        var systemRoles = result.Roles.Where(r => r.SystemRole).ToList();
-        var customRoles = result.Roles.Where(r => !r.SystemRole).ToList();
         
-        // System roles should come first in the result
-        for (int i = 0; i < systemRoles.Count; i++)
-        {
-            var systemRoleIndex = result.Roles.ToList().IndexOf(systemRoles[i]);
-            if (customRoles.Any())
-            {
-                var firstCustomRoleIndex = result.Roles.ToList().IndexOf(customRoles.First());
-                systemRoleIndex.Should().BeLessThan(firstCustomRoleIndex);
-            }
-        }
+        // Roles should be ordered by name
+        var roleNames = result.Roles.Select(r => r.Name).ToList();
+        roleNames.Should().BeInAscendingOrder();
     }
 
     [Fact]
@@ -217,21 +207,18 @@ public class GetRolesHandlerTests
                 id: Guid.NewGuid(),
                 name: "Admin",
                 description: "Administrator role",
-                systemRole: SystemRole.Admin,
                 isActive: true
             ),
             RoleTestData.CreateRole(
                 id: Guid.NewGuid(),
                 name: "User",
-                description: "User role", 
-                systemRole: SystemRole.User,
+                description: "User role",
                 isActive: true
             ),
             RoleTestData.CreateRole(
                 id: Guid.NewGuid(),
                 name: "Inactive",
                 description: "Inactive role",
-                systemRole: SystemRole.User,
                 isActive: false
             )
         };

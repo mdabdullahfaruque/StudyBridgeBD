@@ -181,7 +181,6 @@ public static class TestDataBuilder
         {
             Id = SuperAdminRoleId,
             Name = "Super Administrator",
-            SystemRole = SystemRole.SuperAdmin,
             Description = "System role: SuperAdmin",
             IsActive = true
         };
@@ -190,7 +189,6 @@ public static class TestDataBuilder
         {
             Id = AdminRoleId,
             Name = "Administrator",
-            SystemRole = SystemRole.Admin,
             Description = "System role: Admin",
             IsActive = true
         };
@@ -199,7 +197,6 @@ public static class TestDataBuilder
         {
             Id = UserRoleId,
             Name = "User",
-            SystemRole = SystemRole.User,
             Description = "System role: User",
             IsActive = true
         };

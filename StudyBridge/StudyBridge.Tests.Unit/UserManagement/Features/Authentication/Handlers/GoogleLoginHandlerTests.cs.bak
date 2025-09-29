@@ -16,7 +16,6 @@ public class GoogleLoginHandlerTests
 {
     private readonly Mock<IApplicationDbContext> _mockContext;
     private readonly Mock<IJwtTokenService> _mockJwtTokenService;
-    private readonly Mock<IPermissionService> _mockPermissionService;
     private readonly Mock<ILogger<GoogleLogin.Handler>> _mockLogger;
     private readonly GoogleLogin.Handler _sut;
 
@@ -24,13 +23,11 @@ public class GoogleLoginHandlerTests
     {
         _mockContext = new Mock<IApplicationDbContext>();
         _mockJwtTokenService = new Mock<IJwtTokenService>();
-        _mockPermissionService = new Mock<IPermissionService>();
         _mockLogger = new Mock<ILogger<GoogleLogin.Handler>>();
 
         _sut = new GoogleLogin.Handler(
             _mockContext.Object,
             _mockJwtTokenService.Object,
-            _mockPermissionService.Object,
             _mockLogger.Object);
     }
 
@@ -45,7 +42,6 @@ public class GoogleLoginHandlerTests
         var users = new List<AppUser> { existingUser }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
 
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(existingUser.Id))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
 
         _mockJwtTokenService.Setup(x => x.GenerateToken(existingUser.Id, existingUser.Email, It.IsAny<List<string>>()))
@@ -81,10 +77,8 @@ public class GoogleLoginHandlerTests
         var users = new List<AppUser>().AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
 
-        _mockPermissionService.Setup(x => x.AssignRoleToUserAsync(It.IsAny<Guid>(), SystemRole.User, "Google OAuth"))
             .ReturnsAsync(true);
 
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<Guid>()))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
 
         _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<Guid>(), command.Email, It.IsAny<List<string>>()))
@@ -119,7 +113,6 @@ public class GoogleLoginHandlerTests
         capturedUser.IsActive.Should().BeTrue();
         capturedUser.LoginProvider.Should().Be(StudyBridge.Domain.Enums.LoginProvider.Google);
 
-        _mockPermissionService.Verify(x => x.AssignRoleToUserAsync(It.IsAny<Guid>(), SystemRole.User, "Google OAuth"), Times.Once);
         _mockContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once); // Only once for user creation
     }
 
@@ -159,7 +152,6 @@ public class GoogleLoginHandlerTests
         var users = new List<AppUser> { existingUser }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
 
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<Guid>()))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
 
         _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<List<string>>()))
@@ -191,10 +183,8 @@ public class GoogleLoginHandlerTests
         var users = new List<AppUser>().AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
 
-        _mockPermissionService.Setup(x => x.AssignRoleToUserAsync(It.IsAny<Guid>(), SystemRole.User, "Google OAuth"))
             .ReturnsAsync(true);
 
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(It.IsAny<Guid>()))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User });
 
         _mockJwtTokenService.Setup(x => x.GenerateToken(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<List<string>>()))
@@ -229,7 +219,6 @@ public class GoogleLoginHandlerTests
         var users = new List<AppUser> { existingUser }.AsQueryable().BuildMockDbSet();
         _mockContext.Setup(x => x.Users).Returns(users.Object);
 
-        _mockPermissionService.Setup(x => x.GetUserRolesAsync(existingUser.Id))
             .ReturnsAsync(new List<SystemRole> { SystemRole.User, SystemRole.Admin });
 
         _mockJwtTokenService.Setup(x => x.GenerateToken(existingUser.Id, existingUser.Email, It.IsAny<List<string>>()))

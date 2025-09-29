@@ -41,7 +41,6 @@ public static class RoleTestData
         Guid? id = null,
         string name = "TestRole",
         string description = "Test role description",
-        SystemRole systemRole = SystemRole.User,
         bool isActive = true,
         DateTime? createdAt = null)
     {
@@ -50,11 +49,10 @@ public static class RoleTestData
             Id = id ?? Guid.NewGuid(),
             Name = name,
             Description = description,
-            SystemRole = systemRole,
             IsActive = isActive,
             CreatedAt = createdAt ?? DateTime.UtcNow,
             UserRoles = new List<UserRole>(),
-            RolePermissions = new List<RolePermission>()
+            RoleMenus = new List<RoleMenu>()
         };
     }
 }
@@ -85,44 +83,8 @@ public static class MenuTestData
             SortOrder = sortOrder,
             IsActive = isActive,
             CreatedAt = createdAt ?? DateTime.UtcNow,
-            Permissions = new List<Permission>()
+            RoleMenus = new List<RoleMenu>()
         };
-    }
-}
-
-public static class PermissionTestData
-{
-    public static Permission CreatePermission(
-        Guid? id = null,
-        string key = "test.permission",
-        string displayName = "Test Permission",
-        string? description = "Test permission description",
-        PermissionType permissionType = PermissionType.View,
-        Menu? menu = null,
-        bool isActive = true,
-        bool isSystemPermission = false,
-        DateTime? createdAt = null)
-    {
-        var permission = new Permission
-        {
-            Id = id ?? Guid.NewGuid(),
-            PermissionKey = key,
-            DisplayName = displayName,
-            Description = description,
-            PermissionType = permissionType,
-            IsActive = isActive,
-            IsSystemPermission = isSystemPermission,
-            CreatedAt = createdAt ?? DateTime.UtcNow,
-            RolePermissions = new List<RolePermission>()
-        };
-
-        if (menu != null)
-        {
-            permission.MenuId = menu.Id;
-            permission.Menu = menu;
-        }
-
-        return permission;
     }
 }
 

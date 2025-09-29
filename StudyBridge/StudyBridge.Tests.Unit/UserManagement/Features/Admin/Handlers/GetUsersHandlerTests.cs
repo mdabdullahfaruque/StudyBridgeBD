@@ -254,7 +254,6 @@ public class GetUsersHandlerTests
         { 
             Id = Guid.NewGuid(), 
             Name = "Admin", 
-            SystemRole = SystemRole.Admin,
             IsActive = true
         };
 
@@ -262,7 +261,6 @@ public class GetUsersHandlerTests
         { 
             Id = Guid.NewGuid(), 
             Name = "User", 
-            SystemRole = SystemRole.User,
             IsActive = true
         };
 

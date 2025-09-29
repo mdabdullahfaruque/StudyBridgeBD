@@ -318,7 +318,7 @@ public class UserRoleRepositoryTests : IDisposable
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var role = CreateTestRole(SystemRole.ContentManager);
+        var role = CreateTestRole("ContentManager");
         await _context.Roles.AddAsync(role);
         await _context.SaveChangesAsync();
 
